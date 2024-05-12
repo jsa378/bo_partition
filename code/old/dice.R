@@ -1,9 +1,9 @@
 library(MASS)
 library(DiceOptim)
-source("/Users/jesse/Downloads/welch_research/code/test_funcs.R")
-source("/Users/jesse/Downloads/welch_research/code/gen_points_in_region.R")
-source("/Users/jesse/Downloads/welch_research/code/split_func.R")
-source("/Users/jesse/Downloads/welch_research/code/filter_points_region_func.R")
+source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/gen_points_in_region.R")
+source("/Users/jesse/Downloads/bo_partition/code/split_func.R")
+source("/Users/jesse/Downloads/bo_partition/code/filter_points_region_func.R")
 
 dim = 2
 num_points = 10

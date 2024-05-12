@@ -1,8 +1,8 @@
 library(MASS)
 library(GaSP)
 library(EGO)
-source("/Users/jesse/Downloads/welch_research/code/test_funcs.R")
-source("/Users/jesse/Downloads/welch_research/code/goldpr_points_func.R")
+source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/goldpr_points_func.R")
 
 dim = 2
 num_init_points = 10

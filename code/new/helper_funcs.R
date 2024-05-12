@@ -4,7 +4,14 @@ gen_points_in_region = function(region, num_points){
     points[r, 1] = runif(n = 1, min = region[[1]][[1]], max = region[[1]][[2]])
     points[r, 2] = runif(n = 1, min = region[[2]][[1]], max = region[[2]][[2]])
   }
-  return(points)
+  obs = apply(points, 1, goldprsc)
+  return(list(points, obs))
+}
+
+return_bounds_for_optim = function(region){
+  lower_bounds = c(region[[1]][1], region[[2]][1])
+  upper_bounds = c(region[[1]][2], region[[2]][2])
+  return(list(lower_bounds, upper_bounds))
 }
 
 filter_points_region_func = function(region, chosen_points, test_func_vals){
@@ -17,6 +24,28 @@ filter_points_region_func = function(region, chosen_points, test_func_vals){
   chosen_points_in_region = chosen_points[indices_of_points_in_region, ]
   test_func_vals_in_region = test_func_vals[indices_of_points_in_region]
   return(list(chosen_points_in_region, test_func_vals_in_region))
+}
+
+method_2 = function(list_of_regions,
+                    list_of_models,
+                    list_of_region_bounds,
+                    best_val_so_far){
+  method_2_ei_vals = matrix(data = NA, nrow = 1, ncol = length(list_of_regions))
+  for (region in length(list_of_regions)){
+    region_model = list_of_models[[region]]
+    region_lower_bounds = list_of_region_bounds[[region]][[1]]
+    region_upper_bounds = list_of_region_bounds[[region]][[2]]
+    region_ei_val = max_EI(model = region_model,
+                           plugin = best_val_so_far,
+                           type = "SK",
+                           lower = region_lower_bounds,
+                           upper = region_upper_bounds,
+                           minimization = TRUE,
+                           control = max_ei_control_list
+                             )
+    method_2_ei_vals[1, region] = region_ei_val$value
+  }
+  return(method_2_ei_vals)
 }
 
 split_func = function(region, chosen_points, test_func_vals) {

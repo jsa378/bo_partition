@@ -1,6 +1,6 @@
 library(MASS)
 library(DiceOptim)
-source("/Users/jesse/Downloads/welch_research/code/new/helper_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/new/helper_funcs.R")
 
 dim = 2
 num_points = 10
