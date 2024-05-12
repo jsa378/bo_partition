@@ -10,7 +10,7 @@ To install the xmengju/EGO R package from [https://github.com/xmengju/EGO](https
 4. Generate a token and copy it
 5. Enter `devtools::install_github("xmengju/EGO", auth_token =  "token")` in the R Console, where I paste in the token I copied in place of `token`
 
-# Algorithm
+# Algorithm (rough draft)
 
 The rough idea is to try to adapt the ADAPT algorithm for use in Bayesian Optimization.
 
@@ -28,7 +28,7 @@ The rough idea is to try to adapt the ADAPT algorithm for use in Bayesian Optimi
 9. Fit a new GP model for each of $\mathcal R_1$ and $\mathcal R_2$
 9. Select either Method 1 or Method 2 (below) to decide which of $\mathcal R_1$ or $\mathcal R_2$ to split
 
-## Method 1
+### Method 1
 
 1. Optimize an acquisition function in each of $\mathcal R_1$ and $\mathcal R_2$, resulting in proposed new sampling points $x_1^*$ and $x_2^*$
 2. Evaluate $f$ at each of $x_1^*$ and $x_2^*$
@@ -38,9 +38,62 @@ I think with this method, if we have three regions $\mathcal R_1, \mathcal R_2$ 
 
 Note: For this method to be honest, I would probably need to count the evaluations $f(x_1^*)$ and $f(x_2^*)$ towards the total budget of $N$ observations.
 
-## Method 2
+### Method 2
 
 1. Optimize EI in each of $\mathcal R_1$ and $\mathcal R_2$, *using* $\boldsymbol f^*$, the *lowest* observed value in any region
 2. Choose for splitting the region that returns the *highest* of the EI values from the previous step
 
 I think with this method, we have to re-optimize EI for every region, if in the last round, we observed a new lowest observed min $\boldsymbol f^*$, right?
+
+## Algorithm (more polished)
+
+1. Generate points in $X$, the domain of $f$
+2. Evaluate $f$ at the points generated
+3. Define region $\mathcal R_1 \coloneqq X$ (make a list of regions and put $\mathcal R_1$ in it)
+4. Fit GP for $\mathcal R_1$ (using `km`)
+5. Apply either the Method 1 or Method 2 criterion to $\mathcal R_1$ (see below) (this is the mechanism for determining which region to split)
+6. while $n < N$:
+    - for all regions in the list of regions, find the region with the smallest Method 1 criterion, or the largest Method 2 criterion; this is the region we will split
+        - maybe i should put this in a function called `which_region_to_split`, which takes in a list of regions and returns the region to split
+    - send the region to split to a function `split_and_fit`, which:
+        - takes in a region to split
+        - generates new points in that region
+        - evaluates $f$ at those new points
+        - adds both sets of points to the lists of all chosen points and observed values
+        - splits the region:
+            - split each axis at the midpoint
+            - for each pair of sub-regions, record the average of the observed values of $f$ in the sub-regions
+            - choose the split that leads to the lowest average of observed values of $f$
+        - fit a new GP for each new sub-region
+    - remove the region chosen for splitting from the list of regions, and add the two new sub-regions to the list of regions
+    - update the total number of observations of $f$
+7. finally, return $f^*$, the smallest observed value of $f$
+
+### Method 1 criterion
+
+- for all regions in the list of regions $[\mathcal R_1, \dots, \mathcal R_K]$:
+    - maximize EI in each region, resulting in proposed new sampling points $x_i^*$ within each region
+    - evaluate $f$ at each of $x_1^*, \dots, x_K^*$
+    - add $x_1^*, \dots, x_K^*$ and $f(x_1^*), \dots, f(x_K^*)$ to the lists of all chosen points and observations, respectively
+    - choose the region to split with index $\argmin \left\{ f(x_1^*), \dots, f(x_K^*) \right\}$, *i.e.*, smallest $f$ value
+
+Note: for this method, each time through the loop, I think we can either:
+
+1. re-fit GPs for each region and re-optimize EI for each region (because we chose a point and evaluated $f$ at that point in each region, the last time through the loop), OR
+2. we can re-fit GPs and optimize EI only for the two sub-regions of the region we chose to split, and leave the rest unchanged. Right?
+
+The second method should be more efficient.
+
+### Method 2 criterion
+
+- identify the smallest observed value of $f$ so far (irrespective of region); call this value $f^*$
+- for all regions in the list of regions $[\mathcal R_1, \dots, \mathcal R_K]$:
+    - maximize EI in each region, *using $f^*$ as the plugin value for all optimizations*, *i.e.* compute EI in each region with respect to $f^*$
+    - choose the region to split with the highest returned EI value
+
+Note: for this method, each time through the loop, I think there are two cases:
+
+1. We have found a new, smallest $f^*$ within the region we chose to split, in which case maybe we need to re-maximize EI in each region with respect to the new, smaller $f^*$
+2. The old $f^*$ is still the smallest so far, in which case we just need to re-maximize EI for the two sub-regions of the region that we chose to split.
+
+I think that is right.
