@@ -8,22 +8,22 @@ gen_points_in_region = function(region, num_points){
   return(list(points, obs))
 }
 
-return_bounds_for_optim = function(region){
+bounds_for_optim = function(region){
   lower_bounds = c(region[[1]][1], region[[2]][1])
   upper_bounds = c(region[[1]][2], region[[2]][2])
   return(list(lower_bounds, upper_bounds))
 }
 
-filter_points_region_func = function(region, chosen_points, test_func_vals){
+filter_points_region = function(region, x_points, y_vals){
   indices_of_points_in_region = which(
-      chosen_points[, 1] >= region[[1]][[1]] &
-      chosen_points[, 1] <= region[[1]][[2]] &
-      chosen_points[, 2] >= region[[2]][[1]] &
-      chosen_points[, 2] <= region[[2]][[2]]
+      x_points[, 1] >= region[[1]][[1]] &
+      x_points[, 1] <= region[[1]][[2]] &
+      x_points[, 2] >= region[[2]][[1]] &
+      x_points[, 2] <= region[[2]][[2]]
   )
-  chosen_points_in_region = chosen_points[indices_of_points_in_region, ]
-  test_func_vals_in_region = test_func_vals[indices_of_points_in_region]
-  return(list(chosen_points_in_region, test_func_vals_in_region))
+  x_points_in_region = x_points[indices_of_points_in_region, ]
+  y_vals_in_region = y_vals[indices_of_points_in_region]
+  return(list(x_points_in_region, y_vals_in_region))
 }
 
 method_2 = function(list_of_regions,
@@ -31,7 +31,7 @@ method_2 = function(list_of_regions,
                     list_of_region_bounds,
                     best_val_so_far){
   method_2_ei_vals = matrix(data = NA, nrow = 1, ncol = length(list_of_regions))
-  for (region in length(list_of_regions)){
+  for (region in 1:length(list_of_regions)){
     region_model = list_of_models[[region]]
     region_lower_bounds = list_of_region_bounds[[region]][[1]]
     region_upper_bounds = list_of_region_bounds[[region]][[2]]
@@ -42,23 +42,35 @@ method_2 = function(list_of_regions,
                            upper = region_upper_bounds,
                            minimization = TRUE,
                            control = max_ei_control_list
-                             )
+                           )
     method_2_ei_vals[1, region] = region_ei_val$value
   }
   return(method_2_ei_vals)
+  # return(region_ei_val)
 }
 
-split_func = function(region, chosen_points, test_func_vals) {
+split_and_fit = function(region,
+                         x_points,
+                         y_vals
+                         # index_of_region_to_split
+                         ) {
   # this function has to take in one region, and return two regions, right?
   # I probably need to check whether a proposed subregion has no points
   # although maybe the step where we add new points
   # to the region chosen to be split will take care of this
-  dim = length(region)
+  # dim = length(region)
 
-  points_in_region = filter_points_region_func(region, chosen_points, test_func_vals)
-  chosen_points_in_region = points_in_region[[1]]
-  test_func_vals_in_region = points_in_region[[2]]
+  points_in_region = filter_points_region(region, x_points, y_vals)
+  x_points_in_region = points_in_region[[1]]
+  y_vals_in_region = points_in_region[[2]]
+  
+  new_points_in_region = gen_points_in_region(region, num_points)
+  
+  x_points_in_region = rbind(x_points_in_region, new_points_in_region[[1]])
+  y_vals_in_region = c(y_vals_in_region, new_points_in_region[[2]])
+  
   first_split_midpoint = mean(region[[1]])
+  
   first_split_region_1 = list(
     c(region[[1]][[1]], first_split_midpoint),
     region[[2]]
@@ -67,7 +79,9 @@ split_func = function(region, chosen_points, test_func_vals) {
     c(first_split_midpoint, region[[1]][[2]]),
     region[[2]]
   )
+  
   second_split_midpoint = mean(region[[2]])
+  
   second_split_region_1 = list(
     region[[1]],
     c(region[[2]][[1]], second_split_midpoint)
@@ -77,35 +91,97 @@ split_func = function(region, chosen_points, test_func_vals) {
     c(second_split_midpoint, region[[2]][[2]])
   )
 
-  points_in_first_split_region_1 = filter_points_region_func(first_split_region_1, chosen_points_in_region, test_func_vals_in_region)
-  chosen_points_in_first_split_region_1 = points_in_first_split_region_1[[1]]
-  test_func_vals_in_first_split_region_1 = points_in_first_split_region_1[[2]]
-  test_func_avg_vals_in_first_split_region_1 = mean(test_func_vals_in_first_split_region_1)
+  points_in_first_split_region_1 = filter_points_region(first_split_region_1, x_points_in_region, y_vals_in_region)
+  x_points_in_first_split_region_1 = points_in_first_split_region_1[[1]]
+  y_vals_in_first_split_region_1 = points_in_first_split_region_1[[2]]
+  y_avg_vals_in_first_split_region_1 = mean(y_vals_in_first_split_region_1)
 
-  points_in_first_split_region_2 = filter_points_region_func(first_split_region_2, chosen_points_in_region, test_func_vals_in_region)
-  chosen_points_in_first_split_region_2 = points_in_first_split_region_2[[1]]
-  test_func_vals_in_first_split_region_2 = points_in_first_split_region_2[[2]]
-  test_func_avg_vals_in_first_split_region_2 = mean(test_func_vals_in_first_split_region_2)
+  points_in_first_split_region_2 = filter_points_region(first_split_region_2, x_points_in_region, y_vals_in_region)
+  x_points_in_first_split_region_2 = points_in_first_split_region_2[[1]]
+  y_vals_in_first_split_region_2 = points_in_first_split_region_2[[2]]
+  y_avg_vals_in_first_split_region_2 = mean(y_vals_in_first_split_region_2)
 
-  points_in_second_split_region_1 = filter_points_region_func(second_split_region_1, chosen_points_in_region, test_func_vals_in_region)
-  chosen_points_in_second_split_region_1 = points_in_second_split_region_1[[1]]
-  test_func_vals_in_second_split_region_1 = points_in_second_split_region_1[[2]]
-  test_func_avg_vals_in_second_split_region_1 = mean(test_func_vals_in_second_split_region_1)
+  points_in_second_split_region_1 = filter_points_region(second_split_region_1, x_points_in_region, y_vals_in_region)
+  x_points_in_second_split_region_1 = points_in_second_split_region_1[[1]]
+  y_vals_in_second_split_region_1 = points_in_second_split_region_1[[2]]
+  y_avg_vals_in_second_split_region_1 = mean(y_vals_in_second_split_region_1)
 
-  points_in_second_split_region_2 = filter_points_region_func(second_split_region_2, chosen_points_in_region, test_func_vals_in_region)
-  chosen_points_in_second_split_region_2 = points_in_second_split_region_2[[1]]
-  test_func_vals_in_second_split_region_2 = points_in_second_split_region_2[[2]]
-  test_func_avg_vals_in_second_split_region_2 = mean(test_func_vals_in_second_split_region_2)
-  test_func_avg_vals = c(
-    test_func_avg_vals_in_first_split_region_1, 
-    test_func_avg_vals_in_first_split_region_2,
-    test_func_avg_vals_in_second_split_region_1,
-    test_func_avg_vals_in_second_split_region_2
+  points_in_second_split_region_2 = filter_points_region(second_split_region_2, x_points_in_region, y_vals_in_region)
+  x_points_in_second_split_region_2 = points_in_second_split_region_2[[1]]
+  y_vals_in_second_split_region_2 = points_in_second_split_region_2[[2]]
+  y_avg_vals_in_second_split_region_2 = mean(y_vals_in_second_split_region_2)
+  
+  y_avg_vals = c(
+    y_avg_vals_in_first_split_region_1, 
+    y_avg_vals_in_first_split_region_2,
+    y_avg_vals_in_second_split_region_1,
+    y_avg_vals_in_second_split_region_2
   )
-  if (which.min(test_func_avg_vals) <= 2) {
-    return(list(first_split_region_1, first_split_region_2))
+  
+  if (which.min(y_avg_vals) <= 2) {
+    first_split_region_1_model = km(~1,
+                                    design = x_points_in_first_split_region_1,
+                                    response = y_vals_in_first_split_region_1,
+                                    covtype = "matern5_2",
+                                    control = km_control_list,
+                                    optim.method = "gen"
+                                    )
+    first_split_region_2_model = km(~1,
+                                    design = x_points_in_first_split_region_2,
+                                    response = y_vals_in_first_split_region_2,
+                                    covtype = "matern5_2",
+                                    control = km_control_list,
+                                    optim.method = "gen"
+                                    )
+    first_split_region_1_bounds = bounds_for_optim(first_split_region_1)
+    first_split_region_2_bounds = bounds_for_optim(first_split_region_2)
+
+    return(list(list(rbind(all_x, new_points_in_region[[1]]),
+                     c(all_y, new_points_in_region[[2]])
+                     ),
+                list(first_split_region_1,
+                     first_split_region_2
+                     ),
+                list(first_split_region_1_bounds,
+                     first_split_region_2_bounds
+                     ),
+                list(first_split_region_1_model,
+                     first_split_region_2_model
+                     )
+                )
+          )
   } else {
-    return(list(second_split_region_1, second_split_region_2))
+    second_split_region_1_model = km(~1,
+                                     design = x_points_in_second_split_region_1,
+                                     response = y_vals_in_second_split_region_1,
+                                     covtype = "matern5_2",
+                                     control = km_control_list,
+                                     optim.method = "gen"
+                                     )
+    second_split_region_2_model = km(~1,
+                                     design = x_points_in_second_split_region_2,
+                                     response = y_vals_in_second_split_region_2,
+                                     covtype = "matern5_2",
+                                     control = km_control_list,
+                                     optim.method = "gen"
+                                     )
+    second_split_region_1_bounds = bounds_for_optim(second_split_region_1)
+    second_split_region_2_bounds = bounds_for_optim(second_split_region_2)
+
+    return(list(list(rbind(all_x, new_points_in_region[[1]]),
+                     c(all_y, new_points_in_region[[2]])
+                     ),
+                list(second_split_region_1,
+                     second_split_region_2
+                     ),
+                list(second_split_region_1_bounds,
+                     second_split_region_2_bounds
+                     ),
+                list(second_split_region_1_model,
+                     second_split_region_2_model
+                     )
+                )
+          )
   }
 }
 
