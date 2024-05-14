@@ -1,21 +1,24 @@
 library(MASS)
 library(DiceOptim)
-source("/Users/jesse/Downloads/bo_partition/code/new/helper_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 set.seed(1)
 
 num_points = 10
 N = 20
-goldprsc_x1_range = c(0, 1)
-goldprsc_x2_range = c(0, 1)
-region_1 = list(goldprsc_x1_range, goldprsc_x2_range)
-dim = length(region_1[[1]])
+dim = 2
+test_func = goldprsc
+# goldprsc_x1_range = c(0, 1)
+# goldprsc_x2_range = c(0, 1)
+# region_1 = list(goldprsc_x1_range, goldprsc_x2_range)
+region_1 = as.matrix(cbind(rep(0, dim), rep(1, dim)))
+# dim = length(region_1[[1]])
 all_regions = list(region_1)
 region_1_bounds = bounds_for_optim(all_regions[[1]])
 all_region_bounds = list(region_1_bounds)
 region_1_lower_bounds = region_1_bounds[[1]]
 region_1_upper_bounds = region_1_bounds[[2]]
 
-goldprsc_init_points = gen_points_in_region(region = all_regions[[1]], num_points = num_points)
+goldprsc_init_points = new_gen_points_in_region(region = all_regions[[1]], num_points = num_points)
 all_x = goldprsc_init_points[[1]]
 all_y = goldprsc_init_points[[2]]
 smallest_y_so_far = min(all_y)

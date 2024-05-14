@@ -97,3 +97,9 @@ Note: for this method, each time through the loop, I think there are two cases:
 2. The old $f^*$ is still the smallest so far, in which case we just need to re-maximize EI for the two sub-regions of the region that we chose to split.
 
 I think that is right.
+
+### Note regarding Method 1 and 2
+
+Should Method 1 or two actually do a full round of BO? That is, you do whatever EI maximization you were going to do, then observe at the propsed point in each region, then re-fit the model for each region, and then do another EI maximization, and then return the EI values, so you can decide which region to split?
+
+Perhaps this needs to be investigated as well. I guess it might be a tradeoff---the above version is more computationally demanding and used up your budget of $N$ evaluations of $f$ faster. Maybe I should test two versions of Method 1 and 2 each, and regular BO, all with some equal number $N$ of observations, and compare results?

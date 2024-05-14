@@ -1,29 +1,50 @@
+# gen_points_in_region = function(region, num_points){
+#   points = matrix(data=NA, nrow=num_points, ncol=dim)
+#   for (r in 1:nrow(points)){
+#     points[r, 1] = runif(n = 1, min = region[[1]][[1]], max = region[[1]][[2]])
+#     points[r, 2] = runif(n = 1, min = region[[2]][[1]], max = region[[2]][[2]])
+#   }
+#   obs = apply(points, 1, goldprsc)
+#   return(list(points, obs))
+# }
+
 gen_points_in_region = function(region, num_points){
-  points = matrix(data=NA, nrow=num_points, ncol=dim)
-  for (r in 1:nrow(points)){
-    points[r, 1] = runif(n = 1, min = region[[1]][[1]], max = region[[1]][[2]])
-    points[r, 2] = runif(n = 1, min = region[[2]][[1]], max = region[[2]][[2]])
+  points = matrix(data = NA, nrow = num_points, ncol = dim)
+  for(r in 1:nrow(points)){
+    for(c in 1:ncol(points)){
+      points[r, c] = runif(n = 1, min = region[c, 1], max = region[c, 2])
+    }
   }
-  obs = apply(points, 1, goldprsc)
+  obs = apply(points, 1, test_func)
   return(list(points, obs))
 }
 
+# bounds_for_optim = function(region){
+#   lower_bounds = c(region[[1]][1], region[[2]][1])
+#   upper_bounds = c(region[[1]][2], region[[2]][2])
+#   return(list(lower_bounds, upper_bounds))
+# }
+
 bounds_for_optim = function(region){
-  lower_bounds = c(region[[1]][1], region[[2]][1])
-  upper_bounds = c(region[[1]][2], region[[2]][2])
+  lower_bounds = region[, 1]
+  upper_bounds = region[, 2]
   return(list(lower_bounds, upper_bounds))
 }
 
+# filter_points_region = function(region, x_points, y_vals){
+#   indices_of_points_in_region = which(
+#       x_points[, 1] >= region[[1]][[1]] &
+#       x_points[, 1] <= region[[1]][[2]] &
+#       x_points[, 2] >= region[[2]][[1]] &
+#       x_points[, 2] <= region[[2]][[2]]
+#   )
+#   x_points_in_region = x_points[indices_of_points_in_region, ]
+#   y_vals_in_region = y_vals[indices_of_points_in_region]
+#   return(list(x_points_in_region, y_vals_in_region))
+# }
+
 filter_points_region = function(region, x_points, y_vals){
-  indices_of_points_in_region = which(
-      x_points[, 1] >= region[[1]][[1]] &
-      x_points[, 1] <= region[[1]][[2]] &
-      x_points[, 2] >= region[[2]][[1]] &
-      x_points[, 2] <= region[[2]][[2]]
-  )
-  x_points_in_region = x_points[indices_of_points_in_region, ]
-  y_vals_in_region = y_vals[indices_of_points_in_region]
-  return(list(x_points_in_region, y_vals_in_region))
+  
 }
 
 method_1 = function(list_of_regions,
