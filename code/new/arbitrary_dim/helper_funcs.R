@@ -41,22 +41,54 @@ bounds_for_optim = function(region){
 #   x_points_in_region = x_points[indices_of_points_in_region, ]
 #   y_vals_in_region = y_vals[indices_of_points_in_region]
 #   return(list(x_points_in_region, y_vals_in_region))
+#   # return(indices_of_points_in_region)
 # }
 
 filter_points_region = function(region, x_points, y_vals){
-  
+  # row = 1
+  in_region = matrix(data = 0, nrow = nrow(x_points), ncol = 1) + 1
+  for(row in 1:nrow(x_points)){
+    for(col in 1:ncol(x_points)){
+      if(x_points[row, col] < region[col, 1] | x_points[row, col] > region[col, 2]){
+        in_region[row] = 0
+      }
+    }
+    # if(x_points[row, 1] >= region)
+    # row = row + 1
+  }
+  indices_of_points_in_region = as.logical(in_region)
+  x_points_in_region = x_points[indices_of_points_in_region, ]
+  y_vals_in_region = y_vals[indices_of_points_in_region]
+  return(list(x_points_in_region, y_vals_in_region))
+  # return(in_region)
 }
+
+# new_filter_points_region = function(region, x_points, y_vals){
+#   # row = 1
+#   in_region = matrix(data = 0, nrow = nrow(x_points), ncol = 1)
+#   for(row in nrow(x_points)){
+#     for(col in ncol(x_points)){
+#       if(x_points[row, col] >= region[col, 1] & x_points[row, col] <= region[col, 2]){
+#         in_region[row] = 1
+#       }
+#     }
+#     # if(x_points[row, 1] >= region)
+#     # row = row + 1
+#   }
+#   return(in_region)
+# }
 
 method_1 = function(list_of_regions,
                     list_of_models,
-                    list_of_region_bounds,
+                    # list_of_region_bounds,
                     x_points,
                     y_vals){
   method_1_y_vals = matrix(data = NA, nrow = 1, ncol = length(list_of_regions))
-  for (region in 1:length(list_of_regions)){
-    region_model = list_of_models[[region]]
-    region_lower_bounds = list_of_region_bounds[[region]][[1]]
-    region_upper_bounds = list_of_region_bounds[[region]][[2]]
+  for (reg in 1:length(list_of_regions)){
+    region = list_of_regions[[reg]]
+    region_model = list_of_models[[reg]]
+    region_lower_bounds = region[, 1]
+    region_upper_bounds = region[, 2]
     region_ei = max_EI(model = region_model,
                            type = "SK",
                            lower = region_lower_bounds,
@@ -68,7 +100,7 @@ method_1 = function(list_of_regions,
     new_y_val = apply(new_point, 1, goldprsc)
     x_points = rbind(x_points, new_point)
     y_vals = c(y_vals, new_y_val)
-    method_1_y_vals[1, region] = new_y_val
+    method_1_y_vals[1, reg] = new_y_val
   }
   return(list(list(x_points, y_vals),
               method_1_y_vals))
@@ -76,13 +108,14 @@ method_1 = function(list_of_regions,
 
 method_2 = function(list_of_regions,
                     list_of_models,
-                    list_of_region_bounds,
+                    # list_of_region_bounds,
                     best_val_so_far){
   method_2_ei_vals = matrix(data = NA, nrow = 1, ncol = length(list_of_regions))
-  for (region in 1:length(list_of_regions)){
-    region_model = list_of_models[[region]]
-    region_lower_bounds = list_of_region_bounds[[region]][[1]]
-    region_upper_bounds = list_of_region_bounds[[region]][[2]]
+  for (reg in 1:length(list_of_regions)){
+    region = list_of_regions[[reg]]
+    region_model = list_of_models[[reg]]
+    region_lower_bounds = region[, 1]
+    region_upper_bounds = region[, 2]
     region_ei_val = max_EI(model = region_model,
                            plugin = best_val_so_far,
                            type = "SK",
@@ -91,7 +124,7 @@ method_2 = function(list_of_regions,
                            minimization = TRUE,
                            control = max_ei_control_list
                            )
-    method_2_ei_vals[1, region] = region_ei_val$value
+    method_2_ei_vals[1, reg] = region_ei_val$value
   }
   return(method_2_ei_vals)
   # return(region_ei_val)
@@ -116,6 +149,35 @@ split_and_fit = function(region,
   
   x_points_in_region = rbind(x_points_in_region, new_points_in_region[[1]])
   y_vals_in_region = c(y_vals_in_region, new_points_in_region[[2]])
+  
+  dim_to_split = 0
+  region_1 = region
+  region_2 = region
+  lowest_y_avg_val = 1e+10
+  
+  for(d in 1:dim){
+    first_region = region
+    second_region = region
+    split_midpoint = mean(region[d, ])
+    first_region[d, 2] = split_midpoint
+    second_region[d, 1] = split_midpoint
+    
+    points_in_first_region = filter_points_region(first_region, x_points_in_region, y_vals_in_region)
+    x_points_in_first_region = points_in_first_region[[1]]
+    y_vals_in_first_region = points_in_first_region[[2]]
+    y_avg_vals_in_first_region = mean(y_vals_in_first_region)
+    
+    points_in_second_region = filter_points_region(second_region, x_points_in_region, y_vals_in_region)
+    x_points_in_second_region = points_in_second_region[[1]]
+    y_vals_in_second_region = points_in_second_region[[2]]
+    y_avg_vals_in_second_region = mean(y_vals_in_second_region)
+    
+    if(y_avg_vals_in_first_region < lowest_y_avg_val | y_avg_vals_in_second_region < lowest_y_avg_val){
+      dim_to_split = d
+      region_1 = first_region
+      region_2 = second_region
+    }
+  }
   
   first_split_midpoint = mean(region[[1]])
   
@@ -181,8 +243,8 @@ split_and_fit = function(region,
                                     control = km_control_list,
                                     optim.method = "gen"
                                     )
-    first_split_region_1_bounds = bounds_for_optim(first_split_region_1)
-    first_split_region_2_bounds = bounds_for_optim(first_split_region_2)
+    # first_split_region_1_bounds = bounds_for_optim(first_split_region_1)
+    # first_split_region_2_bounds = bounds_for_optim(first_split_region_2)
 
     return(list(list(rbind(all_x, new_points_in_region[[1]]),
                      c(all_y, new_points_in_region[[2]])
@@ -190,9 +252,9 @@ split_and_fit = function(region,
                 list(first_split_region_1,
                      first_split_region_2
                      ),
-                list(first_split_region_1_bounds,
-                     first_split_region_2_bounds
-                     ),
+                # list(first_split_region_1_bounds,
+                     # first_split_region_2_bounds
+                     # ),
                 list(first_split_region_1_model,
                      first_split_region_2_model
                      )
@@ -213,8 +275,8 @@ split_and_fit = function(region,
                                      control = km_control_list,
                                      optim.method = "gen"
                                      )
-    second_split_region_1_bounds = bounds_for_optim(second_split_region_1)
-    second_split_region_2_bounds = bounds_for_optim(second_split_region_2)
+    # second_split_region_1_bounds = bounds_for_optim(second_split_region_1)
+    # second_split_region_2_bounds = bounds_for_optim(second_split_region_2)
 
     return(list(list(rbind(all_x, new_points_in_region[[1]]),
                      c(all_y, new_points_in_region[[2]])
@@ -222,9 +284,9 @@ split_and_fit = function(region,
                 list(second_split_region_1,
                      second_split_region_2
                      ),
-                list(second_split_region_1_bounds,
-                     second_split_region_2_bounds
-                     ),
+                # list(second_split_region_1_bounds,
+                     # second_split_region_2_bounds
+                     # ),
                 list(second_split_region_1_model,
                      second_split_region_2_model
                      )

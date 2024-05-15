@@ -11,18 +11,28 @@ test_func = goldprsc
 # goldprsc_x2_range = c(0, 1)
 # region_1 = list(goldprsc_x1_range, goldprsc_x2_range)
 region_1 = as.matrix(cbind(rep(0, dim), rep(1, dim)))
+# test_region = rbind(c(0, 1), c(0, 0.5))
 # dim = length(region_1[[1]])
 all_regions = list(region_1)
-region_1_bounds = bounds_for_optim(all_regions[[1]])
-all_region_bounds = list(region_1_bounds)
-region_1_lower_bounds = region_1_bounds[[1]]
-region_1_upper_bounds = region_1_bounds[[2]]
+# region_1_bounds = bounds_for_optim(all_regions[[1]])
+# all_region_bounds = list(region_1_bounds)
+# region_1_lower_bounds = region_1_bounds[[1]]
+# region_1_upper_bounds = region_1_bounds[[2]]
 
-goldprsc_init_points = new_gen_points_in_region(region = all_regions[[1]], num_points = num_points)
+goldprsc_init_points = gen_points_in_region(region = all_regions[[1]], num_points = num_points)
 all_x = goldprsc_init_points[[1]]
 all_y = goldprsc_init_points[[2]]
 smallest_y_so_far = min(all_y)
 n = length(all_y)
+
+# filter_points_region_1 = new_filter_points_region(test_region, all_x, all_y)
+# x_in_region_1 = filter_points_region_1[[1]]
+# y_in_region_1 = filter_points_region_1[[2]]
+# test_which = new_filter_points_region(test_region, all_x, all_y)
+# test_which_1 = new_filter_points_region(test_region, all_x[1:1, ], all_y[1:1, ])
+# test_which_2 = new_filter_points_region(test_region, all_x[1:2, ], all_y[1:2, ])
+# test_which_3 = new_filter_points_region(test_region, all_x[1:3, ], all_y[1:3, ])
+
 
 km_control_list = list(pop.size=512,
                        max.generations=50,
@@ -56,7 +66,7 @@ all_models = list(region_1_model)
 while(n < N){
   method_1_results = method_1(list_of_regions = all_regions,
                               list_of_models = all_models,
-                              list_of_region_bounds = all_region_bounds,
+                              # list_of_region_bounds = all_region_bounds,
                               x_points = all_x,
                               y_vals = all_y
                               )
@@ -86,13 +96,15 @@ while(n < N){
   all_regions = all_regions[-index_of_region_to_split]
   all_regions = c(all_regions, list(first_new_region, second_new_region))
   
-  first_new_region_bounds = results[[3]][[1]]
-  second_new_region_bounds = results[[3]][[2]]
-  all_region_bounds = all_region_bounds[-index_of_region_to_split]
-  all_region_bounds = c(all_region_bounds, list(first_new_region_bounds, second_new_region_bounds))
+  # first_new_region_bounds = results[[3]][[1]]
+  # second_new_region_bounds = results[[3]][[2]]
+  # all_region_bounds = all_region_bounds[-index_of_region_to_split]
+  # all_region_bounds = c(all_region_bounds, list(first_new_region_bounds, second_new_region_bounds))
   
-  first_new_region_model = results[[4]][[1]]
-  second_new_region_model = results[[4]][[2]]
+  # first_new_region_model = results[[4]][[1]]
+  # second_new_region_model = results[[4]][[2]]
+  first_new_region_model = results[[3]][[1]]
+  second_new_region_model = results[[3]][[2]]
   all_models = all_models[-index_of_region_to_split]
   all_models = c(all_models, list(first_new_region_model, second_new_region_model))
 }
