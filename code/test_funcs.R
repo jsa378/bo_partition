@@ -1,6 +1,3 @@
-ackley_lbound_scalar = -32.768
-ackley_ubound_scalar = 32.768
-
 ackley <- function(xx, a=20, b=0.2, c=2*pi)
 {
   ##########################################################################
@@ -150,3 +147,10 @@ goldprsc <- function(xx)
   y <- (log(prod) - 8.693) / 2.427
   return(y)
 }
+
+dim = 2
+ackley_lbound_scalar = -32.768
+ackley_ubound_scalar = 32.768
+ackley_lbound = rep(ackley_lbound_scalar, dim)
+ackley_ubound = rep(ackley_ubound_scalar, dim)
+ackley_argmin = rep(0, dim)
