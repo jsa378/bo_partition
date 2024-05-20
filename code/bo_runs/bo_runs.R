@@ -1,31 +1,46 @@
 library(GaSP)
 library(EGO)
 source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 set.seed(1)
 
 test_func_string = c("ackley")
 num_init_obs = 20
-num_obs = 20
-num_runs = 2
+num_obs = 100
+reg_obs = num_obs / 2
+num_runs = 10
 img_width = 2000
 img_height = 2000
 tot_obs = num_init_obs + num_obs
+# reg_tot_obs = num_init_obs + reg_obs
 x_names_arg = character(0)
 for (d in 1:dim){
   x_names_arg = c(x_names_arg, sprintf("x%s", d))
 }
 run_obs = matrix(data = NA, nrow = num_runs, ncol = num_obs)
+best_so_far = matrix(data = NA, nrow = num_runs, ncol = num_obs)
+reg_1_run_obs = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
+reg_1_best_so_far = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
+reg_2_run_obs = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
+reg_2_best_so_far = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
 
 descr = DescribeX(
-  # x_names = c("x1", "x2"),
   x_names = x_names_arg,
   x_min = ackley_lbound,
   x_max = ackley_ubound,
-  # x_min = c(goldpr_lower_bound, goldpr_lower_bound),
-  # x_max = c(goldpr_upper_bound, goldpr_upper_bound),
-  # x_min = c(x1_ran[1], x2_ran[1]),
-  # x_max = c(x1_ran[2], x2_ran[2]),
+  support = rep("Continuous", dim)
+)
+reg_1_descr = DescribeX(
+  x_names = x_names_arg,
+  x_min = ackley_reg_1_lbound,
+  x_max = ackley_reg_1_ubound,
+  support = rep("Continuous", dim)
+)
+reg_2_descr = DescribeX(
+  x_names = x_names_arg,
+  x_min = ackley_reg_2_lbound,
+  x_max = ackley_reg_2_ubound,
   support = rep("Continuous", dim)
 )
 ctrl = EGO.control(
@@ -43,6 +58,7 @@ ctrl = EGO.control(
   print_level = 1
 )
 colors = c(rep("green", num_init_obs), rep("blue", num_obs))
+# reg_colors = c(rep("green", num_init_obs), rep("blue", reg_obs))
 start = Sys.time()
 
 for(run in 1:num_runs){
@@ -53,8 +69,37 @@ for(run in 1:num_runs){
     fun = ackley,
     n_rep = 0
   )
+  reg_1_points = filter_points_region(ackley_reg_1, init$x_design, init$y_design)
+  reg_1_x = reg_1_points[[1]]
+  reg_1_y = reg_1_points[[2]]
+  reg_1_init = Initialize(
+    x_design = reg_1_x,
+    y_design = reg_1_y,
+    x_describe = reg_1_descr,
+    fun = ackley,
+    n_rep = 0
+  )
   
-  train_gp = EGO(
+  reg_2_points = filter_points_region(ackley_reg_2, init$x_design, init$y_design)
+  reg_2_x = reg_2_points[[1]]
+  reg_2_y = reg_2_points[[2]]
+  reg_2_init = Initialize(
+    x_design = reg_2_x,
+    y_design = reg_2_y,
+    x_describe = reg_2_descr,
+    fun = ackley,
+    n_rep = 0
+  )
+  
+  reg_1_num_init_obs = nrow(reg_1_x)
+  reg_2_num_init_obs = nrow(reg_2_x)
+  reg_1_tot_obs = reg_1_num_init_obs + reg_obs
+  reg_2_tot_obs = reg_2_num_init_obs + reg_obs
+  
+  reg_1_colors = c(rep("green", reg_1_num_init_obs), rep("blue", reg_obs))
+  reg_2_colors = c(rep("green", reg_2_num_init_obs), rep("blue", reg_obs))
+  
+  bo = EGO(
     fun = ackley,
     reg_model = ~1,
     ego_init = init,
@@ -62,11 +107,27 @@ for(run in 1:num_runs){
     nsteps = num_obs,
     control = ctrl
   )
+  reg_1_bo = EGO(
+    fun = ackley,
+    reg_model = ~1,
+    ego_init = reg_1_init,
+    x_describe = reg_1_descr,
+    nsteps = reg_obs,
+    control = ctrl
+  )
+  reg_2_bo = EGO(
+    fun = ackley,
+    reg_model = ~1,
+    ego_init = reg_2_init,
+    x_describe = reg_2_descr,
+    nsteps = reg_obs,
+    control = ctrl
+  )
   
   png(filename = sprintf("/Users/jesse/Downloads/bo_partition/plots/bo_runs/%s_ego_plot_run_%s.png", test_func_string, run),
       width = img_width,
       height = img_height)
-  EGO.plot(ego_fit = train_gp,
+  EGO.plot(ego_fit = bo,
            fun = ackley,
            n.grid = 1000,
            x_describe = descr,
@@ -76,19 +137,87 @@ for(run in 1:num_runs){
   )
   # par(cex = 5)
   points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex=5)
-  text(train_gp$x, col=colors, label=1:tot_obs, cex = 5)
+  text(bo$x, col=colors, label=1:tot_obs, cex = 5)
   dev.off()
   
-  plot_title = sprintf(paste(test_func_string, ", run %s", sep=""), run)
+  png(filename = sprintf("/Users/jesse/Downloads/bo_partition/plots/bo_runs/%s_reg_1_ego_plot_run_%s.png", test_func_string, run),
+      width = img_width,
+      height = img_height)
+  EGO.plot(ego_fit = reg_1_bo,
+           fun = ackley,
+           n.grid = 1000,
+           x_describe = reg_1_descr,
+           control = list(limit_min = descr$Min,
+                          limit_max = descr$Max,
+                          label_order = FALSE)
+  )
+  # par(cex = 5)
+  points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex=5)
+  text(reg_1_bo$x, col=reg_1_colors, label=1:reg_1_tot_obs, cex = 5)
+  dev.off()
+  
+  png(filename = sprintf("/Users/jesse/Downloads/bo_partition/plots/bo_runs/%s_reg_2_ego_plot_run_%s.png", test_func_string, run),
+      width = img_width,
+      height = img_height)
+  EGO.plot(ego_fit = reg_2_bo,
+           fun = ackley,
+           n.grid = 1000,
+           x_describe = reg_2_descr,
+           control = list(limit_min = descr$Min,
+                          limit_max = descr$Max,
+                          label_order = FALSE)
+  )
+  # par(cex = 5)
+  points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex=5)
+  text(reg_2_bo$x, col=reg_2_colors, label=1:reg_2_tot_obs, cex = 5)
+  dev.off()
+  
+  plot_title = sprintf(paste(test_func_string, " run %s", sep=""), run)
   png(filename = sprintf("/Users/jesse/Downloads/bo_partition/plots/bo_runs/%s_numbered_points_run_%s.png", test_func_string, run),
       width = img_width,
       height = img_height)
   par(cex = 5)
-  plot(train_gp$x, col=colors, pch=paste(1:tot_obs), type='n', main=plot_title)
+  plot(bo$x, col=colors, pch=paste(1:tot_obs), type='n', main=plot_title)
   points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex = 5)
-  text(train_gp$x, col=colors, label=1:tot_obs)
+  text(bo$x, col=colors, label=1:tot_obs)
   dev.off()
-  run_obs[run, ] = train_gp$y[-(1:num_init_obs)]
+  
+  plot_title = sprintf(paste(test_func_string, " reg 1 run %s", sep=""), run)
+  png(filename = sprintf("/Users/jesse/Downloads/bo_partition/plots/bo_runs/%s_reg_1_numbered_points_run_%s.png", test_func_string, run),
+      width = img_width,
+      height = img_height)
+  par(cex = 5)
+  plot(reg_1_bo$x, col=reg_1_colors, pch=paste(1:reg_1_tot_obs), type='n', main=plot_title,
+       xlim=c(ackley_lbound_scalar, ackley_ubound_scalar),
+       ylim=c(ackley_lbound_scalar, ackley_ubound_scalar))
+  points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex = 5)
+  text(reg_1_bo$x, col=reg_1_colors, label=1:reg_1_tot_obs)
+  dev.off()
+  
+  plot_title = sprintf(paste(test_func_string, " reg 2 run %s", sep=""), run)
+  png(filename = sprintf("/Users/jesse/Downloads/bo_partition/plots/bo_runs/%s_reg_2_numbered_points_run_%s.png", test_func_string, run),
+      width = img_width,
+      height = img_height)
+  par(cex = 5)
+  plot(reg_2_bo$x, col=reg_2_colors, pch=paste(1:reg_2_tot_obs), type='n', main=plot_title,
+       xlim=c(ackley_lbound_scalar, ackley_ubound_scalar),
+       ylim=c(ackley_lbound_scalar, ackley_ubound_scalar))
+  points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex = 5)
+  text(reg_2_bo$x, col=reg_2_colors, label=1:reg_2_tot_obs)
+  dev.off()
+  
+  run_obs[run, ] = bo$y[-(1:num_init_obs)]
+  for(obs in 1:num_obs){
+    best_so_far[run, obs] = min(bo$y[-(1:num_init_obs)][(1:obs)])
+  }
+  reg_1_run_obs[run, ] = reg_1_bo$y[-(1:reg_1_num_init_obs)]
+  for(obs in 1:reg_obs){
+    reg_1_best_so_far[run, obs] = min(reg_1_bo$y[-(1:reg_1_num_init_obs)][(1:obs)])
+  }
+  reg_2_run_obs[run, ] = reg_2_bo$y[-(1:reg_2_num_init_obs)]
+  for(obs in 1:reg_obs){
+    reg_2_best_so_far[run, obs] = min(reg_2_bo$y[-(1:reg_2_num_init_obs)][(1:obs)])
+  }
 }
 
 write.table(run_obs,
@@ -96,58 +225,33 @@ write.table(run_obs,
           row.names = FALSE,
           col.names = FALSE
           )
+write.table(best_so_far,
+            file = sprintf("/Users/jesse/Downloads/bo_partition/data/bo_runs/%s_best_so_far.csv", test_func_string),
+            row.names = FALSE,
+            col.names = FALSE
+            )
 
-# init = Initialize(
-#   # x_design = train_x,
-#   # y_design = train_obs,
-#   n_design = num_init_obs,
-#   x_describe = descr,
-#   # fun = goldpr
-#   # fun = goldprsc
-#   fun = ackley,
-#   n_rep = 0
-# )
-# 
-# train_gp = EGO(
-#   fun = ackley,
-#   reg_model = ~1,
-#   ego_init = init,
-#   x_describe = descr,
-#   nsteps = num_obs,
-#   control = ctrl
-# )
-# 
-# 
-# 
-# EGO.plot(ego_fit = train_gp,
-#          fun = ackley,
-#          n.grid = 1000,
-#          x_describe = descr,
-#          control = list(# limit_min = ackley_lbound_scalar,
-#                         # limit_max = ackley_ubound_scalar,
-#                         limit_min = descr$Min,
-#                         limit_max = descr$Max,
-#                         label_order = FALSE)
-# )
-# # text(train_gp$x + 0, symbols)
-# 
-# # symbols = character(0)
-# # colors = character(0)
-# # 
-# # for (p in 1:(num_init_obs + num_obs)){
-# #   symbols = c(symbols, sprintf("%s", p))
-# #   if(p <= num_init_obs){
-# #     colors = c(colors, "green")
-# #   }
-# #   else{
-# #     colors = c(colors, "blue")
-# #   }
-# # }
-# # plot(train_gp$x, col=colors, pch=as.character(1:40))
-# 
-# plot_title = sprintf(paste(test_func_string, ", run %s", sep=""), 4)
-# plot(train_gp$x, col=colors, pch=paste(1:tot_obs), type='n', main=test_func_string)
-# text(train_gp$x, col=colors, label=1:tot_obs)
+write.table(reg_1_run_obs,
+            file = sprintf("/Users/jesse/Downloads/bo_partition/data/bo_runs/%s_reg_1_obs.csv", test_func_string),
+            row.names = FALSE,
+            col.names = FALSE
+)
+write.table(reg_1_best_so_far,
+            file = sprintf("/Users/jesse/Downloads/bo_partition/data/bo_runs/%s_reg_1_best_so_far.csv", test_func_string),
+            row.names = FALSE,
+            col.names = FALSE
+)
+
+write.table(reg_2_run_obs,
+            file = sprintf("/Users/jesse/Downloads/bo_partition/data/bo_runs/%s_reg_2_obs.csv", test_func_string),
+            row.names = FALSE,
+            col.names = FALSE
+)
+write.table(reg_2_best_so_far,
+            file = sprintf("/Users/jesse/Downloads/bo_partition/data/bo_runs/%s_reg_2_best_so_far.csv", test_func_string),
+            row.names = FALSE,
+            col.names = FALSE
+)
 
 end = Sys.time()
 duration = end - start

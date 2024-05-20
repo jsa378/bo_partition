@@ -153,4 +153,13 @@ ackley_lbound_scalar = -32.768
 ackley_ubound_scalar = 32.768
 ackley_lbound = rep(ackley_lbound_scalar, dim)
 ackley_ubound = rep(ackley_ubound_scalar, dim)
+
+ackley_x1_split_point = mean(ackley_ubound[1] + ackley_lbound[1])
+ackley_reg_1_lbound = ackley_lbound
+ackley_reg_1_ubound = c(ackley_x1_split_point, ackley_ubound_scalar)
+ackley_reg_2_lbound = c(ackley_x1_split_point, ackley_lbound_scalar)
+ackley_reg_2_ubound = ackley_ubound
+ackley_reg_1 = cbind(ackley_reg_1_lbound, ackley_reg_1_ubound)
+ackley_reg_2 = cbind(ackley_reg_2_lbound, ackley_reg_2_ubound)
+
 ackley_argmin = rep(0, dim)
