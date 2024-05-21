@@ -148,7 +148,50 @@ goldprsc <- function(xx)
   return(y)
 }
 
+rastr <- function(xx)
+{
+  ##########################################################################
+  #
+  # RASTRIGIN FUNCTION
+  #
+  # Authors: Sonja Surjanovic, Simon Fraser University
+  #          Derek Bingham, Simon Fraser University
+  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
+  #
+  # Copyright 2013. Derek Bingham, Simon Fraser University.
+  #
+  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
+  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
+  # derivative works, such modified software should be clearly marked.
+  # Additionally, this program is free software; you can redistribute it 
+  # and/or modify it under the terms of the GNU General Public License as 
+  # published by the Free Software Foundation; version 2.0 of the License. 
+  # Accordingly, this program is distributed in the hope that it will be 
+  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+  # General Public License for more details.
+  #
+  # For function details and reference information, see:
+  # http://www.sfu.ca/~ssurjano/
+  #
+  ##########################################################################
+  #
+  # INPUT:
+  #
+  # xx = c(x1, x2, ..., xd)
+  #
+  ##########################################################################
+  
+  d <- length(xx)
+  
+  sum <- sum(xx^2 - 10*cos(2*pi*xx))
+  
+  y <- 10*d + sum
+  return(y)
+}
+
 dim = 2
+
 ackley_lbound_scalar = -32.768
 ackley_ubound_scalar = 32.768
 ackley_lbound = rep(ackley_lbound_scalar, dim)
@@ -163,3 +206,18 @@ ackley_reg_1 = cbind(ackley_reg_1_lbound, ackley_reg_1_ubound)
 ackley_reg_2 = cbind(ackley_reg_2_lbound, ackley_reg_2_ubound)
 
 ackley_argmin = rep(0, dim)
+
+rastr_lbound_scalar = -5.12
+rastr_ubound_scalar = 5.12
+rastr_lbound = rep(rastr_lbound_scalar, dim)
+rastr_ubound = rep(rastr_ubound_scalar, dim)
+
+rastr_x1_split_point = mean(rastr_ubound[1] + rastr_lbound[1])
+rastr_reg_1_lbound = rastr_lbound
+rastr_reg_1_ubound = c(rastr_x1_split_point, rastr_ubound_scalar)
+rastr_reg_2_lbound = c(rastr_x1_split_point, rastr_lbound_scalar)
+rastr_reg_2_ubound = rastr_ubound
+rastr_reg_1 = cbind(rastr_reg_1_lbound, rastr_reg_1_ubound)
+rastr_reg_2 = cbind(rastr_reg_2_lbound, rastr_reg_2_ubound)
+
+rastr_argmin = rep(0, dim)
