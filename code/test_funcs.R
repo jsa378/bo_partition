@@ -148,6 +148,48 @@ goldprsc <- function(xx)
   return(y)
 }
 
+grie <- function(xx)
+{
+  ##########################################################################
+  #
+  # GRIEWANK FUNCTION
+  #
+  # Authors: Sonja Surjanovic, Simon Fraser University
+  #          Derek Bingham, Simon Fraser University
+  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
+  #
+  # Copyright 2013. Derek Bingham, Simon Fraser University.
+  #
+  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
+  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
+  # derivative works, such modified software should be clearly marked.
+  # Additionally, this program is free software; you can redistribute it 
+  # and/or modify it under the terms of the GNU General Public License as 
+  # published by the Free Software Foundation; version 2.0 of the License. 
+  # Accordingly, this program is distributed in the hope that it will be 
+  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+  # General Public License for more details.
+  #
+  # For function details and reference information, see:
+  # http://www.sfu.ca/~ssurjano/
+  #
+  ##########################################################################
+  #
+  # INPUT:
+  #
+  # xx = c(x1, x2, ..., xd)
+  #
+  ##########################################################################
+  
+  ii <- c(1:length(xx))
+  sum <- sum(xx^2/4000)
+  prod <- prod(cos(xx/sqrt(ii)))
+  
+  y <- sum - prod + 1
+  return(y)
+}
+
 rastr <- function(xx)
 {
   ##########################################################################
@@ -207,6 +249,21 @@ ackley_reg_2 = cbind(ackley_reg_2_lbound, ackley_reg_2_ubound)
 
 ackley_argmin = rep(0, dim)
 
+grie_lbound_scalar = -600
+grie_ubound_scalar = 600
+grie_lbound = rep(grie_lbound_scalar, dim)
+grie_ubound = rep(grie_ubound_scalar, dim)
+
+grie_x1_split_point = mean(grie_ubound[1] + grie_lbound[1])
+grie_reg_1_lbound = grie_lbound
+grie_reg_1_ubound = c(grie_x1_split_point, grie_ubound_scalar)
+grie_reg_2_lbound = c(grie_x1_split_point, grie_lbound_scalar)
+grie_reg_2_ubound = grie_ubound
+grie_reg_1 = cbind(grie_reg_1_lbound, grie_reg_1_ubound)
+grie_reg_2 = cbind(grie_reg_2_lbound, grie_reg_2_ubound)
+
+grie_argmin = rep(0, dim)
+
 rastr_lbound_scalar = -5.12
 rastr_ubound_scalar = 5.12
 rastr_lbound = rep(rastr_lbound_scalar, dim)
@@ -221,3 +278,5 @@ rastr_reg_1 = cbind(rastr_reg_1_lbound, rastr_reg_1_ubound)
 rastr_reg_2 = cbind(rastr_reg_2_lbound, rastr_reg_2_ubound)
 
 rastr_argmin = rep(0, dim)
+
+

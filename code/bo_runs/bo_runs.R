@@ -78,50 +78,50 @@ for(run in 1:num_runs){
     fun = rastr,
     n_rep = 0
   )
-  # reg_1_points = filter_points_region(ackley_reg_1, init$x_design, init$y_design)
-  reg_1_points = filter_points_region(rastr_reg_1, init$x_design, init$y_design)
-  reg_1_x = reg_1_points[[1]]
-  reg_1_y = reg_1_points[[2]]
+  # # reg_1_points = filter_points_region(ackley_reg_1, init$x_design, init$y_design)
+  # reg_1_points = filter_points_region(rastr_reg_1, init$x_design, init$y_design)
+  # reg_1_x = reg_1_points[[1]]
+  # reg_1_y = reg_1_points[[2]]
+  # reg_1_init = Initialize(
+  #   x_design = reg_1_x,
+  #   y_design = reg_1_y,
+  #   x_describe = reg_1_descr,
+  #   # fun = ackley,
+  #   fun = rastr,
+  #   n_rep = 0
+  # )
+  # 
+  # # reg_2_points = filter_points_region(ackley_reg_2, init$x_design, init$y_design)
+  # reg_2_points = filter_points_region(rastr_reg_2, init$x_design, init$y_design)
+  # reg_2_x = reg_2_points[[1]]
+  # reg_2_y = reg_2_points[[2]]
+  # reg_2_init = Initialize(
+  #   x_design = reg_2_x,
+  #   y_design = reg_2_y,
+  #   x_describe = reg_2_descr,
+  #   # fun = ackley,
+  #   fun = rastr,
+  #   n_rep = 0
+  # )
   reg_1_init = Initialize(
-    x_design = reg_1_x,
-    y_design = reg_1_y,
+    n_design = reg_init_obs,
     x_describe = reg_1_descr,
     # fun = ackley,
     fun = rastr,
     n_rep = 0
   )
-
-  # reg_2_points = filter_points_region(ackley_reg_2, init$x_design, init$y_design)
-  reg_2_points = filter_points_region(rastr_reg_2, init$x_design, init$y_design)
-  reg_2_x = reg_2_points[[1]]
-  reg_2_y = reg_2_points[[2]]
   reg_2_init = Initialize(
-    x_design = reg_2_x,
-    y_design = reg_2_y,
+    n_design = reg_init_obs,
     x_describe = reg_2_descr,
     # fun = ackley,
     fun = rastr,
     n_rep = 0
   )
-  # reg_1_init = Initialize(
-  #   n_design = reg_init_obs,
-  #   x_describe = reg_1_descr,
-  # #   fun = ackley,
-  #   fun = rastr,
-  #   n_rep = 0
-  # )
-  # reg_2_init = Initialize(
-  #   n_design = reg_init_obs,
-  #   x_describe = reg_2_descr,
-  # #   fun = ackley,
-  #   fun = rastr,
-  #   n_rep = 0
-  # )
   
-  reg_1_num_init_obs = nrow(reg_1_x)
-  reg_2_num_init_obs = nrow(reg_2_x)
-  # reg_1_num_init_obs = reg_init_obs
-  # reg_2_num_init_obs = reg_init_obs
+  # reg_1_num_init_obs = nrow(reg_1_x)
+  # reg_2_num_init_obs = nrow(reg_2_x)
+  reg_1_num_init_obs = reg_init_obs
+  reg_2_num_init_obs = reg_init_obs
   
   reg_1_tot_obs = reg_1_num_init_obs + reg_obs
   reg_2_tot_obs = reg_2_num_init_obs + reg_obs
