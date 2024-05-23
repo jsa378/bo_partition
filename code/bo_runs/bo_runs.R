@@ -6,7 +6,8 @@ source("/Users/jesse/Downloads/bo_partition/code/new/arbitrary_dim/helper_funcs.
 set.seed(1)
 
 # test_func_string = c("ackley")
-test_func_string = c("rastr")
+# test_func_string = c("rastr")
+test_func_string = c("grie")
 num_init_obs = 20
 reg_init_obs = num_init_obs / 2
 num_obs = 100
@@ -27,28 +28,36 @@ reg_1_best_so_far = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
 reg_2_run_obs = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
 reg_2_best_so_far = matrix(data = NA, nrow = num_runs, ncol = reg_obs)
 
+test_func = grie
+test_lbound_scalar = grie_lbound_scalar
+test_ubound_scalar = grie_ubound_scalar
+plot_lims = c(test_lbound_scalar, test_ubound_scalar)
+test_lbound = grie_lbound
+test_ubound = grie_ubound
+test_reg_1_lbound = grie_reg_1_lbound
+test_reg_1_ubound = grie_reg_1_ubound
+test_reg_2_lbound = grie_reg_2_lbound
+test_reg_2_ubound = grie_reg_2_ubound
+test_reg_1 = grie_reg_1
+test_reg_2 = grie_reg_2
+test_argmin = grie_argmin
+
 descr = DescribeX(
   x_names = x_names_arg,
-  # x_min = ackley_lbound,
-  x_min = rastr_lbound,
-  # x_max = ackley_ubound,
-  x_max = rastr_ubound,
+  x_min = test_lbound,
+  x_max = test_ubound,
   support = rep("Continuous", dim)
 )
 reg_1_descr = DescribeX(
   x_names = x_names_arg,
-  # x_min = ackley_reg_1_lbound,
-  x_min = rastr_reg_1_lbound,
-  # x_max = ackley_reg_1_ubound,
-  x_max = rastr_reg_1_ubound,
+  x_min = test_reg_1_lbound,
+  x_max = test_reg_1_ubound,
   support = rep("Continuous", dim)
 )
 reg_2_descr = DescribeX(
   x_names = x_names_arg,
-  # x_min = ackley_reg_2_lbound,
-  x_min = rastr_reg_2_lbound,
-  # x_max = ackley_reg_2_ubound,
-  x_max = rastr_reg_2_ubound,
+  x_min = test_reg_2_lbound,
+  x_max = test_reg_2_ubound,
   support = rep("Continuous", dim)
 )
 ctrl = EGO.control(
@@ -66,7 +75,6 @@ ctrl = EGO.control(
   print_level = 1
 )
 colors = c(rep("green", num_init_obs), rep("blue", num_obs))
-# reg_colors = c(rep("green", num_init_obs), rep("blue", reg_obs))
 start = Sys.time()
 
 for(run in 1:num_runs){
@@ -74,54 +82,47 @@ for(run in 1:num_runs){
   init = Initialize(
     n_design = num_init_obs,
     x_describe = descr,
-    # fun = ackley,
-    fun = rastr,
+    fun = test_func,
     n_rep = 0
   )
-  # # reg_1_points = filter_points_region(ackley_reg_1, init$x_design, init$y_design)
-  # reg_1_points = filter_points_region(rastr_reg_1, init$x_design, init$y_design)
-  # reg_1_x = reg_1_points[[1]]
-  # reg_1_y = reg_1_points[[2]]
-  # reg_1_init = Initialize(
-  #   x_design = reg_1_x,
-  #   y_design = reg_1_y,
-  #   x_describe = reg_1_descr,
-  #   # fun = ackley,
-  #   fun = rastr,
-  #   n_rep = 0
-  # )
-  # 
-  # # reg_2_points = filter_points_region(ackley_reg_2, init$x_design, init$y_design)
-  # reg_2_points = filter_points_region(rastr_reg_2, init$x_design, init$y_design)
-  # reg_2_x = reg_2_points[[1]]
-  # reg_2_y = reg_2_points[[2]]
-  # reg_2_init = Initialize(
-  #   x_design = reg_2_x,
-  #   y_design = reg_2_y,
-  #   x_describe = reg_2_descr,
-  #   # fun = ackley,
-  #   fun = rastr,
-  #   n_rep = 0
-  # )
+  reg_1_points = filter_points_region(test_reg_1, init$x_design, init$y_design)
+  reg_1_x = reg_1_points[[1]]
+  reg_1_y = reg_1_points[[2]]
   reg_1_init = Initialize(
-    n_design = reg_init_obs,
+    x_design = reg_1_x,
+    y_design = reg_1_y,
     x_describe = reg_1_descr,
-    # fun = ackley,
-    fun = rastr,
+    fun = test_func,
     n_rep = 0
   )
+
+  reg_2_points = filter_points_region(test_reg_2, init$x_design, init$y_design)
+  reg_2_x = reg_2_points[[1]]
+  reg_2_y = reg_2_points[[2]]
   reg_2_init = Initialize(
-    n_design = reg_init_obs,
+    x_design = reg_2_x,
+    y_design = reg_2_y,
     x_describe = reg_2_descr,
-    # fun = ackley,
-    fun = rastr,
+    fun = test_func,
     n_rep = 0
   )
+  # reg_1_init = Initialize(
+  #   n_design = reg_init_obs,
+  #   x_describe = reg_1_descr,
+  #   fun = test_func,
+  #   n_rep = 0
+  # )
+  # reg_2_init = Initialize(
+  #   n_design = reg_init_obs,
+  #   x_describe = reg_2_descr,
+  #   fun = test_func,
+  #   n_rep = 0
+  # )
   
-  # reg_1_num_init_obs = nrow(reg_1_x)
-  # reg_2_num_init_obs = nrow(reg_2_x)
-  reg_1_num_init_obs = reg_init_obs
-  reg_2_num_init_obs = reg_init_obs
+  reg_1_num_init_obs = nrow(reg_1_x)
+  reg_2_num_init_obs = nrow(reg_2_x)
+  # reg_1_num_init_obs = reg_init_obs
+  # reg_2_num_init_obs = reg_init_obs
   
   reg_1_tot_obs = reg_1_num_init_obs + reg_obs
   reg_2_tot_obs = reg_2_num_init_obs + reg_obs
@@ -130,8 +131,7 @@ for(run in 1:num_runs){
   reg_2_colors = c(rep("green", reg_2_num_init_obs), rep("blue", reg_obs))
   
   bo = EGO(
-    # fun = ackley,
-    fun = rastr,
+    fun = test_func,
     reg_model = ~1,
     ego_init = init,
     x_describe = descr,
@@ -139,8 +139,7 @@ for(run in 1:num_runs){
     control = ctrl
   )
   reg_1_bo = EGO(
-    # fun = ackley,
-    fun = rastr,
+    fun = test_func,
     reg_model = ~1,
     ego_init = reg_1_init,
     x_describe = reg_1_descr,
@@ -148,8 +147,7 @@ for(run in 1:num_runs){
     control = ctrl
   )
   reg_2_bo = EGO(
-    # fun = ackley,
-    fun = rastr,
+    fun = test_func,
     reg_model = ~1,
     ego_init = reg_2_init,
     x_describe = reg_2_descr,
@@ -161,17 +159,14 @@ for(run in 1:num_runs){
       width = img_width,
       height = img_height)
   EGO.plot(ego_fit = bo,
-           # fun = ackley,
-           fun = rastr,
+           fun = test_func,
            n.grid = 1000,
            x_describe = descr,
            control = list(limit_min = descr$Min,
                           limit_max = descr$Max,
                           label_order = FALSE)
   )
-  # par(cex = 5)
-  # points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex=5)
-  points(rastr_argmin[1], rastr_argmin[2], pch=4, col="red", cex=5)
+  points(test_argmin[1], test_argmin[2], pch=4, col="red", cex=5)
   text(bo$x, col=colors, label=1:tot_obs, cex = 5)
   dev.off()
   
@@ -179,17 +174,14 @@ for(run in 1:num_runs){
       width = img_width,
       height = img_height)
   EGO.plot(ego_fit = reg_1_bo,
-           # fun = ackley,
-           fun = rastr,
+           fun = test_func,
            n.grid = 1000,
            x_describe = reg_1_descr,
            control = list(limit_min = descr$Min,
                           limit_max = descr$Max,
                           label_order = FALSE)
   )
-  # par(cex = 5)
-  # points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex=5)
-  points(rastr_argmin[1], rastr_argmin[2], pch=4, col="red", cex=5)
+  points(test_argmin[1], test_argmin[2], pch=4, col="red", cex=5)
   text(reg_1_bo$x, col=reg_1_colors, label=1:reg_1_tot_obs, cex = 5)
   dev.off()
   
@@ -197,17 +189,14 @@ for(run in 1:num_runs){
       width = img_width,
       height = img_height)
   EGO.plot(ego_fit = reg_2_bo,
-           # fun = ackley,
-           fun = rastr,
+           fun = test_func,
            n.grid = 1000,
            x_describe = reg_2_descr,
            control = list(limit_min = descr$Min,
                           limit_max = descr$Max,
                           label_order = FALSE)
   )
-  # par(cex = 5)
-  # points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex=5)
-  points(rastr_argmin[1], rastr_argmin[2], pch=4, col="red", cex=5)
+  points(test_argmin[1], test_argmin[2], pch=4, col="red", cex=5)
   text(reg_2_bo$x, col=reg_2_colors, label=1:reg_2_tot_obs, cex = 5)
   dev.off()
   
@@ -217,8 +206,7 @@ for(run in 1:num_runs){
       height = img_height)
   par(cex = 5)
   plot(bo$x, col=colors, pch=paste(1:tot_obs), type='n', main=plot_title)
-  # points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex = 5)
-  points(rastr_argmin[1], rastr_argmin[2], pch=4, col="red", cex=5)
+  points(test_argmin[1], test_argmin[2], pch=4, col="red", cex=5)
   text(bo$x, col=colors, label=1:tot_obs)
   dev.off()
   
@@ -227,14 +215,8 @@ for(run in 1:num_runs){
       width = img_width,
       height = img_height)
   par(cex = 5)
-  # plot(reg_1_bo$x, col=reg_1_colors, pch=paste(1:reg_1_tot_obs), type='n', main=plot_title,
-  #      xlim=c(ackley_lbound_scalar, ackley_ubound_scalar),
-  #      ylim=c(ackley_lbound_scalar, ackley_ubound_scalar))
-  plot(reg_1_bo$x, col=reg_1_colors, pch=paste(1:reg_1_tot_obs), type='n', main=plot_title,
-       xlim=c(rastr_lbound_scalar, rastr_ubound_scalar),
-       ylim=c(rastr_lbound_scalar, rastr_ubound_scalar))
-  # points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex = 5)
-  points(rastr_argmin[1], rastr_argmin[2], pch=4, col="red", cex=5)
+  plot(reg_1_bo$x, col=reg_1_colors, pch=paste(1:reg_1_tot_obs), type='n', main=plot_title, xlim=plot_lims, ylim=plot_lims)
+  points(test_argmin[1], test_argmin[2], pch=4, col="red", cex=5)
   text(reg_1_bo$x, col=reg_1_colors, label=1:reg_1_tot_obs)
   dev.off()
   
@@ -243,14 +225,8 @@ for(run in 1:num_runs){
       width = img_width,
       height = img_height)
   par(cex = 5)
-  # plot(reg_2_bo$x, col=reg_2_colors, pch=paste(1:reg_2_tot_obs), type='n', main=plot_title,
-  #      xlim=c(ackley_lbound_scalar, ackley_ubound_scalar),
-  #      ylim=c(ackley_lbound_scalar, ackley_ubound_scalar))
-  plot(reg_2_bo$x, col=reg_2_colors, pch=paste(1:reg_2_tot_obs), type='n', main=plot_title,
-       xlim=c(rastr_lbound_scalar, rastr_ubound_scalar),
-       ylim=c(rastr_lbound_scalar, rastr_ubound_scalar))
-  # points(ackley_argmin[1], ackley_argmin[2], pch=4, col="red", cex = 5)
-  points(rastr_argmin[1], rastr_argmin[2], pch=4, col="red", cex=5)
+  plot(reg_2_bo$x, col=reg_2_colors, pch=paste(1:reg_2_tot_obs), type='n', main=plot_title, xlim=plot_lims, ylim=plot_lims)
+  points(test_argmin[1], test_argmin[2], pch=4, col="red", cex=5)
   text(reg_2_bo$x, col=reg_2_colors, label=1:reg_2_tot_obs)
   dev.off()
   
