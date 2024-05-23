@@ -10,9 +10,10 @@ num_runs = 10
 global_mins = {
     'ackley': 0,
     'rastr': 0,
-    'grie': 0
+    'grie': 0,
+    'cit': -2.06261
 }
-test_func_names = ['ackley', 'rastr', 'grie']
+test_func_names = ['ackley', 'rastr', 'grie', 'cit']
 
 obs = pd.read_csv(f'/Users/jesse/Downloads/bo_partition/data/bo_runs/{test_func_names[2]}_obs.csv', header=None, dtype=float, sep='\s+').to_numpy()
 best = pd.read_csv(f'/Users/jesse/Downloads/bo_partition/data/bo_runs/{test_func_names[2]}_best_so_far.csv', header=None, dtype=float, sep='\s+').to_numpy()

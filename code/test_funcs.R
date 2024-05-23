@@ -2,30 +2,6 @@ ackley <- function(xx, a=20, b=0.2, c=2*pi)
 {
   ##########################################################################
   #
-  # ACKLEY FUNCTION
-  #
-  # Authors: Sonja Surjanovic, Simon Fraser University
-  #          Derek Bingham, Simon Fraser University
-  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
-  #
-  # Copyright 2013. Derek Bingham, Simon Fraser University.
-  #
-  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
-  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-  # derivative works, such modified software should be clearly marked.
-  # Additionally, this program is free software; you can redistribute it 
-  # and/or modify it under the terms of the GNU General Public License as 
-  # published by the Free Software Foundation; version 2.0 of the License. 
-  # Accordingly, this program is distributed in the hope that it will be 
-  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-  # General Public License for more details.
-  #
-  # For function details and reference information, see:
-  # http://www.sfu.ca/~ssurjano/
-  #
-  ##########################################################################
-  #
   # INPUTS:
   #
   # xx = c(x1, x2, ..., xd)
@@ -47,33 +23,28 @@ ackley <- function(xx, a=20, b=0.2, c=2*pi)
   return(y)
 }
 
-
-goldpr <- function(xx)
+cit <- function(xx)
 {
   ##########################################################################
   #
-  # GOLDSTEIN-PRICE FUNCTION
+  # INPUT:
   #
-  # Authors: Sonja Surjanovic, Simon Fraser University
-  #          Derek Bingham, Simon Fraser University
-  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
+  # xx = c(x1, x2)
   #
-  # Copyright 2013. Derek Bingham, Simon Fraser University.
-  #
-  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
-  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-  # derivative works, such modified software should be clearly marked.
-  # Additionally, this program is free software; you can redistribute it 
-  # and/or modify it under the terms of the GNU General Public License as 
-  # published by the Free Software Foundation; version 2.0 of the License. 
-  # Accordingly, this program is distributed in the hope that it will be 
-  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-  # General Public License for more details.
-  #
-  # For function details and reference information, see:
-  # http://www.sfu.ca/~ssurjano/
-  #
+  ##########################################################################
+  
+  x1 <- xx[1]
+  x2 <- xx[2]
+  
+  fact1 <- sin(x1)*sin(x2)
+  fact2 <- exp(abs(100 - sqrt(x1^2+x2^2)/pi))
+  
+  y <- -0.0001 * (abs(fact1*fact2)+1)^0.1
+  return(y)
+}
+
+goldpr <- function(xx)
+{
   ##########################################################################
   #
   # INPUT:
@@ -99,30 +70,6 @@ goldpr <- function(xx)
 
 goldprsc <- function(xx)
 {
-  ##########################################################################
-  #
-  # GOLDSTEIN-PRICE FUNCTION, SCALED
-  #
-  # Authors: Sonja Surjanovic, Simon Fraser University
-  #          Derek Bingham, Simon Fraser University
-  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
-  #
-  # Copyright 2013. Derek Bingham, Simon Fraser University.
-  #
-  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
-  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-  # derivative works, such modified software should be clearly marked.
-  # Additionally, this program is free software; you can redistribute it 
-  # and/or modify it under the terms of the GNU General Public License as 
-  # published by the Free Software Foundation; version 2.0 of the License. 
-  # Accordingly, this program is distributed in the hope that it will be 
-  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-  # General Public License for more details.
-  #
-  # For function details and reference information, see:
-  # http://www.sfu.ca/~ssurjano/
-  #
   ##########################################################################
   #
   # INPUT:
@@ -152,30 +99,6 @@ grie <- function(xx)
 {
   ##########################################################################
   #
-  # GRIEWANK FUNCTION
-  #
-  # Authors: Sonja Surjanovic, Simon Fraser University
-  #          Derek Bingham, Simon Fraser University
-  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
-  #
-  # Copyright 2013. Derek Bingham, Simon Fraser University.
-  #
-  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
-  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-  # derivative works, such modified software should be clearly marked.
-  # Additionally, this program is free software; you can redistribute it 
-  # and/or modify it under the terms of the GNU General Public License as 
-  # published by the Free Software Foundation; version 2.0 of the License. 
-  # Accordingly, this program is distributed in the hope that it will be 
-  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-  # General Public License for more details.
-  #
-  # For function details and reference information, see:
-  # http://www.sfu.ca/~ssurjano/
-  #
-  ##########################################################################
-  #
   # INPUT:
   #
   # xx = c(x1, x2, ..., xd)
@@ -192,30 +115,6 @@ grie <- function(xx)
 
 rastr <- function(xx)
 {
-  ##########################################################################
-  #
-  # RASTRIGIN FUNCTION
-  #
-  # Authors: Sonja Surjanovic, Simon Fraser University
-  #          Derek Bingham, Simon Fraser University
-  # Questions/Comments: Please email Derek Bingham at dbingham@stat.sfu.ca.
-  #
-  # Copyright 2013. Derek Bingham, Simon Fraser University.
-  #
-  # THERE IS NO WARRANTY, EXPRESS OR IMPLIED. WE DO NOT ASSUME ANY LIABILITY
-  # FOR THE USE OF THIS SOFTWARE.  If software is modified to produce
-  # derivative works, such modified software should be clearly marked.
-  # Additionally, this program is free software; you can redistribute it 
-  # and/or modify it under the terms of the GNU General Public License as 
-  # published by the Free Software Foundation; version 2.0 of the License. 
-  # Accordingly, this program is distributed in the hope that it will be 
-  # useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-  # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-  # General Public License for more details.
-  #
-  # For function details and reference information, see:
-  # http://www.sfu.ca/~ssurjano/
-  #
   ##########################################################################
   #
   # INPUT:
@@ -248,6 +147,21 @@ ackley_reg_1 = cbind(ackley_reg_1_lbound, ackley_reg_1_ubound)
 ackley_reg_2 = cbind(ackley_reg_2_lbound, ackley_reg_2_ubound)
 
 ackley_argmin = rep(0, dim)
+
+cit_lbound_scalar = -10
+cit_ubound_scalar = 10
+cit_lbound = rep(cit_lbound_scalar, dim)
+cit_ubound = rep(cit_ubound_scalar, dim)
+
+cit_reg_1_lbound = cit_lbound
+cit_reg_1_ubound = rep(0, dim)
+cit_reg_1 = cbind(cit_reg_1_lbound, cit_reg_1_ubound)
+
+cit_argmin = rbind(c(1.3491, -1.3491),
+                   c(1.3491, 1.3491),
+                   c(-1.3491, 1.3491),
+                   c(-1.3491, -1.3491)
+)
 
 grie_lbound_scalar = -600
 grie_ubound_scalar = 600
