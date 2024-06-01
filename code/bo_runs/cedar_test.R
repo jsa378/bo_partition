@@ -200,7 +200,7 @@ for(run in 1:num_runs){
   # dev.off()
   
   plot_title = sprintf(paste(test_func_string, " run %s", sep=""), run)
-  png(filename = sprintf("/home/jsa378/Downloads/bo_partition/plots/bo_runs/%s_numbered_points_run_%s.png", test_func_string, run),
+  png(filename = sprintf("/home/jsa378/bo_partition/plots/bo_runs/%s_numbered_points_run_%s.png", test_func_string, run),
       width = img_width,
       height = img_height)
   par(cex = 5)

@@ -8,4 +8,6 @@
 
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
-Rscript /home/jsa378/bo_partition/code/cedar_test.R
+printf "The current job ID is: $SLURM_JOB_ID\n"
+
+Rscript /home/jsa378/bo_partition/code/bo_runs/cedar_test.R
