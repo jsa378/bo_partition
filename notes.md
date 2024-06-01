@@ -36,7 +36,8 @@
 15. Back at the terminal, logged into Cedar in my home directory (`/home/jsa378`), clone the GitHub repository: `git clone https://github.com/jsa378/bo_partition`
     - Be very careful if you are simultaneously working on the repository from another computer; if you are, make sure to add, commit and push whatever you're working on before proceeding
 16. Double-check that the version of the repository on Cedar is up to date: `cd bo_partition`, then `git pull origin master`
-17. 
+17. Make some small change to the version of the repository on Cedar (like I am doing right now)
+18. Now check that you can push from Cedar: `git add .`, `git commit -m 'Cedar test commit'`, `git push origin master`
 
 
 # Local Installation
