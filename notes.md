@@ -34,7 +34,9 @@
 13. Paste the stuff you copied into the **Key** field
 14. Click **Add SSH key**
 15. Back at the terminal, logged into Cedar in my home directory (`/home/jsa378`), clone the GitHub repository: `git clone https://github.com/jsa378/bo_partition`
-16. 
+    - Be very careful if you are simultaneously working on the repository from another computer; if you are, make sure to add, commit and push whatever you're working on before proceeding
+16. Double-check that the version of the repository on Cedar is up to date: `cd bo_partition`, then `git pull origin master`
+17. 
 
 
 # Local Installation
