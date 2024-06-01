@@ -1,9 +1,40 @@
 # Cedar Setup
 
+## Installing software
+
 1. Log in via `ssh -Y jsa378@cedar.alliancecan.ca`
-2. To check latest versions of GCC and R, type `module spider r` and `module spider gcc`
-3. `module load gcc/12.3 r/4.4.0` (these are the latest versions as of 31 May, 2024)
-4. 
+2. To check which versions of GCC and R are available, type `module spider r` and `module spider gcc`
+    - (R 4.4.0 and GCC 12.3 are the latest versions as of 31 May, 2024)
+3. To check which modules should be loaded before you load `gcc` and `r`, type `module spider r/4.4.0` and `module spider gcc/12.3`
+    - In my case, I am supposed to load `StdEnv/2023`
+4. Now load the software: `module load StdEnv/2023 gcc/12.3 r/4.4.0` 
+5. Start the R interpreter: `R`
+6. Install the CRAN packages I need: `install.packages(c('devtools', 'GaSP'), repos='https://mirror.rcg.sfu.ca/mirror/CRAN')`
+    - Answer "yes" to both questions about using and creating a personal library
+    - My personal library is located at `/home/jsa378/R/x86_64-pc-linux-gnu-library/4.4`
+7. Now install `xmengju/EGO` as in the local installation instructions below
+8. Quit the R interpreter: `q()`
+9. That should take care of it. The next job is to set up Git to work with my code.
+
+## Setting up Git
+
+1. Assuming I am logged into Cedar, `ssh-keygen -t ed25519 -C "jsa378@student.ubc.ca"`
+2. When prompted "Enter file in which to save the key...", press **Enter**
+3. When prompted "Enter passphrase...", press **Enter**
+4. Press **Enter** again
+5. `eval "$(ssh-agent -s)"`
+6. `ssh-add ~/.ssh/id_ed25519`
+    - The terminal should say "Identity added..."
+7. `cat ~/.ssh/id_ed25519.pub`
+8. Copy the entire output to the clipboard
+9. Log into GitHub account in Web browser, go to **Settings**, and then **SSH and GPG keys**
+10. Click **New SSH key**
+11. Enter key title
+12. For **Key type**, select "Authentication key" (I don't know much about this)
+13. Paste the stuff you copied into the **Key** field
+14. Click **Add SSH key**
+15. Back at the terminal, logged into Cedar in my home directory (`/home/jsa378`), clone the GitHub repository: `git clone https://github.com/jsa378/bo_partition`
+16. 
 
 
 # Local Installation
