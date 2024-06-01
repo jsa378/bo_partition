@@ -1,4 +1,12 @@
-# Installation
+# Cedar Setup
+
+1. Log in via `ssh -Y jsa378@cedar.alliancecan.ca`
+2. To check latest versions of GCC and R, type `module spider r` and `module spider gcc`
+3. `module load gcc/12.3 r/4.4.0` (these are the latest versions as of 31 May, 2024)
+4. 
+
+
+# Local Installation
 
 ## xmengju/EGO
 

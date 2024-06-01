@@ -43,6 +43,36 @@ cit <- function(xx)
   return(y)
 }
 
+neg_copeak <- function(xx, u=rep(0.5, 1, length(xx)), a=rep(5, 1, length(xx)), theta = 0)
+{
+  ##########################################################################
+  #
+  # INPUTS:
+  #
+  # xx = c(x1, x2, ..., xd)
+  # u = c(u1, u2, ..., ud) (optional), with default value
+  #     c(0.5, 0.5, ..., 0.5)
+  # a = c(a1, a2, ..., ad) (optional), with default value c(5, 5, ..., 5)
+  #
+  #########################################################################
+  
+  d <- length(xx)
+  rot_mat = rbind(c(cos(theta), -sin(theta)), c(sin(theta), cos(theta)))
+  disp = rep(0.5, d)
+  rotated_coords = disp + rot_mat %*% (xx - disp)
+  xx = rotated_coords
+  
+  sum <- sum(a*xx)
+  
+  y <- (1 + sum)^(-d-1)
+  return(-y)
+}
+
+neg_fourpeak <- function(xx){
+  return(neg_copeak(xx) + 0.4*neg_copeak(xx, theta = pi/2)
+         + 0.5*neg_copeak(xx, theta = pi) + 0.3*neg_copeak(xx, theta = 3*pi/2))
+}
+
 goldpr <- function(xx)
 {
   ##########################################################################
@@ -162,6 +192,13 @@ cit_argmin = rbind(c(1.3491, -1.3491),
                    c(-1.3491, 1.3491),
                    c(-1.3491, -1.3491)
 )
+
+neg_copeak_lbound_scalar = 0
+neg_copeak_ubound_scalar = 1
+neg_copeak_lbound = rep(neg_copeak_lbound_scalar, dim)
+neg_copeak_ubound = rep(neg_copeak_ubound_scalar, dim)
+
+neg_copeak_argmin = rep(0, dim)
 
 grie_lbound_scalar = -600
 grie_ubound_scalar = 600

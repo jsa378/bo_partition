@@ -20,18 +20,18 @@ gen_points_in_region = function(region, num_points){
   return(points)
 }
 
-# goldpr_points_func = function(num_points, x1_range, x2_range){
-#   goldpr_points = matrix(data=NA, nrow=num_points, ncol=dim)
-#   # ranges = c(x1_range, x2_range)
-#   for (r in 1:nrow(goldpr_points)){
-#     # for (c in 1:ncol(goldpr_points)){
-#     #   goldpr_points[r, c] = runif(n = 1, min = ranges[c][c], max = ranges[c][c])
-#     # }
-#     goldpr_points[r, 1] = runif(n = 1, min = x1_range[1], max = x1_range[2])
-#     goldpr_points[r, 2] = runif(n = 1, min = x2_range[1], max = x2_range[2])
-#   }
-#   return(goldpr_points)
-# }
+goldpr_points_func = function(num_points, x1_range, x2_range){
+  goldpr_points = matrix(data=NA, nrow=num_points, ncol=dim)
+  # ranges = c(x1_range, x2_range)
+  for (r in 1:nrow(goldpr_points)){
+    # for (c in 1:ncol(goldpr_points)){
+    #   goldpr_points[r, c] = runif(n = 1, min = ranges[c][c], max = ranges[c][c])
+    # }
+    goldpr_points[r, 1] = runif(n = 1, min = x1_range[1], max = x1_range[2])
+    goldpr_points[r, 2] = runif(n = 1, min = x2_range[1], max = x2_range[2])
+  }
+  return(goldpr_points)
+}
 
 # test = goldpr_points_func(num_points = num_init_points, x1_range = x1_ran, x2_range = x2_ran)
 # 

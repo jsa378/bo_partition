@@ -2,7 +2,8 @@ library(MASS)
 library(GaSP)
 library(EGO)
 source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
-source("/Users/jesse/Downloads/bo_partition/code/goldpr_points_func.R")
+# source("/Users/jesse/Downloads/bo_partition/code/goldpr_points_func.R")
+source("/Users/jesse/Downloads/bo_partition/code/old/gen_points_in_region.R")
 
 dim = 2
 num_init_points = 10
@@ -41,6 +42,12 @@ init = Initialize(
   # fun = goldpr
   fun = goldprsc
 )
+# init = Initialize(
+#   n_design = num_init_points,
+#   x_describe = descr,
+#   fun = goldprsc,
+#   n_rep = 0
+# )
 ctrl = EGO.control(
   alg = "genoud",
   rel_tol = 0,
