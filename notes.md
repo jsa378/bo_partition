@@ -37,7 +37,14 @@
     - Be very careful if you are simultaneously working on the repository from another computer; if you are, make sure to add, commit and push whatever you're working on before proceeding
 16. Double-check that the version of the repository on Cedar is up to date: `cd bo_partition`, then `git pull origin master`
 17. Make some small change to the version of the repository on Cedar (like I am doing right now)
-18. Now check that you can push from Cedar: `git add .`, `git commit -m 'Cedar test commit'`, `git push origin master`
+18. Now we have to make sure Git on Cedar will push using SSH, not https. Go to [https://github.com/jsa378/bo_partition](https://github.com/jsa378/bo_partition) and click on the "Code" button. Copy the URL from the "SSH" tab. (As of this writing, it is  `git@github.com:jsa378/bo_partition.git`.) Now back in the Cedar terminal, `git remote set-url origin git@github.com:jsa378/bo_partition.git`.
+    - Check that it's set correctly: `git remote -v` (Before changing, it would have said "https://...", which is not SSH. Now it should say what you copied from GitHub.)
+19. Now check that you can push from Cedar: `git add .`, `git commit -m 'Cedar test commit'`, `git push origin master`
+20. If that works, then you should be set up to use Git for this repository on Cedar. The next job is to submit jobs on Cedar.
+
+## Submitting jobs
+
+1. 
 
 
 # Local Installation
