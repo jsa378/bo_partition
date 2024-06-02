@@ -26,7 +26,13 @@ source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 #             "', and save directory: '", save_dir,
 #             "'."))
 
-paste(c(""))
+paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
+paste(c("Test function:", test_func_name), collapse = " ")
+paste(c("Dimension:", dim), collapse = " ")
+paste(c("Number of initial observations:", num_init_obs), collapse = " ")
+paste(c("Number of observations:", num_obs), collapse = " ")
+paste(c("Number of runs:", num_runs), collapse = " ")
+paste(c("Save directory:", save_dir), collapse = " ")
 
 # set.seed(1)
 set.seed(seed_value)
@@ -62,12 +68,18 @@ test_ubound = test_func_list[[test_func_name]]$ubound
 plot_lims = c(test_lbound_scalar, test_ubound_scalar)
 test_argmin = test_func_list[[test_func_name]]$argmin
 
-print(paste("Test function lower bound scalar: '", test_lbound_scalar,
-            "', upper bound scalar: '", test_ubound_scalar,
-            "', lower bound vector: '", test_lbound,
-            "', upper bound vector: '", test_ubound,
-            "', and argmin: '", test_argmin,
-            "."))
+# print(paste("Test function lower bound scalar: '", test_lbound_scalar,
+#             "', upper bound scalar: '", test_ubound_scalar,
+#             "', lower bound vector: '", test_lbound,
+#             "', upper bound vector: '", test_ubound,
+#             "', and argmin: '", test_argmin,
+#             "."))
+
+paste(c("Test function lower bound scalar:", test_lbound_scalar), collapse = " ")
+paste(c("Test function upper bound scalar:", test_ubound_scalar), collapse = " ")
+paste(c("Test function lower bound vector:", test_lbound), collapse = " ")
+paste(c("Test function upper bound vector:", test_ubound), collapse = " ")
+paste(c("Test function argmin:", test_argmin), collapse = " ")
 
 # test_func = rastr
 # test_lbound_scalar = rastr_lbound_scalar
