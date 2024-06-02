@@ -161,7 +161,7 @@ rastr <- function(xx)
   return(y)
 }
 
-dim = 2
+# dim = 2
 
 ackley_lbound_scalar = -32.768
 ackley_ubound_scalar = 32.768
@@ -230,4 +230,25 @@ rastr_reg_2 = cbind(rastr_reg_2_lbound, rastr_reg_2_ubound)
 
 rastr_argmin = rep(0, dim)
 
+# test_func_dict = c(
+#   "rastr" = c(
+#     "lbound_scalar" = -5.12,
+#     "ubound_scalar" = 5.12,
+#     "lbound" = rep(-5.12, dim),
+#     "ubound" = rep(5.12, dim),
+#     "argmin" = rep(0, dim)
+#   )
+# )
 
+test_func_list = list(
+  rastr = list(
+    func = rastr,
+    lbound_scalar = -5.12,
+    ubound_scalar = 5.12,
+    lbound = rep(-5.12, dim),
+    ubound = rep(5.12, dim),
+    argmin = rep(0, dim)
+  )
+)
+
+# rastr_list = 
