@@ -1,14 +1,10 @@
 library(GaSP)
 library(EGO)
 
-
 args = commandArgs(trailingOnly = TRUE)
 if (length(args) < 7){
   stop("Seven arguments must be supplied: seed value (int), test function (string), dim (int), num init obs (int), num obs (int), num runs (int) and save dir (no type)", call. = FALSE)
 }
-
-source("/home/jsa378/bo_partition/code/test_funcs.R")
-source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 seed_value = as.integer(args[1])
 test_func_name = args[2]
@@ -18,14 +14,19 @@ num_obs = as.integer(args[5])
 num_runs = as.integer(args[6])
 save_dir = as.character(args[7])
 
-print(paste("Bayesian optimization with seed value: '", seed_value,
-            "', test function: '", test_func_name,
-            "', in dimension: '", dim,
-            "', with num init obs: '", num_init_obs,
-            "', with num obs: '", num_obs,
-            "', with num runs: '", num_runs,
-            "', and save directory: '", save_dir,
-            "'."))
+source("/home/jsa378/bo_partition/code/test_funcs.R")
+source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
+
+# print(paste("Bayesian optimization with seed value: '", seed_value,
+#             "', test function: '", test_func_name,
+#             "', in dimension: '", dim,
+#             "', with num init obs: '", num_init_obs,
+#             "', with num obs: '", num_obs,
+#             "', with num runs: '", num_runs,
+#             "', and save directory: '", save_dir,
+#             "'."))
+
+paste(c(""))
 
 # set.seed(1)
 set.seed(seed_value)
