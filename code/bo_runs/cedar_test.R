@@ -285,13 +285,13 @@ for(run in 1:num_runs){
   
   write.table(run_obs,
               # file = sprintf("/home/jsa378/bo_partition/data/bo_runs/%s_obs.csv", test_func_string),
-              file = sprintf("%s%s_obs.csv", save_dir, test_func_string),
+              file = sprintf("%s%s_seed_%s_obs.csv", save_dir, test_func_string, seed_value),
               row.names = FALSE,
               col.names = FALSE
   )
   write.table(best_so_far,
               # file = sprintf("/home/jsa378/bo_partition/data/bo_runs/%s_best_so_far.csv", test_func_string),
-              file = sprintf("%s%s_best_so_far.csv", save_dir, test_func_string),
+              file = sprintf("%s%s_seed_%s_best_so_far.csv", save_dir, test_func_string, seed_value),
               row.names = FALSE,
               col.names = FALSE
   )
