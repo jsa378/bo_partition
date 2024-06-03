@@ -109,7 +109,7 @@ ctrl = EGO.control(
                         BFGSburnin=5,
                         trace=FALSE
   ),
-  print_level = 1
+  print_level = 2
 )
 colors = c(rep("green", num_init_obs), rep("blue", num_obs))
 start = Sys.time()

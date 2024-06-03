@@ -12,7 +12,7 @@ module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc mo
 
 SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="rastr"
-DIM=2
+DIM=5
 NUM_INIT_OBS=20
 NUM_OBS=100
 NUM_RUNS=1

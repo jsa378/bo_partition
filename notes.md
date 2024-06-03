@@ -16,6 +16,16 @@
 8. Quit the R interpreter: `q()`
 9. That should take care of it. The next job is to set up Git to work with my code.
 
+Note: I later installed DiceOptim by using the same `module load` command as above, starting R, and then `install.packages('DiceOptim', ...)` with the `repos` option set as above.
+
+Note 2: Here is some code to enter into the R interpreter to see which packages are installed (and their versions):
+
+```
+ip = as.data.frame(installed.packages()[,c(1,3:4)])
+ip = ip[is.na(ip$Priority),1:2,drop=FALSE]
+ip
+```
+
 ## Setting up Git
 
 1. Assuming I am logged into Cedar, `ssh-keygen -t ed25519 -C "jsa378@student.ubc.ca"`
