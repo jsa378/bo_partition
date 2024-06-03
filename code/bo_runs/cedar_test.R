@@ -17,15 +17,6 @@ save_dir = as.character(args[7])
 source("/home/jsa378/bo_partition/code/test_funcs.R")
 source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
-# print(paste("Bayesian optimization with seed value: '", seed_value,
-#             "', test function: '", test_func_name,
-#             "', in dimension: '", dim,
-#             "', with num init obs: '", num_init_obs,
-#             "', with num obs: '", num_obs,
-#             "', with num runs: '", num_runs,
-#             "', and save directory: '", save_dir,
-#             "'."))
-
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
 paste(c("Dimension:", dim), collapse = " ")
@@ -67,13 +58,6 @@ test_lbound = test_func_list[[test_func_name]]$lbound
 test_ubound = test_func_list[[test_func_name]]$ubound
 plot_lims = c(test_lbound_scalar, test_ubound_scalar)
 test_argmin = test_func_list[[test_func_name]]$argmin
-
-# print(paste("Test function lower bound scalar: '", test_lbound_scalar,
-#             "', upper bound scalar: '", test_ubound_scalar,
-#             "', lower bound vector: '", test_lbound,
-#             "', upper bound vector: '", test_ubound,
-#             "', and argmin: '", test_argmin,
-#             "."))
 
 paste(c("Test function lower bound scalar:", test_lbound_scalar), collapse = " ")
 paste(c("Test function upper bound scalar:", test_ubound_scalar), collapse = " ")
@@ -298,13 +282,13 @@ for(run in 1:num_runs){
   
   write.table(run_obs,
               # file = sprintf("/home/jsa378/bo_partition/data/bo_runs/%s_obs.csv", test_func_string),
-              file = sprintf("%s%s_seed_%s_obs.csv", save_dir, test_func_string, seed_value),
+              file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
               row.names = FALSE,
               col.names = FALSE
   )
   write.table(best_so_far,
               # file = sprintf("/home/jsa378/bo_partition/data/bo_runs/%s_best_so_far.csv", test_func_string),
-              file = sprintf("%s%s_seed_%s_best_so_far.csv", save_dir, test_func_string, seed_value),
+              file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
               row.names = FALSE,
               col.names = FALSE
   )
