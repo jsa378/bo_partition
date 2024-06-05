@@ -1,5 +1,6 @@
-library(GaSP)
+# library(GaSP)
 library(EGO)
+library(DiceOptim)
 
 args = commandArgs(trailingOnly = TRUE)
 if (length(args) < 7){
@@ -97,19 +98,25 @@ descr = DescribeX(
 #   x_max = test_reg_2_ubound,
 #   support = rep("Continuous", dim)
 # )
-ctrl = EGO.control(
-  alg = "genoud",
-  rel_tol = 0,
-  wait_iter = 10,
-  acq_control = list(type = "EI"),
-  GaSP_control = list(cor_family = "PowerExponential"),
-  genoud_control = list(pop.size=512,
-                        max.generations=50,
-                        wait.generations=5,
-                        BFGSburnin=5,
-                        trace=FALSE
-  ),
-  print_level = 2
+# ctrl = EGO.control(
+#   alg = "genoud",
+#   rel_tol = 0,
+#   wait_iter = 10,
+#   acq_control = list(type = "EI"),
+#   GaSP_control = list(cor_family = "PowerExponential"),
+#   genoud_control = list(pop.size=512,
+#                         max.generations=50,
+#                         wait.generations=5,
+#                         BFGSburnin=5,
+#                         trace=FALSE
+#   ),
+#   print_level = 2
+# )
+dice_ctrl = list(
+  pop.size=512,
+  max.generations=50,
+  wait.generations=5,
+  BFGSburnin=5
 )
 colors = c(rep("green", num_init_obs), rep("blue", num_obs))
 start = Sys.time()
@@ -122,6 +129,16 @@ for(run in 1:num_runs){
     fun = test_func,
     n_rep = 0
   )
+
+  km_x = init$x_design
+  km_y = init$y_design
+  gp_model = km(~1, design=km_x, response=km_y, covtype="powexp",
+  control=c(dice_ctrl, trace=FALSE),
+  optim.method="gen")
+  dice_bo = EGO.nsteps(model=gp_model, fun=test_func, nsteps=num_obs,
+  lower=test_lbound, upper=test_ubound, control=dice_ctrl, kmcontrol=NULL)
+  paste(c("Test function values observed during Dice BO:", dice_bo$value), collapse = " ")
+
   # reg_1_points = filter_points_region(test_reg_1, init$x_design, init$y_design)
   # reg_1_x = reg_1_points[[1]]
   # reg_1_y = reg_1_points[[2]]
@@ -167,14 +184,14 @@ for(run in 1:num_runs){
   # reg_1_colors = c(rep("green", reg_1_num_init_obs), rep("blue", reg_obs))
   # reg_2_colors = c(rep("green", reg_2_num_init_obs), rep("blue", reg_obs))
   
-  bo = EGO(
-    fun = test_func,
-    reg_model = ~1,
-    ego_init = init,
-    x_describe = descr,
-    nsteps = num_obs,
-    control = ctrl
-  )
+  # bo = EGO(
+  #   fun = test_func,
+  #   reg_model = ~1,
+  #   ego_init = init,
+  #   x_describe = descr,
+  #   nsteps = num_obs,
+  #   control = ctrl
+  # )
   # reg_1_bo = EGO(
   #   fun = test_func,
   #   reg_model = ~1,
@@ -267,9 +284,11 @@ for(run in 1:num_runs){
   # text(reg_2_bo$x, col=reg_2_colors, label=1:reg_2_tot_obs)
   # dev.off()
   
-  run_obs[run, ] = bo$y[-(1:num_init_obs)]
+  # run_obs[run, ] = bo$y[-(1:num_init_obs)]
+  run_obs[run, ] = dice_bo$value
   for(obs in 1:num_obs){
-    best_so_far[run, obs] = min(bo$y[-(1:num_init_obs)][(1:obs)])
+    # best_so_far[run, obs] = min(bo$y[-(1:num_init_obs)][(1:obs)])
+    best_so_far[run, obs] = min(dice_bo$value[(1:obs)])
   }
   # reg_1_run_obs[run, ] = reg_1_bo$y[-(1:reg_1_num_init_obs)]
   # for(obs in 1:reg_obs){
