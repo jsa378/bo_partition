@@ -1,5 +1,7 @@
+sink(file = "/Users/jesse/Downloads/ego_test.txt")
 library(GaSP)
-library(EGO)
+# library(EGO)
+library(EGOmod2)
 
 seed_value = 1
 test_func_name = "rastr"
@@ -61,9 +63,12 @@ ctrl = EGO.control(
   wait_iter = 10,
   acq_control = list(type = "EI"),
   GaSP_control = list(cor_family = "PowerExponential"),
-  genoud_control = list(pop.size=512,
-                        max.generations=50,
-                        wait.generations=5,
+  genoud_control = list(pop.size=1024,
+                        max.generations=100,
+                        wait.generations=10,
+                        # hard.generation.limit = TRUE,
+                        # print.level = 3,
+                        # debug = TRUE,
                         BFGSburnin=5,
                         trace=FALSE
   ),
@@ -85,15 +90,16 @@ bo_1 = EGO(
   reg_model = ~1,
   ego_init = init,
   x_describe = descr,
-  nsteps = 5,
+  nsteps = 10,
   control = ctrl
 )
+sink(file = NULL)
 
 # print(paste("init x pts and y vals:"))
 # print(init$x_design)
 # print(init$y_design)
 
-for(run in 1:5){
+for(run in 1:10){
   # print(sprintf("Beginning run %s of %s", run, num_runs))
   
   # print(paste("init x pts and y vals:"))
@@ -108,10 +114,10 @@ for(run in 1:5){
     nsteps = 1,
     control = ctrl
   )
-  # 
-  # print(paste("BO visited x and observed y:"))
-  # print(bo$x[-(1:(num_init_obs + run - 1)), ])
-  # print(bo$y[-(1:(num_init_obs + run - 1))])
+
+  print(paste("BO visited x and observed y:"))
+  print(bo$x[-(1:(num_init_obs + run - 1)), ])
+  print(bo$y[-(1:(num_init_obs + run - 1))])
   
   x_pts = bo$x
   y_vals = bo$y
@@ -125,12 +131,12 @@ for(run in 1:5){
 
 }
 
-identical(bo_1$x[1:20, ], bo$x[1:20, ])
-identical(bo_1$y[1:20], bo$y[1:20])
-bo_1$x[-(1:20), ]
-bo$x[-(1:20), ]
-bo_1$y[-(1:20)]
-bo$y[-(1:20)]
+# identical(bo_1$x[1:20, ], bo$x[1:20, ])
+# identical(bo_1$y[1:20], bo$y[1:20])
+# bo_1$x[-(1:20), ]
+# bo$x[-(1:20), ]
+# bo_1$y[-(1:20)]
+# bo$y[-(1:20)]
 
 # print(paste("init x pts and y vals:"))
 # print(init$x_design)
