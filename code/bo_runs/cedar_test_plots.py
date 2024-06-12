@@ -5,6 +5,9 @@ from matplotlib.ticker import MaxNLocator
 plt.figure(figsize=(8, 6), dpi=224)
 import sys
 
+plt.rcParams['savefig.dpi'] = 300
+plt.rcParams['font.size'] = 18
+
 seed_value = int(sys.argv[1])
 test_func_name = sys.argv[2]
 dim = int(sys.argv[3])
@@ -31,14 +34,14 @@ all_obs = np.zeros((num_array_jobs, num_obs))
 all_best = np.zeros((num_array_jobs, num_obs))
 
 for seed in range(1, num_array_jobs + 1):
-   all_obs[seed - 1, ] = pd.read_csv(f'{save_dir}seed_{seed}_obs.csv', header=None, dtype=float, sep='\s+').to_numpy()
-   all_best[seed - 1, ] = pd.read_csv(f'{save_dir}seed_{seed}_best_so_far.csv', header=None, dtype=float, sep='\s+').to_numpy()
+   all_obs[seed - 1, :] = pd.read_csv(f'{save_dir}seed_{seed}_obs.csv', header=None, dtype=float, sep='\s+').to_numpy()
+   all_best[seed - 1, :] = pd.read_csv(f'{save_dir}seed_{seed}_best_so_far.csv', header=None, dtype=float, sep='\s+').to_numpy()
 
 global_min = test_func_dicts[test_func_name]['global_min']
 x_axis_step_size = step_size_dict[num_obs]
 x_axis = np.linspace(1, num_obs, num_obs)
 xtick_array = np.arange(0, num_obs + x_axis_step_size, step=x_axis_step_size)
-fig, (ax1, ax2) = plt.subplots(1, 2)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(40, 20), tight_layout=True)
 fig.suptitle(f'{test_func_name}, {num_init_obs} init obs, {num_obs} obs, {dim} dim, {num_array_jobs} runs')
 ax1.set_title(f'raw obs')
 ax2.set_title(f'best obs so far')

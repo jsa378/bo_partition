@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-wjwelch    # replace this with your own account
-#SBATCH --mem-per-cpu=2000M      # memory; default unit is megabytes
+#SBATCH --mem-per-cpu=1000M      # memory; default unit is megabytes
 #SBATCH --array=1-1              # number of array jobs, inclusive
 #SBATCH --time=0-00:15           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
