@@ -33,7 +33,7 @@ fi
 
 Rscript /home/jsa378/bo_partition/code/bo_runs/cedar_test.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR
 
-NUM_FILES=$(find $SAVE_DIR -type f | wc -l)
+NUM_FILES=$(find $SAVE_DIR -type f -name '*.csv' | wc -l)
 if [ "$NUM_FILES" -eq "$NUM_CSVS" ]
 then
   echo "This is the last of the array jobs to finish, so we will make the plots now."
