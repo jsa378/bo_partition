@@ -161,6 +161,24 @@ rastr <- function(xx)
   return(y)
 }
 
+schwef <- function(xx)
+{
+##########################################################################
+  #
+  # INPUT:
+  #
+  # xx = c(x1, x2, ..., xd)
+  #
+  ##########################################################################
+  
+  d <- length(xx)
+	
+  sum <- sum(xx*sin(sqrt(abs(xx))))
+
+  y <- 418.9829*d - sum
+  return(y)
+}
+
 # dim = 2
 
 ackley_lbound_scalar = -32.768
@@ -260,6 +278,14 @@ test_func_list = list(
     lbound = rep(-5.12, dim),
     ubound = rep(5.12, dim),
     argmin = rep(0, dim)
+  ),
+  schwef = list(
+    func = schwef,
+    lbound_scalar = -500,
+    ubound_scalar = 500,
+    lbound = rep(-500, dim),
+    ubound = rep(500, dim),
+    argmin = rep(420.9687, dim)
   )
 )
 

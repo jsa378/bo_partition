@@ -20,7 +20,10 @@ num_array_jobs = int(sys.argv[8])
 test_func_dicts = {
     'rastr': {
         'global_min': 0
-    }
+    },
+    'schwef': {
+        'global_min': 0
+    },
 }
 
 step_size_dict = {
@@ -54,7 +57,7 @@ ax1.set_xlabel('observation number')
 ax2.set_xlabel('observation number')
 ax1.set_ylabel('obj. function value')
 ax2.set_ylabel('obj. function value')
-ax2.set_ylim(0, 10)
+ax2.set_ylim(0, 100)
 ax1.plot(x_axis, global_min * np.ones(num_obs), label='global_min', color='black')
 ax2.plot(x_axis, global_min * np.ones(num_obs), label='global_min', color='black')
 plt.legend()
