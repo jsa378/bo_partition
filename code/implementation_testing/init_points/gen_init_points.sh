@@ -16,7 +16,7 @@ NUM_INIT_OBS=40
 NUM_RUNS=10
 SAVE_DIR=/home/jsa378/bo_partition/code/implementation_testing/init_points/${TEST_FUNC}_${DIM}_dim_${NUM_RUNS}_runs_${NUM_INIT_OBS}_init_points/
 
-printf "Generating $NUM_INIT_OBS init points for $NUM_RUNS for the $TEST_FUNC test function.\n"
+printf "Generating $NUM_INIT_OBS init points for $NUM_RUNS runs for the $TEST_FUNC test function.\n"
 printf "The init points will be saved in $SAVE_DIR.\n"
 
 if [ ! -d "$SAVE_DIR" ]
