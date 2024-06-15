@@ -1,3 +1,4 @@
+library(GaSP)
 library(EGOmod2)
 
 args = commandArgs(trailingOnly = TRUE)
@@ -38,7 +39,7 @@ for(run in 1:num_runs){
   )
   
   write.table(init$x_design,
-              file = sprintf("%s%s_%s_dim_run_%s_init_points.csv", save_dir, test_func_name, dim, run),
+              file = sprintf("%srun_%s_init_points.csv", save_dir, run),
               row.names = FALSE,
               col.names = FALSE
   )
