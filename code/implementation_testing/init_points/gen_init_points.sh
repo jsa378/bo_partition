@@ -11,12 +11,12 @@ module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
 TEST_FUNC="rastr"
-DIM=2
-NUM_INIT_OBS=20
+DIM=5
+NUM_INIT_OBS=40
 NUM_RUNS=10
 SAVE_DIR=/home/jsa378/bo_partition/code/implementation_testing/init_points/${TEST_FUNC}_${DIM}_dim_${NUM_RUNS}_runs_${NUM_INIT_OBS}_init_points/
 
-printf "Generating $NUM_INIT_OBS init points for $NUM_RUNS runs for the $TEST_FUNC test function.\n"
+printf "Generating $NUM_INIT_OBS init points for $NUM_RUNS runs for the $TEST_FUNC test function in dimension $DIM.\n"
 printf "The init points will be saved in $SAVE_DIR.\n"
 
 if [ ! -d "$SAVE_DIR" ]
@@ -29,4 +29,4 @@ fi
 
 Rscript /home/jsa378/bo_partition/code/implementation_testing/init_points/gen_init_points.R $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_RUNS $SAVE_DIR
 
-printf "Init points created and saved."
+printf "Init points created and saved.\n"
