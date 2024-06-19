@@ -1,31 +1,39 @@
 library(GaSP)
 library(EGOmod3)
 
-library(GaSP)
-library(EGOmod2)
+# args <- commandArgs(trailingOnly = TRUE)
+# if (length(args) < 7) {
+#   stop("Seven arguments must be supplied:
+#   seed value (int),
+#   test function (string),
+#   dim (int),
+#   num init obs (int),
+#   num obs (int),
+#   num runs (int),
+#   save dir (no type)", call. = FALSE)
+# }
+# 
+# seed_value <- as.integer(args[1])
+# test_func_name <- args[2]
+# dim <- as.integer(args[3])
+# num_init_obs <- as.integer(args[4])
+# num_obs <- as.integer(args[5])
+# num_runs <- as.integer(args[6])
+# save_dir <- as.character(args[7])
 
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 7) {
-  stop("Seven arguments must be supplied:
-  seed value (int),
-  test function (string),
-  dim (int),
-  num init obs (int),
-  num obs (int),
-  num runs (int),
-  save dir (no type)", call. = FALSE)
-}
+seed_value = 1
+test_func_name = "rastr"
+dim = 2
+num_init_obs = 20
+num_obs = 100
+num_runs = 10
+save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
-seed_value <- as.integer(args[1])
-test_func_name <- args[2]
-dim <- as.integer(args[3])
-num_init_obs <- as.integer(args[4])
-num_obs <- as.integer(args[5])
-num_runs <- as.integer(args[6])
-save_dir <- as.character(args[7])
+# source("/home/jsa378/bo_partition/code/test_funcs.R")
+# source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
-source("/home/jsa378/bo_partition/code/test_funcs.R")
-source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
@@ -76,7 +84,9 @@ ctrl <- EGO.control(
 start <- Sys.time()
 
 init_points <- read.table(
-  file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  # file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  #                test_func_name, dim, num_runs, num_init_obs, seed_value),
+  file = sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
                  test_func_name, dim, num_runs, num_init_obs, seed_value),
   header = FALSE,
   sep = "",
@@ -97,7 +107,7 @@ descr <- DescribeX(
   support = rep("Continuous", dim)
 )
 init <- Initialize(
-  x_design = init_pts,
+  x_design = init_points,
   n_design = num_init_obs,
   x_describe = descr,
   fun = test_func,
@@ -105,88 +115,73 @@ init <- Initialize(
 )
 
 smallest_y_so_far = min(init$y_design)
-entire_region = list(as.matrix(cbind(test_lbound, test_ubound)))
-entire_region_points = filter_points_region(entire_region[[1]])
-entire_region = c(entire_region, entire_region_points, min(entire_region_points[[2]]))
+entire_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
+                     region_x = init$x_design,
+                     region_y = init$y_design,
+                     region_min = min(init$y_design),
+                     region_argmin = init$x_design[which.min(init$y_design), ]
+                     )
 all_regions = list(entire_region)
 
 n_tot = 100
 
 split = function(region) {
   
-  region_x = reg[[2]][[1]]
-  region_y = reg[[2]][[2]]
+  region_x = region$region_x
+  region_y = region$region_y
+  lowest_y_avg_val = 1e+10
   
   for(d in 1:dim){
     med = median(region_x[, d])
+    
     region_1_x = region_x[region_x[, d] < med, ]
+    region_1_y = region_y[which(region_x[, d] < med)]
     region_2_x = region_x[region_x[, d] >= med, ]
+    region_2_y = region_y[which(region_x[, d] >= med)]
     
+    region_1_y_avg = mean(region_1_y)
+    region_2_y_avg = mean(region_2_y)
     
-    first_region = region
-    second_region = region
-    # split_midpoint = mean(region[d, ])
-    
-    first_region[d, 2] = split_midpoint
-    second_region[d, 1] = split_midpoint
-    
-    points_in_first_region = filter_points_region(first_region, x_points_in_region, y_vals_in_region)
-    x_points_in_first_region = points_in_first_region[[1]]
-    y_vals_in_first_region = points_in_first_region[[2]]
-    y_avg_vals_in_first_region = mean(y_vals_in_first_region)
-    
-    points_in_second_region = filter_points_region(second_region, x_points_in_region, y_vals_in_region)
-    x_points_in_second_region = points_in_second_region[[1]]
-    y_vals_in_second_region = points_in_second_region[[2]]
-    y_avg_vals_in_second_region = mean(y_vals_in_second_region)
-    
-    if(y_avg_vals_in_first_region < lowest_y_avg_val | y_avg_vals_in_second_region < lowest_y_avg_val){
-      lowest_y_avg_val = min(y_avg_vals_in_first_region, y_avg_vals_in_second_region)
+    if(region_1_y_avg < lowest_y_avg_val | region_2_y_avg < lowest_y_avg_val){
+      lowest_y_avg_val = min(region_1_y_avg, region_2_y_avg)
       dim_to_split = d
-      region_1 = first_region
-      region_2 = second_region
-      x_points_in_region_1 = x_points_in_first_region
-      x_points_in_region_2 = x_points_in_second_region
-      y_vals_in_region_1 = y_vals_in_first_region
-      y_vals_in_region_2 = y_vals_in_second_region
+      split_point = med
+
+      split_region_1_x = region_1_x
+      split_region_1_y = region_1_y
+      split_region_2_x = region_2_x
+      split_region_2_y = region_2_y
     }
   }
+
+  region_1_return = region
+  region_1_return$bound_matrix[dim_to_split, 2] = split_point
+  region_1_return$region_x = split_region_1_x
+  region_1_return$region_y = split_region_1_y
+  region_1_return$region_min = min(split_region_1_y)
+  region_1_return$region_argmin = split_region_1_x[which.min(split_region_1_y), ]
+
+  region_2_return = region
+  region_2_return$bound_matrix[dim_to_split, 1] = split_point
+  region_2_return$region_x = split_region_2_x
+  region_2_return$region_y = split_region_2_y
+  region_2_return$region_min = min(split_region_2_y)
+  region_2_return$region_argmin = split_region_2_x[which.min(split_region_2_y), ]
   
-  region_1_model = km(~1,
-                      design = x_points_in_region_1,
-                      response = y_vals_in_region_1,
-                      covtype = "matern5_2",
-                      control = km_control_list,
-                      optim.method = "gen"
+  return(list(region_1_return,
+              region_2_return)
   )
-  region_2_model = km(~1,
-                      design = x_points_in_region_2,
-                      response = y_vals_in_region_2,
-                      covtype = "matern5_2",
-                      control = km_control_list,
-                      optim.method = "gen"
-  )
-  
-  return(list(list(rbind(x_points, new_points_in_region[[1]]),
-                   c(y_vals, new_points_in_region[[2]])
-  ),
-  list(region_1,
-       region_2
-  ),
-  list(region_1_model,
-       region_2_model,
-  )
-  )
-  )
+  # the two regions this function returns
+  # need to be added to our list of candidate regions
 }
 
-explore_region <- function(reg,
+explore_region <- function(region,
                            n_max = 10,
                            tol = 1) {
-  region_lbound = reg[[1]][, 1]
-  region_ubound = reg[[1]][, 2]
-  region_x = reg[[2]][[1]]
-  region_y = reg[[2]][[2]]
+  region_lbound = region$bound_matrix[, 1]
+  region_ubound = region$bound_matrix[, 2]
+  region_x = region$region_x
+  region_y = region$region_y
   n = nrow(region_x)
   descr <- DescribeX(
     x_names = x_names_arg,
@@ -211,22 +206,39 @@ explore_region <- function(reg,
     region_x = bo$x
     region_y = bo$y
     n = nrow(region_x)
-    if (tail(region_y, n = 1) < reg[[3]]) {
-      reg[[3]] = tail(region_y, n = 1)
-      if (tail(region_y, n = 1) < smallest_y_so_far) {
-        smallest_y_so_far = tail(region_y, n = 1)
+    new_observed_y = tail(region_y, n = 1)
+    if (new_observed_y < region$region_min) {
+      region$region_min = new_observed_y
+      region$region_argmin = region_x[n, ]
+      if (new_observed_y < smallest_y_so_far) {
+        smallest_y_so_far = new_observed_y
       }
     }
-    if (bo$ac_val_track < tol) {
-      reg[[2]][[1]] = region_x
-      reg[[2]][[2]] = region_y 
-      return(list(reg, smallest_y_so_far))
-      # need a way to remove this region from the list
-      # my dice_loop.R might be helpful here
+    a_max = bo$ac_val_track
+    
+    region$region_x = region_x
+    region$region_y = region_y
+    region$region_min = min(region_y)
+    region$region_argmin = which.min(region_y)
+    if (a_max < tol) {
+      # i should prepare the updated region and return it
+      # and return the smallest y value, i think
+      # and remove this region from my list of promising regions
+      # my dice_loop.R might be helpful for the last part
+
+      return(list(region,
+                  smallest_y_so_far)
+             )
     }
   }
   # the while loop completed, so now
   # we need to split the region into 2 subregions
+  new_subregions = split(region)
+  new_subregion_1 = new_subregions[[1]]
+  new_subregion_2 = new_subregions[[2]]
+  return(list(new_subregion_1,
+              new_subregion_2)
+         )
 }
 
 end <- Sys.time()
