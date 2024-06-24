@@ -1,4 +1,6 @@
-split_and_fit = function(region) {
+split_and_fit = function(region,
+                         best_y_so_far,
+                         where_best_y_so_far) {
   
   region_x = region$region_x
   region_y = region$region_y
@@ -91,11 +93,12 @@ split_and_fit = function(region) {
   if (new_region_1_obs < region_1_return$region_min) {
     region_1_return$region_min = new_region_1_obs
     region_1_return$region_argmin = region_1_bo$x[nrow(region_1_bo$x), ]
-    if (new_region_1_obs < smallest_y_so_far) {
-      smallest_y_so_far = new_region_1_obs
+    if (new_region_1_obs < best_y_so_far) {
+      best_y_so_far = new_region_1_obs
+      where_best_y_so_far = region_1_bo$x[nrow(region_1_bo$x), ]
     }
   }
-  region_1_return$a_max <- region_1_bo$ac_val_track
+  region_1_return$region_a_max <- region_1_bo$ac_val_track
   
   region_2_return$region_x <- region_2_bo$x
   region_2_return$region_y <- region_2_bo$y
@@ -103,15 +106,17 @@ split_and_fit = function(region) {
   if (new_region_2_obs < region_2_return$region_min) {
     region_2_return$region_min = new_region_2_obs
     region_2_return$region_argmin = region_2_bo$x[nrow(region_2_bo$x), ]
-    if (new_region_2_obs < smallest_y_so_far) {
-      smallest_y_so_far = new_region_2_obs
+    if (new_region_2_obs < best_y_so_far) {
+      best_y_so_far = new_region_2_obs
+      where_best_y_so_far = region_2_bo$x[nrow(region_2_bo$x), ]
     }
   }
-  region_2_return$a_max <- region_2_bo$ac_val_track
+  region_2_return$region_a_max <- region_2_bo$ac_val_track
   
-  return(list(region_1_return,
-              region_2_return,
-              new_best_y = smallest_y_so_far
+  return(list(region_1 = region_1_return,
+              region_2 = region_2_return,
+              new_best_y = best_y_so_far,
+              where_new_best_y = where_best_y_so_far
               )
   )
   # the two regions this function returns
@@ -119,6 +124,8 @@ split_and_fit = function(region) {
 }
 
 explore_region <- function(region,
+                           best_y_so_far,
+                           where_best_y_so_far,
                            n_max = 10,
                            tol = 1) {
   region_x = region$region_x
@@ -146,21 +153,22 @@ explore_region <- function(region,
     )
     region_x = bo$x
     region_y = bo$y
-    n = nrow(region_x)
+    n = n + 1
     new_observed_y = tail(region_y, n = 1)
     if (new_observed_y < region$region_min) {
       region$region_min = new_observed_y
       region$region_argmin = region_x[n, ]
-      if (new_observed_y < smallest_y_so_far) {
-        smallest_y_so_far = new_observed_y
+      if (new_observed_y < best_y_so_far) {
+        best_y_so_far = new_observed_y
+        where_best_y_so_far = region_x[n, ]
       }
     }
     a_max = bo$ac_val_track
     
     region$region_x = region_x
     region$region_y = region_y
-    region$region_min = min(region_y)
-    region$region_argmin = which.min(region_y)
+    region$region_a_max = a_max
+
     if (a_max < tol) {
       # i should prepare the updated region and return it
       # and return the smallest y value, i think
@@ -168,20 +176,25 @@ explore_region <- function(region,
       # my dice_loop.R might be helpful for the last part
       
       return(list(region = region,
-                  best_y = smallest_y_so_far,
+                  best_y = best_y_so_far,
+                  where_best_y = where_best_y_so_far,
                   split_called = 0)
       )
     }
   }
   # the while loop completed, so now
   # we need to split the region into 2 subregions
-  new_subregions = split_and_fit(region)
-  new_subregion_1 = new_subregions[[1]]
-  new_subregion_2 = new_subregions[[2]]
+  new_subregions = split_and_fit(region = region,
+                                 best_y_so_far = best_y_so_far,
+                                 where_best_y_so_far = where_best_y_so_far)
+  new_subregion_1 = new_subregions$region_1
+  new_subregion_2 = new_subregions$region_2
   new_best_y = new_subregions$new_best_y
+  where_new_best_y = new_subregions$where_new_best_y
   return(list(new_region_1 = new_subregion_1,
               new_region_2 = new_subregion_2,
               best_y = new_best_y,
+              where_best_y = where_new_best_y,
               split_called = 1)
   )
 }

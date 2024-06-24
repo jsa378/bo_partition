@@ -1,5 +1,5 @@
 library(GaSP)
-library(EGOmod3)
+library(EGOmod)
 
 # args <- commandArgs(trailingOnly = TRUE)
 # if (length(args) < 7) {
@@ -33,7 +33,7 @@ save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 # source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
-source("/Users/jesse/Downloads/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/research/bo_partition_helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
@@ -50,8 +50,8 @@ x_names_arg <- character(0)
 for (d in 1:dim){
   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
 }
-run_obs <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
-best_so_far <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
+# run_obs <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
+# best_so_far <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -72,11 +72,14 @@ ctrl <- EGO.control(
   rel_tol = 0,
   wait_iter = 10,
   acq_control = list(type = "EI"),
-  GaSP_control = list(cor_family = "Matern"),
+  GaSP_control = list(cor_family = "PowerExponential"),
   genoud_control = list(pop.size = 1024,
                         max.generations = 100,
-                        wait.generations = 10,
+                        hard.generation.limit = TRUE,
+                        wait.generations = 5,
                         BFGSburnin = 5,
+                        print.level = 0,
+                        debug = FALSE,
                         trace = FALSE
   ),
   print_level = 2
@@ -127,33 +130,49 @@ init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_argmin = init_bo$x[which.min(init_bo$y), ],
                    region_a_max = init_bo$ac_val_track
 )
-all_regions = list(init_region)
-smallest_y_so_far = min(init_bo$y)
+all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
+smallest_y_so_far = init_region$region_min
+where_smallest_y_so_far = init_region$region_argmin
+rejected_regions = list() # contains the regions that we've rejected
 
 n_tot = 100
 
 while (length(all_regions) > 0) {
   region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
+  n_obs = 0
   for (region_index in 1:length(all_regions)){
+    n_obs = n_obs + nrow(all_regions[[region_index]]$region_x)
     current_region = all_regions[[region_index]]
     region_values[region_index] = current_region$region_min - current_region$region_a_max
   }
+  if (length(rejected_regions) > 0) {
+    for (region_index in 1:length(rejected_regions)){
+      n_obs = n_obs + nrow(rejected_regions[[region_index]]$region_x)
+    }
+  }
+  if ( n_obs >= n_tot ) {
+    break
+  }
   index_of_region_to_explore <- which.min(region_values)
   region_to_explore = all_regions[[index_of_region_to_explore]]
-  results = explore_region(region_to_explore)
-  # i think I need some way of discerning
-  # whether split_and_fit was called during explore_region or not
-  # because I may need to remove region_to_explore from all_regions
+  results = explore_region(region = region_to_explore,
+                           best_y_so_far = smallest_y_so_far,
+                           where_best_y_so_far = where_smallest_y_so_far,
+                           n_max = 25,
+                           tol = 0.1)
   if (results$split_called == 0) {
+    rejected_regions = c(rejected_regions, list(results$region))
     all_regions = all_regions[-index_of_region_to_explore]
     smallest_y_so_far = results$best_y
-  }
-  if (results$split_called == 1) {
+    where_smallest_y_so_far = results$where_best_y
+  } else if (results$split_called == 1) {
     all_regions = all_regions[-index_of_region_to_explore]
-    new_region_1 = results[[1]]
-    new_region_2 = results[[2]]
+    new_region_1 = results$new_region_1
+    new_region_2 = results$new_region_2
+    
     all_regions = c(all_regions, list(new_region_1, new_region_2))
     smallest_y_so_far = results$best_y
+    where_smallest_y_so_far = results$where_best_y
   }
 }
 
