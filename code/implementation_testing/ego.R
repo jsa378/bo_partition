@@ -39,8 +39,8 @@ x_names_arg <- character(0)
 for (d in 1:dim){
   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
 }
-run_obs <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
-best_so_far <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
+run_obs <- matrix(data = NA, nrow = 1, ncol = num_obs)
+best_so_far <- matrix(data = NA, nrow = 1, ncol = num_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -104,9 +104,9 @@ bo <- EGO(
   control = ctrl
 )
 
-run_obs[run, ] <- bo$y[-(1:num_init_obs)]
+run_obs <- bo$y[-(1:num_init_obs)]
 for(obs in 1:num_obs){
-  best_so_far[run, obs] <- min(bo$y[-(1:num_init_obs)][(1:obs)])
+  best_so_far[obs] <- min(bo$y[-(1:num_init_obs)][(1:obs)])
 }
 
 write.table(run_obs,

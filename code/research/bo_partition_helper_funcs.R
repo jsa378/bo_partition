@@ -1,6 +1,8 @@
 split_and_fit = function(region,
                          best_y_so_far,
-                         where_best_y_so_far) {
+                         where_best_y_so_far,
+                         run_obs_vec,
+                         best_so_far_vec) {
   
   region_x = region$region_x
   region_y = region$region_y
@@ -78,6 +80,11 @@ split_and_fit = function(region,
     control = ctrl
   )
   
+  first_NA_index <- min(which(is.na(run_obs_vec)))
+  latest_obs <- tail(region_1_bo$y, n = 1)
+  run_obs_vec[first_NA_index] <- latest_obs
+  best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+  
   region_2_bo <- EGO(
     fun = test_func,
     reg_model = ~1,
@@ -86,6 +93,11 @@ split_and_fit = function(region,
     nsteps = 1,
     control = ctrl
   )
+  
+  first_NA_index <- min(which(is.na(run_obs_vec)))
+  latest_obs <- tail(region_2_bo$y, n = 1)
+  run_obs_vec[first_NA_index] <- latest_obs
+  best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
   
   region_1_return$region_x <- region_1_bo$x
   region_1_return$region_y <- region_1_bo$y
@@ -116,7 +128,9 @@ split_and_fit = function(region,
   return(list(region_1 = region_1_return,
               region_2 = region_2_return,
               new_best_y = best_y_so_far,
-              where_new_best_y = where_best_y_so_far
+              where_new_best_y = where_best_y_so_far,
+              run_obs = run_obs_vec,
+              best_so_far = best_so_far_vec
               )
   )
   # the two regions this function returns
@@ -126,6 +140,8 @@ split_and_fit = function(region,
 explore_region <- function(region,
                            best_y_so_far,
                            where_best_y_so_far,
+                           run_obs_vec,
+                           best_so_far_vec,
                            n_max = 10,
                            tol = 1) {
   region_x = region$region_x
@@ -154,6 +170,12 @@ explore_region <- function(region,
     region_x = bo$x
     region_y = bo$y
     n = n + 1
+    
+    first_NA_index <- min(which(is.na(run_obs_vec)))
+    latest_obs <- tail(bo$y, n = 1)
+    run_obs_vec[first_NA_index] <- latest_obs
+    best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+    
     new_observed_y = tail(region_y, n = 1)
     if (new_observed_y < region$region_min) {
       region$region_min = new_observed_y
@@ -170,6 +192,7 @@ explore_region <- function(region,
     region$region_a_max = a_max
 
     if (a_max < tol) {
+      
       # i should prepare the updated region and return it
       # and return the smallest y value, i think
       # and remove this region from my list of promising regions
@@ -178,23 +201,38 @@ explore_region <- function(region,
       return(list(region = region,
                   best_y = best_y_so_far,
                   where_best_y = where_best_y_so_far,
+                  run_obs = run_obs_vec,
+                  best_so_far = best_so_far_vec,
                   split_called = 0)
       )
     }
   }
+  
   # the while loop completed, so now
   # we need to split the region into 2 subregions
+  
   new_subregions = split_and_fit(region = region,
                                  best_y_so_far = best_y_so_far,
-                                 where_best_y_so_far = where_best_y_so_far)
+                                 where_best_y_so_far = where_best_y_so_far,
+                                 run_obs_vec = run_obs_vec,
+                                 best_so_far_vec = best_so_far_vec)
+  
+  # I need to re-bind run_obs_vec and best_so_far_vec
+  # and return the updated values below
+  
   new_subregion_1 = new_subregions$region_1
   new_subregion_2 = new_subregions$region_2
   new_best_y = new_subregions$new_best_y
   where_new_best_y = new_subregions$where_new_best_y
+  run_obs_vec <- new_subregions$run_obs
+  best_so_far_vec <- new_subregions$best_so_far
+  
   return(list(new_region_1 = new_subregion_1,
               new_region_2 = new_subregion_2,
               best_y = new_best_y,
               where_best_y = where_new_best_y,
+              run_obs = run_obs_vec,
+              best_so_far = best_so_far_vec,
               split_called = 1)
   )
 }

@@ -50,8 +50,8 @@ x_names_arg <- character(0)
 for (d in 1:dim){
   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
 }
-# run_obs <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
-# best_so_far <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
+run_obs <- matrix(data = NA, nrow = 1, ncol = num_obs)
+best_so_far <- matrix(data = NA, nrow = 1, ncol = num_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -85,6 +85,7 @@ ctrl <- EGO.control(
   print_level = 2
 )
 start <- Sys.time()
+sink(file = "/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
 
 init_points <- read.table(
   # file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
@@ -123,6 +124,11 @@ init_bo <- EGO(
   control = ctrl
 )
 
+first_NA_index <- min(which(is.na(run_obs)))
+latest_obs <- tail(init_bo$y, n = 1)
+run_obs[first_NA_index] <- latest_obs
+best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
+
 init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_x = init_bo$x,
                    region_y = init_bo$y,
@@ -139,27 +145,36 @@ n_tot = 100
 
 while (length(all_regions) > 0) {
   region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
-  n_obs = 0
-  for (region_index in 1:length(all_regions)){
-    n_obs = n_obs + nrow(all_regions[[region_index]]$region_x)
-    current_region = all_regions[[region_index]]
-    region_values[region_index] = current_region$region_min - current_region$region_a_max
-  }
-  if (length(rejected_regions) > 0) {
-    for (region_index in 1:length(rejected_regions)){
-      n_obs = n_obs + nrow(rejected_regions[[region_index]]$region_x)
-    }
-  }
+  n_obs = min(which(is.na(run_obs))) - 1
   if ( n_obs >= n_tot ) {
     break
   }
+  for (region_index in 1:length(all_regions)){
+    # n_obs = n_obs + nrow(all_regions[[region_index]]$region_x)
+    current_region = all_regions[[region_index]]
+    region_values[region_index] = current_region$region_min - current_region$region_a_max
+  }
+  # if (length(rejected_regions) > 0) {
+  #   for (region_index in 1:length(rejected_regions)){
+  #     n_obs = n_obs + nrow(rejected_regions[[region_index]]$region_x)
+  #   }
+  # }
   index_of_region_to_explore <- which.min(region_values)
   region_to_explore = all_regions[[index_of_region_to_explore]]
   results = explore_region(region = region_to_explore,
                            best_y_so_far = smallest_y_so_far,
                            where_best_y_so_far = where_smallest_y_so_far,
+                           run_obs_vec = run_obs,
+                           best_so_far_vec = best_so_far,
                            n_max = 25,
                            tol = 0.1)
+  
+  # I need explore_region to return updated run_obs and best_so_far
+  # and then I need to re-bind run_obs and best_so_far to those updated vectors
+  
+  run_obs <- results$run_obs
+  best_so_far <- results$best_so_far
+  
   if (results$split_called == 0) {
     rejected_regions = c(rejected_regions, list(results$region))
     all_regions = all_regions[-index_of_region_to_explore]
@@ -176,6 +191,18 @@ while (length(all_regions) > 0) {
   }
 }
 
+write.table(run_obs,
+            file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+            row.names = FALSE,
+            col.names = FALSE
+)
+write.table(best_so_far,
+            file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+            row.names = FALSE,
+            col.names = FALSE
+)
+
 end <- Sys.time()
+sink(file = NULL)
 duration <- end - start
 print(duration)
