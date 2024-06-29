@@ -27,6 +27,8 @@ dim = 2
 num_init_obs = 20
 num_obs = 100
 num_runs = 10
+n_max_param <- 25
+tol_param <- 0.1
 save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 # source("/home/jsa378/bo_partition/code/test_funcs.R")
@@ -41,6 +43,8 @@ paste(c("Dimension:", dim), collapse = " ")
 paste(c("Number of initial observations:", num_init_obs), collapse = " ")
 paste(c("Number of observations:", num_obs), collapse = " ")
 paste(c("Number of runs:", num_runs), collapse = " ")
+paste(c("n_max parameter:", n_max_param), collapse = " ")
+paste(c("tol parameter:", tol_param), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
 
 set.seed(seed_value)
@@ -82,7 +86,7 @@ ctrl <- EGO.control(
                         debug = FALSE,
                         trace = FALSE
   ),
-  print_level = 2
+  print_level = 0
 )
 start <- Sys.time()
 sink(file = "/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
@@ -128,6 +132,8 @@ first_NA_index <- min(which(is.na(run_obs)))
 latest_obs <- tail(init_bo$y, n = 1)
 run_obs[first_NA_index] <- latest_obs
 best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
+sprintf("New observation: %s", latest_obs)
+sprintf("Best so far: %s", best_so_far[first_NA_index])
 
 init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_x = init_bo$x,
@@ -136,6 +142,8 @@ init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_argmin = init_bo$x[which.min(init_bo$y), ],
                    region_a_max = init_bo$ac_val_track
 )
+# print("Initial region:")
+# print(init_region)
 all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
 smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
@@ -161,13 +169,15 @@ while (length(all_regions) > 0) {
   # }
   index_of_region_to_explore <- which.min(region_values)
   region_to_explore = all_regions[[index_of_region_to_explore]]
+  print("Region to explore:")
+  print(region_to_explore)
   results = explore_region(region = region_to_explore,
                            best_y_so_far = smallest_y_so_far,
                            where_best_y_so_far = where_smallest_y_so_far,
                            run_obs_vec = run_obs,
                            best_so_far_vec = best_so_far,
-                           n_max = 25,
-                           tol = 0.1)
+                           n_max = n_max_param,
+                           tol = tol_param)
   
   # I need explore_region to return updated run_obs and best_so_far
   # and then I need to re-bind run_obs and best_so_far to those updated vectors
@@ -176,6 +186,7 @@ while (length(all_regions) > 0) {
   best_so_far <- results$best_so_far
   
   if (results$split_called == 0) {
+    print("Region rejected, split not called")
     rejected_regions = c(rejected_regions, list(results$region))
     all_regions = all_regions[-index_of_region_to_explore]
     smallest_y_so_far = results$best_y
@@ -184,12 +195,22 @@ while (length(all_regions) > 0) {
     all_regions = all_regions[-index_of_region_to_explore]
     new_region_1 = results$new_region_1
     new_region_2 = results$new_region_2
+    print("Region split; first new region:")
+    print(new_region_1)
+    print("second new region:")
+    print(new_region_2)
     
     all_regions = c(all_regions, list(new_region_1, new_region_2))
     smallest_y_so_far = results$best_y
     where_smallest_y_so_far = results$where_best_y
   }
 }
+
+print("List of promising regions empty; terminating.")
+print("Best y observed:")
+print(smallest_y_so_far)
+print("at location:")
+print(where_smallest_y_so_far)
 
 write.table(run_obs,
             file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),

@@ -84,6 +84,8 @@ split_and_fit = function(region,
   latest_obs <- tail(region_1_bo$y, n = 1)
   run_obs_vec[first_NA_index] <- latest_obs
   best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+  print(sprintf("New observation in first new subregion: %s", latest_obs))
+  print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
   
   region_2_bo <- EGO(
     fun = test_func,
@@ -98,6 +100,8 @@ split_and_fit = function(region,
   latest_obs <- tail(region_2_bo$y, n = 1)
   run_obs_vec[first_NA_index] <- latest_obs
   best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+  print(sprintf("New observation in second new subregion: %s", latest_obs))
+  print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
   
   region_1_return$region_x <- region_1_bo$x
   region_1_return$region_y <- region_1_bo$y
@@ -153,7 +157,7 @@ explore_region <- function(region,
     x_max = region$bound_matrix[, 2],
     support = rep("Continuous", dim)
   )
-  while (n <= n_max) {
+  while (n < n_max) {
     init <- Initialize(
       x_design = region_x,
       x_describe = descr,
@@ -175,6 +179,8 @@ explore_region <- function(region,
     latest_obs <- tail(bo$y, n = 1)
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+    print(sprintf("New observation: %s", latest_obs))
+    print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
     new_observed_y = tail(region_y, n = 1)
     if (new_observed_y < region$region_min) {
@@ -186,6 +192,7 @@ explore_region <- function(region,
       }
     }
     a_max = bo$ac_val_track
+    print(sprintf("a_max: %s", a_max))
     
     region$region_x = region_x
     region$region_y = region_y
@@ -210,6 +217,8 @@ explore_region <- function(region,
   
   # the while loop completed, so now
   # we need to split the region into 2 subregions
+  
+  print("n_max limit met; splitting region")
   
   new_subregions = split_and_fit(region = region,
                                  best_y_so_far = best_y_so_far,
