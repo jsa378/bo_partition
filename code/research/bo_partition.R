@@ -29,6 +29,7 @@ num_obs = 100
 num_runs = 10
 n_max_param <- 25
 tol_param <- 0.1
+split_crit_param <- "avg"
 save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 # source("/home/jsa378/bo_partition/code/test_funcs.R")
@@ -177,7 +178,8 @@ while (length(all_regions) > 0) {
                            run_obs_vec = run_obs,
                            best_so_far_vec = best_so_far,
                            n_max = n_max_param,
-                           tol = tol_param)
+                           tol = tol_param,
+                           split_crit = split_crit_param)
   
   # I need explore_region to return updated run_obs and best_so_far
   # and then I need to re-bind run_obs and best_so_far to those updated vectors
