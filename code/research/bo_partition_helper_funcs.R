@@ -40,6 +40,8 @@ split_and_fit = function(region,
       region_1$region_y = region_1_y
       region_1$region_min = min(region_1_y)
       region_1$region_argmin = region_1_x[which.min(region_1_y), ]
+      print("Proposed region 1:")
+      print(region_1)
       
       region_2 = region
       region_2$bound_matrix[d, 1] = med
@@ -47,6 +49,8 @@ split_and_fit = function(region,
       region_2$region_y = region_2_y
       region_2$region_min = min(region_2_y)
       region_2$region_argmin = region_2_x[which.min(region_2_y), ]
+      print("Proposed region 2:")
+      print(region_2)
       
       region_1_descr <- DescribeX(
         x_names = x_names_arg,
@@ -97,8 +101,8 @@ split_and_fit = function(region,
       
       if(region_1_value < lowest_y_min_minus_a_max_val | region_2_value < lowest_y_min_minus_a_max_val) {
         lowest_y_min_minus_a_max_val <- min(region_1_value, region_2_value)
-        dim_to_split = d
-        split_point = med
+        # dim_to_split = d
+        # split_point = med
         
         region_1_bo_chosen <- region_1_bo
         region_2_bo_chosen <- region_2_bo
@@ -229,10 +233,10 @@ split_and_fit = function(region,
     new_region_1_obs = tail(region_1_bo_chosen$y, n = 1)
     if (new_region_1_obs < region_1_return$region_min) {
       region_1_return$region_min = new_region_1_obs
-      region_1_return$region_argmin = region_1_bo_chosen$x[nrow(region_1_bo$x), ]
+      region_1_return$region_argmin = region_1_bo_chosen$x[nrow(region_1_bo_chosen$x), ]
       if (new_region_1_obs < best_y_so_far) {
         best_y_so_far = new_region_1_obs
-        where_best_y_so_far = region_1_bo_chosen$x[nrow(region_1_bo$x), ]
+        where_best_y_so_far = region_1_bo_chosen$x[nrow(region_1_bo_chosen$x), ]
       }
     }
     region_1_return$region_a_max <- region_1_bo_chosen$ac_val_track
@@ -242,10 +246,10 @@ split_and_fit = function(region,
     new_region_2_obs = tail(region_2_bo_chosen$y, n = 1)
     if (new_region_2_obs < region_2_return$region_min) {
       region_2_return$region_min = new_region_2_obs
-      region_2_return$region_argmin = region_2_bo_chosen$x[nrow(region_2_bo$x), ]
+      region_2_return$region_argmin = region_2_bo_chosen$x[nrow(region_2_bo_chosen$x), ]
       if (new_region_2_obs < best_y_so_far) {
         best_y_so_far = new_region_2_obs
-        where_best_y_so_far = region_2_bo_chosen$x[nrow(region_2_bo$x), ]
+        where_best_y_so_far = region_2_bo_chosen$x[nrow(region_2_bo_chosen$x), ]
       }
     }
     region_2_return$region_a_max <- region_2_bo_chosen$ac_val_track

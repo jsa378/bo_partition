@@ -29,7 +29,7 @@ num_obs = 100
 num_runs = 10
 n_max_param <- 25
 tol_param <- 0.1
-split_crit_param <- "avg"
+split_crit_param <- "avg" # or "y_min - a_max"
 save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 # source("/home/jsa378/bo_partition/code/test_funcs.R")
