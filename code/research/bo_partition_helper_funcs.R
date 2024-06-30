@@ -263,8 +263,6 @@ split_and_fit = function(region,
               best_so_far = best_so_far_vec
               )
   )
-  # the two regions this function returns
-  # need to be added to our list of candidate regions
 }
 
 explore_region <- function(region,
@@ -272,8 +270,8 @@ explore_region <- function(region,
                            where_best_y_so_far,
                            run_obs_vec,
                            best_so_far_vec,
-                           n_max = 10,
-                           tol = 1,
+                           n_max = 10 * dim,
+                           tol = 0.1,
                            split_crit = "avg") {
   region_x = region$region_x
   region_y = region$region_y
@@ -327,11 +325,6 @@ explore_region <- function(region,
 
     if (a_max < tol) {
       
-      # i should prepare the updated region and return it
-      # and return the smallest y value, i think
-      # and remove this region from my list of promising regions
-      # my dice_loop.R might be helpful for the last part
-      
       return(list(region = region,
                   best_y = best_y_so_far,
                   where_best_y = where_best_y_so_far,
@@ -345,7 +338,7 @@ explore_region <- function(region,
   # the while loop completed, so now
   # we need to split the region into 2 subregions
   
-  print("n_max limit met; splitting region")
+  print("n_max limit met; splitting region.")
   
   new_subregions = split_and_fit(region = region,
                                  best_y_so_far = best_y_so_far,
@@ -353,9 +346,6 @@ explore_region <- function(region,
                                  run_obs_vec = run_obs_vec,
                                  best_so_far_vec = best_so_far_vec,
                                  split_crit = split_crit)
-  
-  # I need to re-bind run_obs_vec and best_so_far_vec
-  # and return the updated values below
   
   new_subregion_1 = new_subregions$region_1
   new_subregion_2 = new_subregions$region_2

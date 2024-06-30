@@ -2,14 +2,17 @@ library(GaSP)
 library(EGOmod)
 
 # args <- commandArgs(trailingOnly = TRUE)
-# if (length(args) < 7) {
-#   stop("Seven arguments must be supplied:
+# if (length(args) < 10) {
+#   stop("Ten arguments must be supplied:
 #   seed value (int),
 #   test function (string),
 #   dim (int),
 #   num init obs (int),
 #   num obs (int),
 #   num runs (int),
+#   n_max_param (int),
+#   tol_param (float),
+#   split_crit_param (string),
 #   save dir (no type)", call. = FALSE)
 # }
 # 
@@ -19,7 +22,10 @@ library(EGOmod)
 # num_init_obs <- as.integer(args[4])
 # num_obs <- as.integer(args[5])
 # num_runs <- as.integer(args[6])
-# save_dir <- as.character(args[7])
+# n_max_param <- as.integer(args[7])
+# tol_param <- as.numeric(args[8])
+# split_crit_param <- args[9]
+# save_dir <- as.character(args[10])
 
 seed_value = 1
 test_func_name = "rastr"
@@ -29,8 +35,8 @@ num_obs = 100
 num_runs = 10
 n_max_param <- 25
 tol_param <- 0.1
-# split_crit_param <- "avg"
-split_crit_param <- "y_min_minus_a_max"
+split_crit_param <- "avg"
+# split_crit_param <- "y_min_minus_a_max"
 save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 # source("/home/jsa378/bo_partition/code/test_funcs.R")
@@ -187,27 +193,31 @@ while (length(all_regions) > 0) {
   # I need explore_region to return updated run_obs and best_so_far
   # and then I need to re-bind run_obs and best_so_far to those updated vectors
   
+  all_regions = all_regions[-index_of_region_to_explore]
   run_obs <- results$run_obs
   best_so_far <- results$best_so_far
+  smallest_y_so_far = results$best_y
+  where_smallest_y_so_far = results$where_best_y
   
   if (results$split_called == 0) {
-    print("Region rejected, split not called")
+    print("Region rejected, split not called.")
     rejected_regions = c(rejected_regions, list(results$region))
-    all_regions = all_regions[-index_of_region_to_explore]
-    smallest_y_so_far = results$best_y
-    where_smallest_y_so_far = results$where_best_y
+    # all_regions = all_regions[-index_of_region_to_explore]
+    # smallest_y_so_far = results$best_y
+    # where_smallest_y_so_far = results$where_best_y
   } else if (results$split_called == 1) {
-    all_regions = all_regions[-index_of_region_to_explore]
+    print("Region split.")
+    # all_regions = all_regions[-index_of_region_to_explore]
     new_region_1 = results$new_region_1
     new_region_2 = results$new_region_2
-    print("Region split; first new region:")
+    print("First new subregion:")
     print(new_region_1)
-    print("second new region:")
+    print("Second new subregion:")
     print(new_region_2)
     
     all_regions = c(all_regions, list(new_region_1, new_region_2))
-    smallest_y_so_far = results$best_y
-    where_smallest_y_so_far = results$where_best_y
+    # smallest_y_so_far = results$best_y
+    # where_smallest_y_so_far = results$where_best_y
   }
 }
 
