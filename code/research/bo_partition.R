@@ -29,7 +29,8 @@ num_obs = 100
 num_runs = 10
 n_max_param <- 25
 tol_param <- 0.1
-split_crit_param <- "avg" # or "y_min - a_max"
+# split_crit_param <- "avg"
+split_crit_param <- "y_min_minus_a_max"
 save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 # source("/home/jsa378/bo_partition/code/test_funcs.R")
@@ -90,7 +91,8 @@ ctrl <- EGO.control(
   print_level = 0
 )
 start <- Sys.time()
-sink(file = "/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
+sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test_%s.txt", split_crit_param)
+sink(file = sink_file)
 
 init_points <- read.table(
   # file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
@@ -156,6 +158,7 @@ while (length(all_regions) > 0) {
   region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
   n_obs = min(which(is.na(run_obs))) - 1
   if ( n_obs >= n_tot ) {
+    print("Total observation budget reached; terminating.")
     break
   }
   for (region_index in 1:length(all_regions)){
@@ -208,19 +211,22 @@ while (length(all_regions) > 0) {
   }
 }
 
-print("List of promising regions empty; terminating.")
+if (length(all_regions) == 0) {
+  print("List of promising regions empty; terminating.")
+}
+
 print("Best y observed:")
 print(smallest_y_so_far)
 print("at location:")
 print(where_smallest_y_so_far)
 
 write.table(run_obs,
-            file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+            file = sprintf("%sbo_partition_seed_%s_obs_%s.csv", save_dir, seed_value, split_crit_param),
             row.names = FALSE,
             col.names = FALSE
 )
 write.table(best_so_far,
-            file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+            file = sprintf("%sbo_partition_seed_%s_best_so_far_%s.csv", save_dir, seed_value, split_crit_param),
             row.names = FALSE,
             col.names = FALSE
 )

@@ -33,7 +33,7 @@ split_and_fit = function(region,
         split_region_2_y = region_2_y
       }
     }
-    if(split_crit == "y_min - a_max") {
+    if(split_crit == "y_min_minus_a_max") {
       region_1 = region
       region_1$bound_matrix[d, 2] = med
       region_1$region_x = region_1_x
@@ -213,7 +213,7 @@ split_and_fit = function(region,
     region_2_return$region_a_max <- region_2_bo$ac_val_track
   }
   
-  if(split_crit == "y_min - a_max") {
+  if(split_crit == "y_min_minus_a_max") {
     first_NA_index <- min(which(is.na(run_obs_vec)))
     latest_obs <- tail(region_1_bo_chosen$y, n = 1)
     run_obs_vec[first_NA_index] <- latest_obs
