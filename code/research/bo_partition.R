@@ -34,9 +34,9 @@ num_init_obs = 20
 num_obs = 100
 num_runs = 10
 n_max_param <- 25
-tol_param <- 0.1
-split_crit_param <- "avg"
-# split_crit_param <- "y_min_minus_a_max"
+tol_param <- 0.1 # Should maybe try 0.01?
+# split_crit_param <- "avg"
+split_crit_param <- "y_min_minus_a_max"
 save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 # source("/home/jsa378/bo_partition/code/test_funcs.R")
@@ -141,8 +141,8 @@ first_NA_index <- min(which(is.na(run_obs)))
 latest_obs <- tail(init_bo$y, n = 1)
 run_obs[first_NA_index] <- latest_obs
 best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
-sprintf("New observation: %s", latest_obs)
-sprintf("Best so far: %s", best_so_far[first_NA_index])
+# sprintf("New observation: %s", latest_obs)
+# sprintf("Best so far: %s", best_so_far[first_NA_index])
 
 init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_x = init_bo$x,

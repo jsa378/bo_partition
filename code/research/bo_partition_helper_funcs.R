@@ -168,7 +168,7 @@ split_and_fit = function(region,
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
     print(sprintf("New observation in first new subregion: %s", latest_obs))
-    print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
     region_2_bo <- EGO(
       fun = test_func,
@@ -184,7 +184,7 @@ split_and_fit = function(region,
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
     print(sprintf("New observation in second new subregion: %s", latest_obs))
-    print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
     region_1_return$region_x <- region_1_bo$x
     region_1_return$region_y <- region_1_bo$y
@@ -195,6 +195,8 @@ split_and_fit = function(region,
       if (new_region_1_obs < best_y_so_far) {
         best_y_so_far = new_region_1_obs
         where_best_y_so_far = region_1_bo$x[nrow(region_1_bo$x), ]
+        print(sprintf("New best: %s", best_y_so_far))
+        print(sprintf("Recorded at: %s", where_best_y_so_far))
       }
     }
     region_1_return$region_a_max <- region_1_bo$ac_val_track
@@ -208,6 +210,8 @@ split_and_fit = function(region,
       if (new_region_2_obs < best_y_so_far) {
         best_y_so_far = new_region_2_obs
         where_best_y_so_far = region_2_bo$x[nrow(region_2_bo$x), ]
+        print(sprintf("New best: %s", best_y_so_far))
+        print(sprintf("Recorded at: %s", where_best_y_so_far))
       }
     }
     region_2_return$region_a_max <- region_2_bo$ac_val_track
@@ -219,14 +223,14 @@ split_and_fit = function(region,
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
     print(sprintf("New observation in first new subregion: %s", latest_obs))
-    print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
 
     first_NA_index <- min(which(is.na(run_obs_vec)))
     latest_obs <- tail(region_2_bo_chosen$y, n = 1)
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
     print(sprintf("New observation in second new subregion: %s", latest_obs))
-    print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
     region_1_return$region_x <- region_1_bo_chosen$x
     region_1_return$region_y <- region_1_bo_chosen$y
@@ -237,6 +241,8 @@ split_and_fit = function(region,
       if (new_region_1_obs < best_y_so_far) {
         best_y_so_far = new_region_1_obs
         where_best_y_so_far = region_1_bo_chosen$x[nrow(region_1_bo_chosen$x), ]
+        print(sprintf("New best: %s", best_y_so_far))
+        print(sprintf("Recorded at: %s", where_best_y_so_far))
       }
     }
     region_1_return$region_a_max <- region_1_bo_chosen$ac_val_track
@@ -250,6 +256,8 @@ split_and_fit = function(region,
       if (new_region_2_obs < best_y_so_far) {
         best_y_so_far = new_region_2_obs
         where_best_y_so_far = region_2_bo_chosen$x[nrow(region_2_bo_chosen$x), ]
+        print(sprintf("New best: %s", best_y_so_far))
+        print(sprintf("Recorded at: %s", where_best_y_so_far))
       }
     }
     region_2_return$region_a_max <- region_2_bo_chosen$ac_val_track
@@ -305,7 +313,7 @@ explore_region <- function(region,
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
     print(sprintf("New observation: %s", latest_obs))
-    print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
     new_observed_y = tail(region_y, n = 1)
     if (new_observed_y < region$region_min) {
@@ -314,6 +322,8 @@ explore_region <- function(region,
       if (new_observed_y < best_y_so_far) {
         best_y_so_far = new_observed_y
         where_best_y_so_far = region_x[n, ]
+        print(sprintf("New best: %s", best_y_so_far))
+        print(sprintf("Recorded at: %s", where_best_y_so_far))
       }
     }
     a_max = bo$ac_val_track
