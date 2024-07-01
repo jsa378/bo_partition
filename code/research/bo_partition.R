@@ -1,49 +1,49 @@
 library(GaSP)
 library(EGOmod)
 
-# args <- commandArgs(trailingOnly = TRUE)
-# if (length(args) < 10) {
-#   stop("Ten arguments must be supplied:
-#   seed value (int),
-#   test function (string),
-#   dim (int),
-#   num init obs (int),
-#   num obs (int),
-#   num runs (int),
-#   n_max_param (int),
-#   tol_param (float),
-#   split_crit_param (string),
-#   save dir (no type)", call. = FALSE)
-# }
-# 
-# seed_value <- as.integer(args[1])
-# test_func_name <- args[2]
-# dim <- as.integer(args[3])
-# num_init_obs <- as.integer(args[4])
-# num_obs <- as.integer(args[5])
-# num_runs <- as.integer(args[6])
-# n_max_param <- as.integer(args[7])
-# tol_param <- as.numeric(args[8])
-# split_crit_param <- args[9]
-# save_dir <- as.character(args[10])
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) < 10) {
+  stop("Ten arguments must be supplied:
+  seed value (int),
+  test function (string),
+  dim (int),
+  num init obs (int),
+  num obs (int),
+  num runs (int),
+  n_max_param (int),
+  tol_param (float),
+  split_crit_param (string),
+  save dir (no type)", call. = FALSE)
+}
 
-seed_value = 1
-test_func_name = "rastr"
-dim = 2
-num_init_obs = 20
-num_obs = 100
-num_runs = 10
-n_max_param <- 25
-tol_param <- 0.1 # Should maybe try 0.01?
+seed_value <- as.integer(args[1])
+test_func_name <- args[2]
+dim <- as.integer(args[3])
+num_init_obs <- as.integer(args[4])
+num_obs <- as.integer(args[5]) # This is my n_tot
+num_runs <- as.integer(args[6])
+n_max_param <- as.integer(args[7])
+tol_param <- as.numeric(args[8])
+split_crit_param <- args[9]
+save_dir <- as.character(args[10])
+
+# seed_value = 1
+# test_func_name = "rastr"
+# dim = 2
+# num_init_obs = 20
+# num_obs = 100
+# num_runs = 10
+# n_max_param <- 25
+# tol_param <- 0.1 # Should maybe try 0.01?
 # split_crit_param <- "avg"
-split_crit_param <- "y_min_minus_a_max"
-save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
+# split_crit_param <- "y_min_minus_a_max"
+# save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
-# source("/home/jsa378/bo_partition/code/test_funcs.R")
-# source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
+source("/home/jsa378/bo_partition/code/test_funcs.R")
+source("/home/jsa378/bo_partition/code/code/research/bo_partition_helper_funcs.R")
 
-source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
-source("/Users/jesse/Downloads/bo_partition/code/research/bo_partition_helper_funcs.R")
+# source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+# source("/Users/jesse/Downloads/bo_partition/code/research/bo_partition_helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
@@ -53,6 +53,7 @@ paste(c("Number of observations:", num_obs), collapse = " ")
 paste(c("Number of runs:", num_runs), collapse = " ")
 paste(c("n_max parameter:", n_max_param), collapse = " ")
 paste(c("tol parameter:", tol_param), collapse = " ")
+paste(c("split crit parameter:", split_crit_param), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
 
 set.seed(seed_value)
@@ -97,14 +98,14 @@ ctrl <- EGO.control(
   print_level = 0
 )
 start <- Sys.time()
-sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test_%s.txt", split_crit_param)
-sink(file = sink_file)
+# sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test_%s.txt", split_crit_param)
+# sink(file = sink_file)
 
 init_points <- read.table(
-  # file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
-  #                test_func_name, dim, num_runs, num_init_obs, seed_value),
-  file = sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
                  test_func_name, dim, num_runs, num_init_obs, seed_value),
+  # file = sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  #                test_func_name, dim, num_runs, num_init_obs, seed_value),
   header = FALSE,
   sep = "",
   dec = "."
@@ -158,12 +159,10 @@ smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
 rejected_regions = list() # contains the regions that we've rejected
 
-n_tot = 100
-
 while (length(all_regions) > 0) {
   region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
   n_obs = min(which(is.na(run_obs))) - 1
-  if ( n_obs >= n_tot ) {
+  if ( n_obs >= num_obs ) {
     print("Total observation budget reached; terminating.")
     break
   }
@@ -242,6 +241,6 @@ write.table(best_so_far,
 )
 
 end <- Sys.time()
-sink(file = NULL)
+# sink(file = NULL)
 duration <- end - start
 print(duration)
