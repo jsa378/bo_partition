@@ -48,7 +48,7 @@ x_axis_step_size = step_size_dict[num_obs]
 x_axis = np.linspace(1, num_obs, num_obs)
 xtick_array = np.arange(0, num_obs + x_axis_step_size, step=x_axis_step_size)
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(40, 20), tight_layout=True)
-fig.suptitle(f'bo part, {test_func_name}, {num_init_obs} init obs, {num_obs} obs, {dim} dim, {num_array_jobs} runs')
+fig.suptitle(f'bo part, {split_crit}, {test_func_name}, {dim} dim, {num_init_obs} init obs, {num_obs} obs, {n_max} n_max, {tol} tol, {num_array_jobs} runs')
 ax1.set_title(f'raw obs')
 ax2.set_title(f'best obs so far')
 

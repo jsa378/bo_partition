@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-wjwelch    # replace this with your own account
-#SBATCH --mem-per-cpu=1000M      # memory; default unit is megabytes
+#SBATCH --mem-per-cpu=4000M      # memory; default unit is megabytes
 #SBATCH --array=1-10             # number of array jobs, inclusive
-#SBATCH --time=0-2:00           # time (DD-HH:MM)
+#SBATCH --time=3-00:00           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
@@ -14,10 +14,10 @@ SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="rastr"
 DIM=10
 NUM_INIT_OBS=40
-NUM_OBS=50 # 200
+NUM_OBS=200
 NUM_RUNS=10
 N_MAX=$(($DIM * 5))
-TOL=0.01
+TOL=0.1
 SPLIT_CRIT="y_min_minus_a_max"
 SAVE_DIR=/home/jsa378/scratch/bo_partition_${TEST_FUNC}_${DIM}_${NUM_INIT_OBS}_${NUM_OBS}_${NUM_RUNS}/
 NUM_ARRAY_JOBS=10

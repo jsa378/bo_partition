@@ -40,7 +40,7 @@ save_dir <- as.character(args[10])
 # save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
 
 source("/home/jsa378/bo_partition/code/test_funcs.R")
-source("/home/jsa378/bo_partition/code/code/research/bo_partition_helper_funcs.R")
+source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
 
 # source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
 # source("/Users/jesse/Downloads/bo_partition/code/research/bo_partition_helper_funcs.R")
@@ -63,8 +63,8 @@ x_names_arg <- character(0)
 for (d in 1:dim){
   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
 }
-run_obs <- matrix(data = NA, nrow = 1, ncol = num_obs)
-best_so_far <- matrix(data = NA, nrow = 1, ncol = num_obs)
+run_obs <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
+best_so_far <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -165,6 +165,22 @@ while (length(all_regions) > 0) {
   if ( n_obs >= num_obs ) {
     print("Total observation budget reached; terminating.")
     break
+  } else {
+    print(sprintf("Taken %s observations out of a total budget of %s; continuing.", n_obs, num_obs))
+    print("Saving partial progress.")
+    first_NA_index_partial <- min(which(is.na(run_obs)))
+    run_obs_partial <- run_obs[1:(first_NA_index_partial - 1)]
+    best_so_far_partial <- best_so_far[1:(first_NA_index_partial - 1)]
+    write.table(run_obs_partial,
+                file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
+    write.table(best_so_far_partial,
+                file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
   }
   for (region_index in 1:length(all_regions)){
     # n_obs = n_obs + nrow(all_regions[[region_index]]$region_x)
@@ -228,14 +244,18 @@ print("Best y observed:")
 print(smallest_y_so_far)
 print("at location:")
 print(where_smallest_y_so_far)
+first_NA_index <- min(which(is.na(run_obs)))
+run_obs <- run_obs[1:(first_NA_index - 1)]
+best_so_far <- best_so_far[1:(first_NA_index - 1)]
+print(sprintf("Used %s out of a total budget of %s observations.", length(run_obs), num_obs))
 
 write.table(run_obs,
-            file = sprintf("%sbo_partition_seed_%s_obs_%s.csv", save_dir, seed_value, split_crit_param),
+            file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
             row.names = FALSE,
             col.names = FALSE
 )
 write.table(best_so_far,
-            file = sprintf("%sbo_partition_seed_%s_best_so_far_%s.csv", save_dir, seed_value, split_crit_param),
+            file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
             row.names = FALSE,
             col.names = FALSE
 )

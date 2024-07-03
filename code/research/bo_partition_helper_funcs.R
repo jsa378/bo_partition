@@ -40,8 +40,8 @@ split_and_fit = function(region,
       region_1$region_y = region_1_y
       region_1$region_min = min(region_1_y)
       region_1$region_argmin = region_1_x[which.min(region_1_y), ]
-      print("Proposed region 1:")
-      print(region_1)
+      # print("Proposed region 1:") # The a_max value is inherited from "region", i.e. it hasn't been computed yet for this proposed subregion
+      # print(region_1)
       
       region_2 = region
       region_2$bound_matrix[d, 1] = med
@@ -49,8 +49,8 @@ split_and_fit = function(region,
       region_2$region_y = region_2_y
       region_2$region_min = min(region_2_y)
       region_2$region_argmin = region_2_x[which.min(region_2_y), ]
-      print("Proposed region 2:")
-      print(region_2)
+      # print("Proposed region 2:") # See comment above pertaining to propsed region 1
+      # print(region_2)
       
       region_1_descr <- DescribeX(
         x_names = x_names_arg,
