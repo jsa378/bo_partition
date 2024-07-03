@@ -1,5 +1,5 @@
 library(GaSP)
-library(EGOmod2)
+library(EGOmod)
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 7) {
@@ -22,7 +22,7 @@ num_runs <- as.integer(args[6])
 save_dir <- as.character(args[7])
 
 source("/home/jsa378/bo_partition/code/test_funcs.R")
-source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
+# source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
@@ -47,7 +47,7 @@ test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
 test_ubound_scalar <- test_func_list[[test_func_name]]$ubound_scalar
 test_lbound <- test_func_list[[test_func_name]]$lbound
 test_ubound <- test_func_list[[test_func_name]]$ubound
-plot_lims <- c(test_lbound_scalar, test_ubound_scalar)
+# plot_lims <- c(test_lbound_scalar, test_ubound_scalar)
 test_argmin <- test_func_list[[test_func_name]]$argmin
 
 paste(c("Test func. lower bound scalar:", test_lbound_scalar), collapse = " ")
@@ -68,7 +68,7 @@ ctrl <- EGO.control(
   rel_tol = 0,
   wait_iter = 10,
   acq_control = list(type = "EI"),
-  GaSP_control = list(cor_family = "Matern"),
+  GaSP_control = list(cor_family = "PowerExponential"),
   genoud_control = list(pop.size = 1024,
     max.generations = 100,
     wait.generations = 10,
@@ -88,11 +88,9 @@ init_points <- read.table(
 )
 
 init <- Initialize(
-  x_design = init_pts,
-  n_design = num_init_obs,
+  x_design = init_points,
   x_describe = descr,
-  fun = test_func,
-  n_rep = 0
+  fun = test_func
 )
 
 bo <- EGO(
@@ -110,12 +108,12 @@ for(obs in 1:num_obs){
 }
 
 write.table(run_obs,
-  file = sprintf("%sego_seed_%s_obs.csv", save_dir, seed_value),
+  file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
   row.names = FALSE,
   col.names = FALSE
 )
 write.table(best_so_far,
-  file = sprintf("%sego_seed_%s_best_so_far.csv", save_dir, seed_value),
+  file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
   row.names = FALSE,
   col.names = FALSE
 )

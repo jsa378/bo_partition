@@ -89,7 +89,7 @@ ctrl <- EGO.control(
   genoud_control = list(pop.size = 1024,
                         max.generations = 100,
                         hard.generation.limit = TRUE,
-                        wait.generations = 5,
+                        wait.generations = 10,
                         BFGSburnin = 5,
                         print.level = 0,
                         debug = FALSE,

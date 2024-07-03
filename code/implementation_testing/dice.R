@@ -1,5 +1,5 @@
 library(GaSP)
-library(EGOmod2)
+library(EGOmod)
 library(DiceOptim)
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -23,7 +23,7 @@ num_runs <- as.integer(args[6])
 save_dir <- as.character(args[7])
 
 source("/home/jsa378/bo_partition/code/test_funcs.R")
-source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
+# source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
@@ -40,15 +40,15 @@ x_names_arg <- character(0)
 for (d in 1:dim){
   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
 }
-run_obs <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
-best_so_far <- matrix(data = NA, nrow = num_runs, ncol = num_obs)
+run_obs <- matrix(data = NA, nrow = 1, ncol = num_obs)
+best_so_far <- matrix(data = NA, nrow = 1, ncol = num_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
 test_ubound_scalar <- test_func_list[[test_func_name]]$ubound_scalar
 test_lbound <- test_func_list[[test_func_name]]$lbound
 test_ubound <- test_func_list[[test_func_name]]$ubound
-plot_lims <- c(test_lbound_scalar, test_ubound_scalar)
+# plot_lims <- c(test_lbound_scalar, test_ubound_scalar)
 test_argmin <- test_func_list[[test_func_name]]$argmin
 
 paste(c("Test func. lower bound scalar:", test_lbound_scalar), collapse = " ")
@@ -82,20 +82,18 @@ init_points <- read.table(
 )
 
 init <- Initialize(
-  x_design = init_pts,
-  n_design = num_init_obs,
+  x_design = init_points,
   x_describe = descr,
-  fun = test_func,
-  n_rep = 0
+  fun = test_func
 )
 
 km_x <- init$x_design
 km_y <- init$y_design
 gp_model <- km(
-  ~1,
+  formula = ~1,
   design = km_x,
   response = km_y,
-  covtype = "matern5_2",
+  covtype = "powexp",
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
@@ -105,22 +103,21 @@ dice_bo <- EGO.nsteps(
   nsteps = num_obs,
   lower = test_lbound,
   upper = test_ubound,
-  control = dice_ctrl,
-  kmcontrol = NULL
+  control = dice_ctrl
 )
 
-run_obs[run, ] <- dice_bo$value
+run_obs <- dice_bo$value
 for(obs in 1:num_obs){
-  best_so_far[run, obs] = min(dice_bo$value[(1:obs)])
+  best_so_far[obs] <- min(dice_bo$value[(1:obs)])
 }
 
 write.table(run_obs,
-  file = sprintf("%sdice_seed_%s_obs.csv", save_dir, seed_value),
+  file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
   row.names = FALSE,
   col.names = FALSE
 )
 write.table(best_so_far,
-  file = sprintf("%sdice_seed_%s_best_so_far.csv", save_dir, seed_value),
+  file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
   row.names = FALSE,
   col.names = FALSE
 )

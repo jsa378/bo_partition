@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-wjwelch    # replace this with your own account
-#SBATCH --mem-per-cpu=1000M      # memory; default unit is megabytes
+#SBATCH --mem-per-cpu=4000M      # memory; default unit is megabytes
 #SBATCH --array=1-10             # number of array jobs, inclusive
 #SBATCH --time=0-01:00           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
@@ -14,9 +14,9 @@ SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="rastr"
 DIM=10
 NUM_INIT_OBS=40
-NUM_OBS=200
+NUM_OBS=10 # 200
 NUM_RUNS=10
-SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_${DIM}_${NUM_INIT_OBS}_${NUM_OBS}_${NUM_RUNS}/
+SAVE_DIR=/home/jsa378/scratch/ego_${TEST_FUNC}_${DIM}_${NUM_INIT_OBS}_${NUM_OBS}_${NUM_RUNS}/
 NUM_ARRAY_JOBS=10
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 2))
 
@@ -50,7 +50,7 @@ then
   source $SLURM_TMPDIR/env/bin/activate
   pip install --no-index --upgrade pip
   pip install --no-index -r /home/jsa378/python/plot_requirements.txt
-  python /home/jsa378/bo_partition/code/bo_runs/cedar_test_plots.py $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR $NUM_ARRAY_JOBS
+  python /home/jsa378/bo_partition/code/implementation_testing/plots.py $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR $NUM_ARRAY_JOBS
 else
   echo "This is not the last job, so we can't make the plots yet."
 fi
