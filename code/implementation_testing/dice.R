@@ -106,7 +106,7 @@ dice_bo <- EGO.nsteps(
   control = dice_ctrl
 )
 
-run_obs <- dice_bo$value
+run_obs[1, ] <- dice_bo$value
 for(obs in 1:num_obs){
   best_so_far[obs] <- min(dice_bo$value[(1:obs)])
 }

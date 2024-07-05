@@ -44,7 +44,12 @@ all_obs = np.zeros((num_array_jobs, num_obs))
 all_best = np.zeros((num_array_jobs, num_obs))
 
 for seed in range(1, num_array_jobs + 1):
+   # obs_row = pd.read_csv(f'{save_dir}seed_{seed}_obs.csv', header=None, dtype=float, sep='\s+').to_numpy()
+   # all_obs[seed - 1, :] = np.reshape(obs_row, (num_obs,))
    all_obs[seed - 1, :] = pd.read_csv(f'{save_dir}seed_{seed}_obs.csv', header=None, dtype=float, sep='\s+').to_numpy()
+
+   # best_row = pd.read_csv(f'{save_dir}seed_{seed}_best_so_far.csv', header=None, dtype=float, sep='\s+').to_numpy()
+   # all_best[seed - 1, :] = np.reshape(best_row, (num_obs,))
    all_best[seed - 1, :] = pd.read_csv(f'{save_dir}seed_{seed}_best_so_far.csv', header=None, dtype=float, sep='\s+').to_numpy()
 
 global_min = test_func_dicts[test_func_name]['global_min']

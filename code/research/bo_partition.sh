@@ -7,6 +7,7 @@
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
 
+ulimit -c unlimited
 module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 

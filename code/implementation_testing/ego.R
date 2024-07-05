@@ -102,7 +102,7 @@ bo <- EGO(
   control = ctrl
 )
 
-run_obs <- bo$y[-(1:num_init_obs)]
+run_obs[1, ] <- bo$y[-(1:num_init_obs)]
 for(obs in 1:num_obs){
   best_so_far[obs] <- min(bo$y[-(1:num_init_obs)][(1:obs)])
 }
