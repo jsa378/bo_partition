@@ -10,10 +10,11 @@ dump_and_quit <- function() {
 options(error = dump_and_quit)
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 10) {
-  stop("Ten arguments must be supplied:
+if (length(args) < 11) {
+  stop("Eleven arguments must be supplied:
   seed value (int),
   test function (string),
+  r package (string),
   dim (int),
   num init obs (int),
   num obs (int),
@@ -26,14 +27,15 @@ if (length(args) < 10) {
 
 seed_value <- as.integer(args[1])
 test_func_name <- args[2]
-dim <- as.integer(args[3])
-num_init_obs <- as.integer(args[4])
-num_obs <- as.integer(args[5]) # This is my n_tot
-num_runs <- as.integer(args[6])
-n_max_param <- as.integer(args[7])
-tol_param <- as.numeric(args[8])
-split_crit_param <- args[9]
-save_dir <- as.character(args[10])
+r_package <- args[3]
+dim <- as.integer(args[4])
+num_init_obs <- as.integer(args[5])
+num_obs <- as.integer(args[6]) # This is my n_tot
+num_runs <- as.integer(args[7])
+n_max_param <- as.integer(args[8])
+tol_param <- as.numeric(args[9])
+split_crit_param <- args[10]
+save_dir <- as.character(args[11])
 
 # seed_value = 1
 # test_func_name = "rastr"
@@ -55,6 +57,7 @@ source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
+paste(c("R package:", r_package), collapse = " ")
 paste(c("Dimension:", dim), collapse = " ")
 paste(c("Number of initial observations:", num_init_obs), collapse = " ")
 paste(c("Number of observations:", num_obs), collapse = " ")
@@ -73,6 +76,7 @@ for (d in 1:dim){
 }
 run_obs <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
 best_so_far <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
+first_NA_index <- min(which(is.na(run_obs)))
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -88,23 +92,6 @@ paste(c("Test func. lower bound vector:", test_lbound), collapse = " ")
 paste(c("Test func. upper bound vector:", test_ubound), collapse = " ")
 paste(c("Test func. argmin:", test_argmin), collapse = " ")
 
-ctrl <- EGO.control(
-  alg = "genoud",
-  rel_tol = 0,
-  wait_iter = 10,
-  acq_control = list(type = "EI"),
-  GaSP_control = list(cor_family = "PowerExponential"),
-  genoud_control = list(pop.size = 1024,
-                        max.generations = 100,
-                        hard.generation.limit = TRUE,
-                        wait.generations = 10,
-                        BFGSburnin = 5,
-                        print.level = 0,
-                        debug = FALSE,
-                        trace = FALSE
-  ),
-  print_level = 0
-)
 start <- Sys.time()
 # sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test_%s.txt", split_crit_param)
 # sink(file = sink_file)
@@ -118,8 +105,6 @@ init_points <- read.table(
   sep = "",
   dec = "."
 )
-
-
 
 # run_obs[run, ] <- bo$y[-(1:num_init_obs)]
 # for(obs in 1:num_obs){
@@ -137,31 +122,102 @@ init <- Initialize(
   x_describe = descr,
   fun = test_func
 )
-init_bo <- EGO(
-  fun = test_func,
-  reg_model = ~1,
-  ego_init = init,
-  x_describe = descr,
-  nsteps = 1,
-  control = ctrl
-)
 
-first_NA_index <- min(which(is.na(run_obs)))
-latest_obs <- tail(init_bo$y, n = 1)
-run_obs[first_NA_index] <- latest_obs
-best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
-# sprintf("New observation: %s", latest_obs)
-# sprintf("Best so far: %s", best_so_far[first_NA_index])
+if (r_package == "dice") {
+  dice_ctrl <- list(
+  pop.size = 1024,
+  max.generations = 100,
+  wait.generations = 10,
+  BFGSburnin = 5
+  )
 
-init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
+  km_x <- init$x_design
+  km_y <- init$y_design
+  gp_model <- km(
+    formula = ~1,
+    design = km_x,
+    response = km_y,
+    covtype = "powexp",
+    control = c(dice_ctrl, trace = FALSE),
+    optim.method = "gen"
+  )
+
+  acq_func_max <- max_EI(
+    model = gp_model,
+    type = "UK",
+    lower  = test_lbound,
+    upper = test_ubound,
+    control = dice_ctrl
+  )
+
+  # dice_bo <- EGO.nsteps(
+  #   model = gp_model,
+  #   fun = test_func,
+  #   nsteps = 1,
+  #   lower = test_lbound,
+  #   upper = test_ubound,
+  #   control = dice_ctrl
+  # )
+
+  latest_obs <- test_func(acq_func_max$par)
+  run_obs[first_NA_index] <- latest_obs
+  best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
+
+  init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
+                  region_x = rbind(init$x_design, acq_func_max$par),
+                  region_y = c(init$y_design, test_func(acq_func_max$par)),
+                  region_min = min(c(init$y_design, test_func(acq_func_max$par))),
+                  region_argmin = rbind(init$x_design, acq_func_max$par)[which.min(c(init$y_design, test_func(acq_func_max$par))), ],
+                  region_a_max = acq_func_max$value
+  )
+
+} else if (r_package == "ego") {
+
+  ctrl <- EGO.control(
+  alg = "genoud",
+  rel_tol = 0,
+  wait_iter = 10,
+  acq_control = list(type = "EI"),
+  GaSP_control = list(cor_family = "PowerExponential"),
+  genoud_control = list(pop.size = 1024,
+                        max.generations = 100,
+                        hard.generation.limit = TRUE,
+                        wait.generations = 10,
+                        BFGSburnin = 5,
+                        print.level = 0,
+                        debug = FALSE,
+                        trace = FALSE
+  ),
+  print_level = 0
+  )
+
+  init_bo <- EGO(
+    fun = test_func,
+    reg_model = ~1,
+    ego_init = init,
+    x_describe = descr,
+    nsteps = 1,
+    control = ctrl
+  )
+
+  latest_obs <- tail(init_bo$y, n = 1)
+  run_obs[first_NA_index] <- latest_obs
+  best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
+
+  init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_x = init_bo$x,
                    region_y = init_bo$y,
                    region_min = min(init_bo$y),
                    region_argmin = init_bo$x[which.min(init_bo$y), ],
                    region_a_max = init_bo$ac_val_track
-)
-# print("Initial region:")
-# print(init_region)
+  )
+}
+
+sprintf("New observation: %s", latest_obs)
+sprintf("Best so far: %s", best_so_far[first_NA_index])
+
+print("Initial region:")
+print(init_region)
 all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
 smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
