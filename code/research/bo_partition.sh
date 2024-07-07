@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-wjwelch    # replace this with your own account
 #SBATCH --mem-per-cpu=4000M      # memory; default unit is megabytes
-#SBATCH --array=1-1             # number of array jobs, inclusive
-#SBATCH --time=0-02:00           # time (DD-HH:MM)
+#SBATCH --array=1-10             # number of array jobs, inclusive
+#SBATCH --time=3-00:00           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
@@ -13,16 +13,16 @@ module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc mo
 
 SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="rastr"
-R_PACKAGE="ego"
-DIM=2
-NUM_INIT_OBS=20
-NUM_OBS=100
+R_PACKAGE="dice"
+DIM=10
+NUM_INIT_OBS=40
+NUM_OBS=200
 NUM_RUNS=10
-N_MAX=25 # $(($DIM * 5))
+N_MAX=$(($DIM * 5))
 TOL=0.1
 SPLIT_CRIT="y_min_minus_a_max"
 SAVE_DIR=/home/jsa378/scratch/bo_partition_${TEST_FUNC}_${R_PACKAGE}_${DIM}_${NUM_INIT_OBS}_${NUM_OBS}_${NUM_RUNS}/
-NUM_ARRAY_JOBS=1
+NUM_ARRAY_JOBS=10
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 2))
 
 printf "The current job ID is: $SLURM_JOB_ID\n"

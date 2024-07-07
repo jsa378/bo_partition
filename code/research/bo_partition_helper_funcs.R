@@ -63,7 +63,8 @@ split_and_fit = function(region,
           formula = ~1,
           design = region_1_km_x,
           response = region_1_km_y,
-          covtype = "powexp",
+          covtype = "matern5_2", # "powexp",
+	  # nugget = 1e-09,
           control = c(dice_ctrl, trace = FALSE),
           optim.method = "gen"
           )
@@ -83,7 +84,8 @@ split_and_fit = function(region,
           formula = ~1,
           design = region_2_km_x,
           response = region_2_km_y,
-          covtype = "powexp",
+          covtype = "matern5_2", # "powexp",
+	  # nugget = 1e-09,
           control = c(dice_ctrl, trace = FALSE),
           optim.method = "gen"
           )
@@ -417,7 +419,8 @@ explore_region <- function(region,
         formula = ~1,
         design = km_x,
         response = km_y,
-        covtype = "powexp",
+        covtype = "matern5_2", # "powexp",
+	# nugget = 1e-09,
         control = c(dice_ctrl, trace = FALSE),
         optim.method = "gen"
       )

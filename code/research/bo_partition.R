@@ -1,13 +1,6 @@
 library(GaSP)
 library(EGOmod)
-
-dump_and_quit <- function() {
-  # Save debugging info to file last.dump.rda
-  dump.frames(to.file = TRUE)
-  # Quit R with error status
-  q(status = 1)
-}
-options(error = dump_and_quit)
+library(DiceOptim)
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 11) {
@@ -48,6 +41,14 @@ save_dir <- as.character(args[11])
 # split_crit_param <- "avg"
 # split_crit_param <- "y_min_minus_a_max"
 # save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
+
+dump_and_quit <- function() {
+  # Save debugging info to file last.dump.rda
+  dump.frames(dumpto = sprintf("last.dump.%s", seed_value), to.file = TRUE)
+  # Quit R with error status
+  q(status = 1)
+}
+options(error = dump_and_quit)
 
 source("/home/jsa378/bo_partition/code/test_funcs.R")
 source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
@@ -137,7 +138,8 @@ if (r_package == "dice") {
     formula = ~1,
     design = km_x,
     response = km_y,
-    covtype = "powexp",
+    covtype = "matern5_2", # "powexp",
+    # nugget = 1e-09,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )
