@@ -3,8 +3,8 @@ library(EGOmod)
 library(DiceOptim)
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 11) {
-  stop("Eleven arguments must be supplied:
+if (length(args) < 12) {
+  stop("Twelve arguments must be supplied:
   seed value (int),
   test function (string),
   r package (string),
@@ -15,7 +15,8 @@ if (length(args) < 11) {
   n_max_param (int),
   tol_param (float),
   split_crit_param (string),
-  save dir (no type)", call. = FALSE)
+  save dir (no type),
+  slurm job id (int)", call. = FALSE)
 }
 
 seed_value <- as.integer(args[1])
@@ -29,6 +30,7 @@ n_max_param <- as.integer(args[8])
 tol_param <- as.numeric(args[9])
 split_crit_param <- args[10]
 save_dir <- as.character(args[11])
+slurm_job_id <- as.integer(args[12])
 
 # seed_value = 1
 # test_func_name = "rastr"
@@ -44,7 +46,7 @@ save_dir <- as.character(args[11])
 
 dump_and_quit <- function() {
   # Save debugging info to file last.dump.rda
-  dump.frames(dumpto = sprintf("last.dump.%s", seed_value), to.file = TRUE)
+  dump.frames(dumpto = sprintf("last.dump%s", slurm_job_id), to.file = TRUE)
   # Quit R with error status
   q(status = 1)
 }

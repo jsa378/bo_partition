@@ -36,7 +36,7 @@ else
   echo "The save directory $SAVE_DIR exists, so we don't need to create it."
 fi
 
-Rscript /home/jsa378/bo_partition/code/research/bo_partition.R $SEED $TEST_FUNC $R_PACKAGE $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $N_MAX $TOL $SPLIT_CRIT $SAVE_DIR
+Rscript /home/jsa378/bo_partition/code/research/bo_partition.R $SEED $TEST_FUNC $R_PACKAGE $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $N_MAX $TOL $SPLIT_CRIT $SAVE_DIR $SLURM_JOB_ID
 
 NUM_FILES=$(find $SAVE_DIR -type f -name '*.csv' | wc -l)
 if [ "$NUM_FILES" -eq "$NUM_CSVS" ]
