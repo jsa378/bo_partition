@@ -3,7 +3,8 @@ split_and_fit = function(region,
                          where_best_y_so_far,
                          run_obs_vec,
                          best_so_far_vec,
-                         split_crit) {
+                         split_crit,
+                         range_tol = 1e-3) {
   print(sprintf("Beginning split_and_fit"))
   region_x = region$region_x
   region_y = region$region_y
@@ -18,6 +19,16 @@ split_and_fit = function(region,
     region_1_y = region_y[which(region_x[, d] < med)]
     region_2_x = region_x[region_x[, d] >= med, ]
     region_2_y = region_y[which(region_x[, d] >= med)]
+    
+    region_1_x_split_dim_range <- max(region_1_x[, d]) - min(region_1_x[, d])
+    region_2_x_split_dim_range <- max(region_2_x[, d]) - min(region_2_x[, d])
+    
+    if(region_1_x_split_dim_range <= range_tol | region_2_x_split_dim_range <= range_tol) {
+      print(sprintf("One of region_1_split_dim_range (%s) or region_2_split_dim_range (%s) is <= range_tol (%s)",
+                    region_1_x_split_dim_range, region_2_x_split_dim_range, range_tol))
+      print(sprintf("Therefore we are going to not going to consider splitting on dimension %s", d))
+      next
+    }
     
     if(split_crit == "avg") {
       region_1_y_avg = mean(region_1_y)
@@ -63,8 +74,8 @@ split_and_fit = function(region,
           formula = ~1,
           design = region_1_km_x,
           response = region_1_km_y,
-          covtype = "matern5_2", # "powexp",
-	  # nugget = 1e-09,
+          covtype = "powexp", # "matern5_2",
+          nugget = 1e-09,
           control = c(dice_ctrl, trace = FALSE),
           optim.method = "gen"
           )
@@ -84,8 +95,8 @@ split_and_fit = function(region,
           formula = ~1,
           design = region_2_km_x,
           response = region_2_km_y,
-          covtype = "matern5_2", # "powexp",
-	  # nugget = 1e-09,
+          covtype = "powexp", # "matern5_2",
+          nugget = 1e-09,
           control = c(dice_ctrl, trace = FALSE),
           optim.method = "gen"
           )
@@ -419,8 +430,8 @@ explore_region <- function(region,
         formula = ~1,
         design = km_x,
         response = km_y,
-        covtype = "matern5_2", # "powexp",
-	# nugget = 1e-09,
+        covtype = "powexp", # "matern5_2",
+        nugget = 1e-09,
         control = c(dice_ctrl, trace = FALSE),
         optim.method = "gen"
       )

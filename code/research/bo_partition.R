@@ -138,8 +138,8 @@ if (r_package == "dice") {
     formula = ~1,
     design = km_x,
     response = km_y,
-    covtype = "matern5_2", # "powexp",
-    # nugget = 1e-09,
+    covtype = "powexp", # "matern5_2",
+    nugget = 1e-09,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )
