@@ -50,7 +50,7 @@ dump_and_quit <- function() {
   # Quit R with error status
   q(status = 1)
 }
-options(error = dump_and_quit)
+options(error = dump_and_quit, CBoundsCheck = TRUE)
 
 source("/home/jsa378/bo_partition/code/test_funcs.R")
 source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
@@ -114,12 +114,14 @@ init_points <- read.table(
 #   best_so_far[run, obs] <- min(bo$y[-(1:num_init_obs)][(1:obs)])
 # }
 
+print(sprintf("Preparing descr"))
 descr <- DescribeX(
   x_names = x_names_arg,
   x_min = test_lbound,
   x_max = test_ubound,
   support = rep("Continuous", dim)
 )
+print(sprintf("Preparing init"))
 init <- Initialize(
   x_design = init_points,
   x_describe = descr,
@@ -136,6 +138,7 @@ if (r_package == "dice") {
 
   km_x <- init$x_design
   km_y <- init$y_design
+  print(sprintf("Fitting gp_model"))
   gp_model <- km(
     formula = ~1,
     design = km_x,
@@ -146,6 +149,7 @@ if (r_package == "dice") {
     optim.method = "gen"
   )
 
+  print(sprintf("Optimizing acq_func_max"))
   acq_func_max <- max_EI(
     model = gp_model,
     type = "UK",
@@ -195,6 +199,7 @@ if (r_package == "dice") {
   print_level = 0
   )
 
+  print(sprintf("Computing init_bo"))
   init_bo <- EGO(
     fun = test_func,
     reg_model = ~1,

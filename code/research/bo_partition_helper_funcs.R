@@ -415,6 +415,7 @@ explore_region <- function(region,
   region_y = region$region_y
   n = nrow(region_x)
   if (r_package == "ego") {
+    print(sprintf("Preparing descr"))
     descr <- DescribeX(
       x_names = x_names_arg,
       x_min = region$bound_matrix[, 1],
@@ -426,6 +427,7 @@ explore_region <- function(region,
     if (r_package == "dice") {
       km_x <- region_x
       km_y <- region_y
+      print(sprintf("Fitting gp_model"))
       gp_model <- km(
         formula = ~1,
         design = km_x,
@@ -435,6 +437,7 @@ explore_region <- function(region,
         control = c(dice_ctrl, trace = FALSE),
         optim.method = "gen"
       )
+      print(sprintf("Optimizing acq_func_max"))
       acq_func_max <- max_EI(
         model = gp_model,
         type = "UK",
@@ -447,11 +450,13 @@ explore_region <- function(region,
       region_y <- c(region_y, latest_obs)
       a_max <- acq_func_max$value
     } else if (r_package == "ego") {
+      print(sprintf("Preparing init"))
       init <- Initialize(
       x_design = region_x,
       x_describe = descr,
       fun = test_func
       )
+      print(sprintf("Computing bo"))
       bo <- EGO(
         fun = test_func,
         reg_model = ~1,
