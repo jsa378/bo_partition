@@ -3,6 +3,7 @@ split_and_fit = function(region,
                          where_best_y_so_far,
                          run_obs_vec,
                          best_so_far_vec,
+                         ei_vals_vec,
                          split_crit,
                          range_tol = 1e-3) {
   start <- Sys.time()
@@ -300,27 +301,33 @@ split_and_fit = function(region,
   }
   
   if(split_crit == "y_min_minus_a_max") {
-    print(sprintf("Updating run_obs_vec and best_so_far_vec with region 1 observation"))
+    print(sprintf("Updating run_obs_vec, best_so_far_vec and ei_vals_vec with region 1 observation"))
     first_NA_index <- min(which(is.na(run_obs_vec)))
     if (r_package == "dice") {
       latest_obs <- test_func(region_1_ei_argmax)
+      ei_val_reg_1 <- region_1_a_max
     } else if (r_package == "ego") {
       latest_obs <- tail(region_1_bo_chosen$y, n = 1)
+      ei_val_reg_1 <- region_1_bo_chosen$ac_val_track
     }
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+    ei_vals_vec[first_NA_index] <- ei_val_reg_1
     print(sprintf("New observation in first new subregion: %s", latest_obs))
     # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
 
-    print(sprintf("Updating run_obs_vec and best_so_far_vec with region 2 observation"))
+    print(sprintf("Updating run_obs_vec, best_so_far_vec and ei_vals_vec with region 2 observation"))
     first_NA_index <- min(which(is.na(run_obs_vec)))
     if (r_package == "dice") {
       latest_obs <- test_func(region_2_ei_argmax)
+      ei_val_reg_2 <- region_2_a_max
     } else if (r_package == "ego") {
       latest_obs <- tail(region_2_bo_chosen$y, n = 1)
+      ei_val_reg_2 <- region_2_bo_chosen$ac_val_track
     }
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+    ei_vals_vec[first_NA_index] <- ei_val_reg_2
     print(sprintf("New observation in second new subregion: %s", latest_obs))
     # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
    
@@ -402,7 +409,8 @@ split_and_fit = function(region,
               new_best_y = best_y_so_far,
               where_new_best_y = where_best_y_so_far,
               run_obs = run_obs_vec,
-              best_so_far = best_so_far_vec
+              best_so_far = best_so_far_vec,
+              ei_vals = ei_vals_vec
               )
   )
 }
@@ -412,6 +420,7 @@ explore_region <- function(region,
                            where_best_y_so_far,
                            run_obs_vec,
                            best_so_far_vec,
+                           ei_vals_vec,
                            n_max = 10 * dim,
                            tol = 0.1,
                            split_crit = "avg") {
@@ -478,6 +487,7 @@ explore_region <- function(region,
     first_NA_index <- min(which(is.na(run_obs_vec)))
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+    ei_vals_vec[first_NA_index] <- a_max
     print(sprintf("New observation: %s", latest_obs))
     # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
@@ -505,6 +515,7 @@ explore_region <- function(region,
                   where_best_y = where_best_y_so_far,
                   run_obs = run_obs_vec,
                   best_so_far = best_so_far_vec,
+                  ei_vals = ei_vals_vec,
                   split_called = 0)
       )
     }
@@ -520,6 +531,7 @@ explore_region <- function(region,
                                  where_best_y_so_far = where_best_y_so_far,
                                  run_obs_vec = run_obs_vec,
                                  best_so_far_vec = best_so_far_vec,
+                                 ei_vals_vec = ei_vals_vec,
                                  split_crit = split_crit)
   
   new_subregion_1 = new_subregions$region_1
@@ -528,6 +540,7 @@ explore_region <- function(region,
   where_new_best_y = new_subregions$where_new_best_y
   run_obs_vec <- new_subregions$run_obs
   best_so_far_vec <- new_subregions$best_so_far
+  ei_vals_vec <- new_subregions$ei_vals
   
   return(list(new_region_1 = new_subregion_1,
               new_region_2 = new_subregion_2,
@@ -535,6 +548,7 @@ explore_region <- function(region,
               where_best_y = where_new_best_y,
               run_obs = run_obs_vec,
               best_so_far = best_so_far_vec,
+              ei_vals = ei_vals_vec,
               split_called = 1)
   )
 }

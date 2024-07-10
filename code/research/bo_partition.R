@@ -79,6 +79,7 @@ for (d in 1:dim){
 }
 run_obs <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
 best_so_far <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
+ei_vals <- matrix(data = NA, nrow = 1, ncol = 2 * num_obs)
 first_NA_index <- min(which(is.na(run_obs)))
 
 test_func <- test_func_list[[test_func_name]]$func
@@ -170,6 +171,7 @@ if (r_package == "dice") {
   latest_obs <- test_func(acq_func_max$par)
   run_obs[first_NA_index] <- latest_obs
   best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
+  ei_vals[first_NA_index] <- acq_func_max$value
 
   init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                   region_x = rbind(init$x_design, acq_func_max$par),
@@ -212,6 +214,7 @@ if (r_package == "dice") {
   latest_obs <- tail(init_bo$y, n = 1)
   run_obs[first_NA_index] <- latest_obs
   best_so_far[first_NA_index] <- min(run_obs[(1:first_NA_index)])
+  ei_vals[first_NA_index] <- init_bo$ac_val_track
 
   init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_x = init_bo$x,
@@ -244,17 +247,24 @@ while (length(all_regions) > 0) {
     first_NA_index_partial <- min(which(is.na(run_obs)))
     run_obs_partial <- matrix(data = NA, nrow = 1, ncol = first_NA_index_partial - 1)
     best_so_far_partial  <- matrix(data = NA, nrow = 1, ncol = first_NA_index_partial - 1)
+    ei_vals_partial <- matrix(data = NA, nrow = 1, ncol = first_NA_index_partial - 1)
     run_obs_partial[1:(first_NA_index_partial - 1)] <- run_obs[1:(first_NA_index_partial - 1)]
     best_so_far_partial[1:(first_NA_index_partial - 1)] <- best_so_far[1:(first_NA_index_partial - 1)]
+    ei_vals_partial[1:(first_NA_index_partial - 1)] <- ei_val[1:(first_NA_index_partial - 1)]
     write.table(run_obs_partial,
-                file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
-                row.names = FALSE,
-                col.names = FALSE
+      file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+      row.names = FALSE,
+      col.names = FALSE
     )
     write.table(best_so_far_partial,
-                file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
-                row.names = FALSE,
-                col.names = FALSE
+      file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+      row.names = FALSE,
+      col.names = FALSE
+    )
+    write.table(ei_vals_partial,
+      file = sprintf("%sbo_partition_seed_%s_ei_vals.csv", save_dir, seed_value),
+      row.names = FALSE,
+      col.names = FALSE
     )
   }
   for (region_index in 1:length(all_regions)){
@@ -276,6 +286,7 @@ while (length(all_regions) > 0) {
                            where_best_y_so_far = where_smallest_y_so_far,
                            run_obs_vec = run_obs,
                            best_so_far_vec = best_so_far,
+                           ei_vals_vec = ei_vals,
                            n_max = n_max_param,
                            tol = tol_param,
                            split_crit = split_crit_param)
@@ -286,6 +297,7 @@ while (length(all_regions) > 0) {
   all_regions = all_regions[-index_of_region_to_explore]
   run_obs <- results$run_obs
   best_so_far <- results$best_so_far
+  ei_vals <- results$ei_vals
   smallest_y_so_far = results$best_y
   where_smallest_y_so_far = results$where_best_y
   
@@ -325,7 +337,7 @@ if (length(all_regions) == 0) {
 if (length(rejected_regions) == 0) {
   print("No regions were rejected during optimization")
 } else if (length(rejected_regions) > 0) {
-  print(sprintf("Number of regions rejected during optimization: %s", length(rejected_regions))
+  print(sprintf("Number of regions rejected during optimization: %s", length(rejected_regions)))
   print("Printing each rejected region")
   for (region_index in 1:length(rejected_regions)) {
     print(sprintf("Rejected region number %s:", region_index))
@@ -340,17 +352,23 @@ print(where_smallest_y_so_far)
 first_NA_index <- min(which(is.na(run_obs)))
 run_obs <- run_obs[1:(first_NA_index - 1)]
 best_so_far <- best_so_far[1:(first_NA_index - 1)]
+ei_vals <- ei_vals[1:(first_NA_index - 1)]
 print(sprintf("Used %s out of a total budget of %s observations.", length(run_obs), num_obs))
 
 write.table(run_obs,
-            file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
-            row.names = FALSE,
-            col.names = FALSE
+  file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+  row.names = FALSE,
+  col.names = FALSE
 )
 write.table(best_so_far,
-            file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
-            row.names = FALSE,
-            col.names = FALSE
+  file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+  row.names = FALSE,
+  col.names = FALSE
+)
+write.table(ei_vals,
+  file = sprintf("%sbo_partition_seed_%s_ei_vals.csv", save_dir, seed_value),
+  row.names = FALSE,
+  col.names = FALSE
 )
 
 end <- Sys.time()
