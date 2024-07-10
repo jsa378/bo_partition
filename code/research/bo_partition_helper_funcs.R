@@ -5,6 +5,7 @@ split_and_fit = function(region,
                          best_so_far_vec,
                          split_crit,
                          range_tol = 1e-3) {
+  start <- Sys.time()
   print(sprintf("Beginning split_and_fit"))
   region_x = region$region_x
   region_y = region$region_y
@@ -392,6 +393,9 @@ split_and_fit = function(region,
     }
   }
 
+  end <- Sys.time()
+  duration <- end - start
+  print(sprintf("Region split in %s", duration))
   print(sprintf("Returning region_1 and region_2 and other data from split_and_fit"))
   return(list(region_1 = region_1_return,
               region_2 = region_2_return,

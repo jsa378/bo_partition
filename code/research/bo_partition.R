@@ -236,7 +236,7 @@ while (length(all_regions) > 0) {
   region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
   n_obs = min(which(is.na(run_obs))) - 1
   if ( n_obs >= num_obs ) {
-    print("Total observation budget reached; terminating.")
+    print("Total observation budget reached or exceeded; terminating.")
     break
   } else {
     print(sprintf("Taken %s observations out of a total budget of %s; continuing.", n_obs, num_obs))
@@ -313,6 +313,24 @@ while (length(all_regions) > 0) {
 
 if (length(all_regions) == 0) {
   print("List of promising regions empty; terminating.")
+} else if (length(all_regions) > 0) {
+  print(sprintf("Number of promising regions at termination: %s", length(all_regions)))
+  print("Printing each promising region")
+  for (region_index in 1:length(all_regions)) {
+    print(sprintf("Promising region number %s:", region_index))
+    print(all_regions[[region_index]])
+  }
+}
+
+if (length(rejected_regions) == 0) {
+  print("No regions were rejected during optimization")
+} else if (length(rejected_regions) > 0) {
+  print(sprintf("Number of regions rejected during optimization: %s", length(rejected_regions))
+  print("Printing each rejected region")
+  for (region_index in 1:length(rejected_regions)) {
+    print(sprintf("Rejected region number %s:", region_index))
+    print(rejected_regions[[region_index]])
+  }
 }
 
 print("Best y observed:")
@@ -338,4 +356,4 @@ write.table(best_so_far,
 end <- Sys.time()
 # sink(file = NULL)
 duration <- end - start
-print(duration)
+print(sprintf("Partitioned Bayesian optimization complete in %s", duration))

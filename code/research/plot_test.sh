@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-wjwelch    # replace this with your own account
 #SBATCH --mem-per-cpu=4000M      # memory; default unit is megabytes
-#SBATCH --array=1-10             # number of array jobs, inclusive
-#SBATCH --time=3-00:00           # time (DD-HH:MM)
+#SBATCH --array=1-1             # number of array jobs, inclusive
+#SBATCH --time=0-00:10           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
@@ -36,7 +36,7 @@ else
   echo "The save directory $SAVE_DIR exists, so we don't need to create it."
 fi
 
-Rscript /home/jsa378/bo_partition/code/research/bo_partition.R $SEED $TEST_FUNC $R_PACKAGE $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $N_MAX $TOL $SPLIT_CRIT $SAVE_DIR $SLURM_JOB_ID
+# Rscript /home/jsa378/bo_partition/code/research/bo_partition.R $SEED $TEST_FUNC $R_PACKAGE $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $N_MAX $TOL $SPLIT_CRIT $SAVE_DIR $SLURM_JOB_ID
 
 NUM_FILES=$(find $SAVE_DIR -type f -name '*.csv' | wc -l)
 if [ "$NUM_FILES" -eq "$NUM_CSVS" ]
