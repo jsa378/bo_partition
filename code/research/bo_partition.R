@@ -295,7 +295,6 @@ while (length(all_regions) > 0) {
   # I need explore_region to return updated run_obs and best_so_far
   # and then I need to re-bind run_obs and best_so_far to those updated vectors
   
-  all_regions = all_regions[-index_of_region_to_explore]
   run_obs <- results$run_obs
   best_so_far <- results$best_so_far
   ei_vals <- results$ei_vals
@@ -305,6 +304,7 @@ while (length(all_regions) > 0) {
   if (results$num_obs_exceeded == 1) {
     next
   }
+  all_regions = all_regions[-index_of_region_to_explore]
   if (results$split_called == 0) {
     print("Region rejected, split not called.")
     rejected_regions = c(rejected_regions, list(results$region))
@@ -378,4 +378,5 @@ write.table(ei_vals,
 end <- Sys.time()
 # sink(file = NULL)
 duration <- end - start
-print(sprintf("Partitioned Bayesian optimization complete in %s", duration))
+print("Partition-Bayesian optimization complete in:")
+print(duration)

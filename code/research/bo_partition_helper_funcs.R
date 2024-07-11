@@ -177,7 +177,7 @@ split_and_fit = function(region,
       if(region_1_value < lowest_y_min_minus_a_max_val | region_2_value < lowest_y_min_minus_a_max_val) {
         print(sprintf("New best region value observed: %s; updating best observed", min(region_1_value, region_2_value)))
         lowest_y_min_minus_a_max_val <- min(region_1_value, region_2_value)
-        # dim_to_split = d
+        dim_to_split = d
         # split_point = med
         
         if (r_package == "dice") {
@@ -195,6 +195,8 @@ split_and_fit = function(region,
       }
     }
   }
+
+  print(sprintf("Dimension chosen for splitting: %s", dim_to_split))
   
   if(split_crit == "avg") {
     region_1_return = region
@@ -580,6 +582,7 @@ explore_region <- function(region,
               run_obs = run_obs_vec,
               best_so_far = best_so_far_vec,
               ei_vals = ei_vals_vec,
+	      num_obs_exceeded = 0,
               split_called = 1)
   )
 }
