@@ -422,6 +422,7 @@ explore_region <- function(region,
                            best_so_far_vec,
                            ei_vals_vec,
                            n_max = 10 * dim,
+                           num_obs_so_far,
                            tol = 0.1,
                            split_crit = "avg") {
   region_x = region$region_x
@@ -484,6 +485,7 @@ explore_region <- function(region,
       a_max = bo$ac_val_track
     }
     n <- n + 1
+    num_obs_so_far <- num_obs_so_far + 1
     first_NA_index <- min(which(is.na(run_obs_vec)))
     run_obs_vec[first_NA_index] <- latest_obs
     best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
@@ -508,8 +510,14 @@ explore_region <- function(region,
     region$region_y = region_y
     region$region_a_max = a_max
 
-    if (a_max < tol) {
-      print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
+    if (a_max < tol | num_obs_so_far >= num_obs) {
+      if (a_max < tol) {
+        print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
+      }
+      if (num_obs_so_far >= num_obs) {
+        print("Total observation budget reached while exploring region, so returning region.")
+      }
+
       return(list(region = region,
                   best_y = best_y_so_far,
                   where_best_y = where_best_y_so_far,

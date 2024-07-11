@@ -288,6 +288,7 @@ while (length(all_regions) > 0) {
                            best_so_far_vec = best_so_far,
                            ei_vals_vec = ei_vals,
                            n_max = n_max_param,
+                           num_obs_so_far = n_obs,
                            tol = tol_param,
                            split_crit = split_crit_param)
   
