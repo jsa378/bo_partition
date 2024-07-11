@@ -250,7 +250,7 @@ while (length(all_regions) > 0) {
     ei_vals_partial <- matrix(data = NA, nrow = 1, ncol = first_NA_index_partial - 1)
     run_obs_partial[1:(first_NA_index_partial - 1)] <- run_obs[1:(first_NA_index_partial - 1)]
     best_so_far_partial[1:(first_NA_index_partial - 1)] <- best_so_far[1:(first_NA_index_partial - 1)]
-    ei_vals_partial[1:(first_NA_index_partial - 1)] <- ei_val[1:(first_NA_index_partial - 1)]
+    ei_vals_partial[1:(first_NA_index_partial - 1)] <- ei_vals[1:(first_NA_index_partial - 1)]
     write.table(run_obs_partial,
       file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
       row.names = FALSE,
