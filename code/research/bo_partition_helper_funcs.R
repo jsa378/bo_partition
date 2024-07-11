@@ -510,23 +510,44 @@ explore_region <- function(region,
     region$region_y = region_y
     region$region_a_max = a_max
 
-    if (a_max < tol | num_obs_so_far >= num_obs) {
-      if (a_max < tol) {
-        print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
-      }
-      if (num_obs_so_far >= num_obs) {
-        print("Total observation budget reached while exploring region, so returning region.")
-      }
-
+    if (num_obs_so_far >= num_obs) {
+      print("Total observation budget reached while exploring region, so returning region.")
       return(list(region = region,
                   best_y = best_y_so_far,
                   where_best_y = where_best_y_so_far,
                   run_obs = run_obs_vec,
                   best_so_far = best_so_far_vec,
                   ei_vals = ei_vals_vec,
-                  split_called = 0)
-      )
+                  num_obs_exceeded = 1) 
     }
+    if (a_max < tol) {
+      print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
+      return(list(region = region,
+                  best_y = best_y_so_far,
+                  where_best_y = where_best_y_so_far,
+                  run_obs = run_obs_vec,
+                  best_so_far = best_so_far_vec,
+                  ei_vals = ei_vals_vec,
+		  num_obs_exceeded = 0,
+                  split_called = 0)
+    }
+    # if (a_max < tol | num_obs_so_far >= num_obs) {
+    #   if (a_max < tol) {
+    #     print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
+    #   }
+    #   if (num_obs_so_far >= num_obs) {
+    #     print("Total observation budget reached while exploring region, so returning region.")
+    #   }
+
+    #   return(list(region = region,
+    #               best_y = best_y_so_far,
+    #               where_best_y = where_best_y_so_far,
+    #               run_obs = run_obs_vec,
+    #               best_so_far = best_so_far_vec,
+    #               ei_vals = ei_vals_vec,
+    #               split_called = 0)
+    #   )
+    # }
   }
   
   # the while loop completed, so now

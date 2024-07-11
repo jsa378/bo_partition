@@ -302,6 +302,9 @@ while (length(all_regions) > 0) {
   smallest_y_so_far = results$best_y
   where_smallest_y_so_far = results$where_best_y
   
+  if (results$num_obs_exceeded == 1) {
+    next
+  }
   if (results$split_called == 0) {
     print("Region rejected, split not called.")
     rejected_regions = c(rejected_regions, list(results$region))
