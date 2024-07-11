@@ -518,7 +518,8 @@ explore_region <- function(region,
                   run_obs = run_obs_vec,
                   best_so_far = best_so_far_vec,
                   ei_vals = ei_vals_vec,
-                  num_obs_exceeded = 1) 
+                  num_obs_exceeded = 1)
+      )
     }
     if (a_max < tol) {
       print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
@@ -528,8 +529,9 @@ explore_region <- function(region,
                   run_obs = run_obs_vec,
                   best_so_far = best_so_far_vec,
                   ei_vals = ei_vals_vec,
-		  num_obs_exceeded = 0,
+                  num_obs_exceeded = 0,
                   split_called = 0)
+      )
     }
     # if (a_max < tol | num_obs_so_far >= num_obs) {
     #   if (a_max < tol) {
