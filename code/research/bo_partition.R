@@ -10,6 +10,7 @@ start <- Sys.time()
 # or in a job submission script (remotely)
 
 working <- "local"
+
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
   if (length(args) < 10) {
@@ -156,6 +157,24 @@ acq_func_max <- max_EI(
   control = dice_ctrl
 )
 
+# Experimenting with adding points to gp_model
+# The means don't seem to change
+
+# test_point = matrix(data=NA, nrow=2, ncol=2)
+# test_point[1, ] <- c(1, 1)
+# test_point[2, ] <- c(-1, -1)
+# colnames(test_point) <- c("V1", "V2")
+# 
+# pred <- predict(object = gp_model, newdata = test_point, type = "UK")
+# pred$mean
+# 
+# gp_model@X <- rbind(gp_model@X, acq_func_max$par)
+# gp_model@y <- rbind(gp_model@y, test_func(acq_func_max$par))
+# gp_model@n <- as.integer(gp_model@n + 1)
+# 
+# pred <- predict(object = gp_model, newdata = test_point, type = "UK")
+# pred$mean
+
 # Set up the initial region list
 
 init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
@@ -178,4 +197,225 @@ smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
 
 # Now begin the outer optimization loop
+# Loop as long as there are promising regions to explore
 
+while (length(all_regions) > 0) {
+  
+  # Calculate how many observations have been taken
+
+  n_obs = min(which(is.na(run_obs))) - 1
+  
+  # If we reach our observation budget (num_subseq_obs),
+  # exit the loop,
+  # else we save our partial progress and continue
+  
+  if ( n_obs >= num_subseq_obs ) {
+    
+    print("Total observation budget reached or exceeded; terminating.")
+    break
+    
+  } else {
+    
+    print(sprintf("Taken %s observations out of a total budget of %s; continuing.",
+                  n_obs, num_subseq_obs))
+    print("Saving partial progress.")
+    
+    write.table(run_obs[1:(n_obs)],
+                file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
+    write.table(best_so_far[1:(n_obs)],
+                file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
+    write.table(ei_vals[1:(n_obs)],
+                file = sprintf("%sbo_partition_seed_%s_ei_vals.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
+  }
+  
+  # Set up vector to hold region values
+  # and loop over regions,
+  # putting their values in the vector
+  
+  region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
+  
+  for (region_index in 1:length(all_regions)){
+    
+    current_region = all_regions[[region_index]]
+    region_values[region_index] = current_region$region_min - current_region$region_a_max
+    
+  }
+  
+  # Select the region to explore
+
+  index_of_region_to_explore <- which.min(region_values)
+  region_to_explore = all_regions[[index_of_region_to_explore]]
+  
+  print("Region to explore:")
+  print(region_to_explore)
+  
+  # Send the region to explore_region()
+  
+  results = explore_region(region = region_to_explore,
+                           best_y_so_far = smallest_y_so_far,
+                           where_best_y_so_far = where_smallest_y_so_far,
+                           run_obs_vec = run_obs,
+                           best_so_far_vec = best_so_far,
+                           ei_vals_vec = ei_vals,
+                           n_max = n_max_param,
+                           num_obs_so_far = n_obs,
+                           tol = tol_param,
+                           split_crit = split_crit_param)
+  
+  # Update observation records
+  
+  run_obs <- results$run_obs
+  best_so_far <- results$best_so_far
+  ei_vals <- results$ei_vals
+  smallest_y_so_far = results$best_y
+  where_smallest_y_so_far = results$where_best_y
+  
+  # If explore_region() returned because
+  # we reached our observation budget,
+  # go to the top of the while loop again
+  
+  if (results$num_obs_exceeded == 1) {
+    next
+  }
+  
+  # If explore_region() returned because
+  # we either rejected or split the region,
+  # we remove the explored region
+  # from the list of promising regions
+
+  all_regions = all_regions[-index_of_region_to_explore]
+  
+  # If explore_region() returned because
+  # we rejected the region,
+  # we put the explored region
+  # in the list of rejected regions
+  
+  # If explore_region() returned because
+  # we split the region,
+  # we put the two new regions
+  # in the list of promising regions
+
+  if (results$split_called == 0) {
+    
+    print("Region rejected, split not called.")
+    rejected_regions = c(rejected_regions, list(results$region))
+    
+  } else if (results$split_called == 1) {
+    
+    print("Region split.")
+    
+    new_region_1 = results$new_region_1
+    new_region_2 = results$new_region_2
+    
+    print("First new subregion:")
+    print(new_region_1)
+    print("Second new subregion:")
+    print(new_region_2)
+    
+    all_regions = c(all_regions, list(new_region_1, new_region_2))
+  }
+}
+
+# At this point, the Bayesian optimization is done
+
+# If there were promising regions remaimning
+# at termination, we print them out
+
+if (length(all_regions) == 0) {
+  
+  print("List of promising regions empty; terminating.")
+  
+} else if (length(all_regions) > 0) {
+  
+  print(sprintf("Number of promising regions remaining at termination: %s",
+                length(all_regions)))
+  print("Printing each promising region.")
+  
+  for (region_index in 1:length(all_regions)) {
+    
+    print(sprintf("Promising region number %s:", region_index))
+    print(all_regions[[region_index]])
+    
+  }
+  
+}
+
+# If we rejected any regions
+# during the while loop,
+# we print those out as well
+
+if (length(rejected_regions) == 0) {
+  
+  print("No regions were rejected during optimization")
+  
+} else if (length(rejected_regions) > 0) {
+  
+  print(sprintf("Number of regions rejected during optimization: %s", length(rejected_regions)))
+  print("Printing each rejected region")
+  
+  for (region_index in 1:length(rejected_regions)) {
+    
+    print(sprintf("Rejected region number %s:", region_index))
+    print(rejected_regions[[region_index]])
+    
+  }
+  
+}
+
+# Print ouf the best value we found
+# and where we found it
+
+print("Best y observed:")
+print(smallest_y_so_far)
+
+print("at location:")
+print(where_smallest_y_so_far)
+
+# Now we check how many observations we gathered,
+# since we may have quit early
+
+n_obs = min(which(is.na(run_obs))) - 1
+
+print(sprintf("Used %s out of a total budget of %s observations.", n_obs, num_subseq_obs))
+
+# Now we save the record vectors
+
+write.table(run_obs[1:(n_obs)],
+            file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+            row.names = FALSE,
+            col.names = FALSE
+)
+write.table(best_so_far[1:(n_obs)],
+            file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+            row.names = FALSE,
+            col.names = FALSE
+)
+write.table(ei_vals[1:(n_obs)],
+            file = sprintf("%sbo_partition_seed_%s_ei_vals.csv", save_dir, seed_value),
+            row.names = FALSE,
+            col.names = FALSE
+)
+
+# Compute the runtime and print it out
+
+end <- Sys.time()
+duration <- end - start
+
+print("Partition-Bayesian optimization complete in:")
+print(duration)
+
+# If we are working locally,
+# we terminate the sink file
+
+if (working == "local") {
+  sink(file = NULL)
+}
