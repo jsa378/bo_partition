@@ -18,8 +18,10 @@ num_runs = int(sys.argv[7])
 n_max = int(sys.argv[8])
 tol = float(sys.argv[9])
 split_crit = str(sys.argv[10])
-save_dir = str(sys.argv[11])
-num_array_jobs = int(sys.argv[12])
+# save_dir = str(sys.argv[11])
+save_dir = "/Users/jesse/Downloads/cedar_test_output/12jul24meeting/with_ei_plot/bo_partition_rastr_ego_10_40_200_10/" # delete this line when done making the plots
+# num_array_jobs = int(sys.argv[12])
+num_array_jobs = 10
 
 test_func_dicts = {
     'rastr': {

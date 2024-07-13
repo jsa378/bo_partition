@@ -2,47 +2,48 @@ library(GaSP)
 library(EGOmod)
 library(DiceOptim)
 
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 12) {
-  stop("Twelve arguments must be supplied:
-  seed value (int),
-  test function (string),
-  r package (string),
-  dim (int),
-  num init obs (int),
-  num obs (int),
-  num runs (int),
-  n_max_param (int),
-  tol_param (float),
-  split_crit_param (string),
-  save dir (no type),
-  slurm job id (int)", call. = FALSE)
-}
+# args <- commandArgs(trailingOnly = TRUE)
+# if (length(args) < 12) {
+#   stop("Twelve arguments must be supplied:
+#   seed value (int),
+#   test function (string),
+#   r package (string),
+#   dim (int),
+#   num init obs (int),
+#   num obs (int),
+#   num runs (int),
+#   n_max_param (int),
+#   tol_param (float),
+#   split_crit_param (string),
+#   save dir (no type),
+#   slurm job id (int)", call. = FALSE)
+# }
 
-seed_value <- as.integer(args[1])
-test_func_name <- args[2]
-r_package <- args[3]
-dim <- as.integer(args[4])
-num_init_obs <- as.integer(args[5])
-num_obs <- as.integer(args[6]) # This is my n_tot
-num_runs <- as.integer(args[7])
-n_max_param <- as.integer(args[8])
-tol_param <- as.numeric(args[9])
-split_crit_param <- args[10]
-save_dir <- as.character(args[11])
-slurm_job_id <- as.integer(args[12])
+# seed_value <- as.integer(args[1])
+# test_func_name <- args[2]
+# r_package <- args[3]
+# dim <- as.integer(args[4])
+# num_init_obs <- as.integer(args[5])
+# num_obs <- as.integer(args[6]) # This is my n_tot
+# num_runs <- as.integer(args[7])
+# n_max_param <- as.integer(args[8])
+# tol_param <- as.numeric(args[9])
+# split_crit_param <- args[10]
+# save_dir <- as.character(args[11])
+# slurm_job_id <- as.integer(args[12])
 
-# seed_value = 1
-# test_func_name = "rastr"
-# dim = 2
-# num_init_obs = 20
-# num_obs = 100
-# num_runs = 10
-# n_max_param <- 25
-# tol_param <- 0.1 # Should maybe try 0.01?
-# split_crit_param <- "avg"
-# split_crit_param <- "y_min_minus_a_max"
-# save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
+seed_value = 1
+test_func_name = "rastr"
+r_package = "dice"
+dim = 2
+num_init_obs = 20
+num_obs = 100
+num_runs = 10
+n_max_param <- 25
+tol_param <- 0.1 # Should maybe try 0.01?
+split_crit_param <- "y_min_minus_a_max"
+save_dir = "/Users/jesse/Downloads/cedar_test_output/research_testing/"
+slurm_job_id = seed_value
 
 dump_and_quit <- function() {
   # Save debugging info to file last.dump.rda
@@ -52,11 +53,11 @@ dump_and_quit <- function() {
 }
 options(error = dump_and_quit, CBoundsCheck = TRUE)
 
-source("/home/jsa378/bo_partition/code/test_funcs.R")
-source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
+# source("/home/jsa378/bo_partition/code/test_funcs.R")
+# source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
 
-# source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
-# source("/Users/jesse/Downloads/bo_partition/code/research/bo_partition_helper_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+source("/Users/jesse/Downloads/bo_partition/code/research/bo_partition_helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
@@ -87,7 +88,7 @@ test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
 test_ubound_scalar <- test_func_list[[test_func_name]]$ubound_scalar
 test_lbound <- test_func_list[[test_func_name]]$lbound
 test_ubound <- test_func_list[[test_func_name]]$ubound
-plot_lims <- c(test_lbound_scalar, test_ubound_scalar)
+# plot_lims <- c(test_lbound_scalar, test_ubound_scalar)
 test_argmin <- test_func_list[[test_func_name]]$argmin
 
 paste(c("Test func. lower bound scalar:", test_lbound_scalar), collapse = " ")
@@ -97,14 +98,14 @@ paste(c("Test func. upper bound vector:", test_ubound), collapse = " ")
 paste(c("Test func. argmin:", test_argmin), collapse = " ")
 
 start <- Sys.time()
-# sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test_%s.txt", split_crit_param)
-# sink(file = sink_file)
+sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test_%s_%s.txt", r_package, split_crit_param)
+sink(file = sink_file)
 
 init_points <- read.table(
-  file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
-                 test_func_name, dim, num_runs, num_init_obs, seed_value),
-  # file = sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  # file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
   #                test_func_name, dim, num_runs, num_init_obs, seed_value),
+  file = sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+                 test_func_name, dim, num_runs, num_init_obs, seed_value),
   header = FALSE,
   sep = "",
   dec = "."
@@ -376,7 +377,7 @@ write.table(ei_vals,
 )
 
 end <- Sys.time()
-# sink(file = NULL)
+sink(file = NULL)
 duration <- end - start
 print("Partition-Bayesian optimization complete in:")
 print(duration)

@@ -1,4 +1,5 @@
 split_and_fit = function(region,
+                         region_model,
                          best_y_so_far,
                          where_best_y_so_far,
                          run_obs_vec,
@@ -10,7 +11,7 @@ split_and_fit = function(region,
   print(sprintf("Beginning split_and_fit"))
   region_x = region$region_x
   region_y = region$region_y
-  lowest_y_avg_val = 1e+10
+  # lowest_y_avg_val = 1e+10
   lowest_y_min_minus_a_max_val <- 1e+10
   
   for(d in 1:dim){
@@ -25,49 +26,49 @@ split_and_fit = function(region,
     region_1_x_split_dim_range <- max(region_1_x[, d]) - min(region_1_x[, d])
     region_2_x_split_dim_range <- max(region_2_x[, d]) - min(region_2_x[, d])
     
-    if(region_1_x_split_dim_range <= range_tol | region_2_x_split_dim_range <= range_tol) {
+    if(region_1_x_split_dim_range <= range_tol || region_2_x_split_dim_range <= range_tol) {
       print(sprintf("One of region_1_split_dim_range (%s) or region_2_split_dim_range (%s) is <= range_tol (%s)",
                     region_1_x_split_dim_range, region_2_x_split_dim_range, range_tol))
       print(sprintf("Therefore we are going to not going to consider splitting on dimension %s", d))
       next
     }
-    
-    if(split_crit == "avg") {
-      region_1_y_avg = mean(region_1_y)
-      region_2_y_avg = mean(region_2_y)
-      
-      if(region_1_y_avg < lowest_y_avg_val | region_2_y_avg < lowest_y_avg_val){
-        lowest_y_avg_val = min(region_1_y_avg, region_2_y_avg)
-        dim_to_split = d
-        split_point = med
-        
-        split_region_1_x = region_1_x
-        split_region_1_y = region_1_y
-        split_region_2_x = region_2_x
-        split_region_2_y = region_2_y
-      }
-    }
-    if(split_crit == "y_min_minus_a_max") {
-      print(sprintf("Preparing region_1"))
-      region_1 = region
-      region_1$bound_matrix[d, 2] = med
-      region_1$region_x = region_1_x
-      region_1$region_y = region_1_y
-      region_1$region_min = min(region_1_y)
-      region_1$region_argmin = region_1_x[which.min(region_1_y), ]
-      print("Proposed region 1:") # The a_max value is inherited from "region", i.e. it hasn't been computed yet for this proposed subregion
-      print(region_1)
-      
-      print(sprintf("Preparing region_2"))
-      region_2 = region
-      region_2$bound_matrix[d, 1] = med
-      region_2$region_x = region_2_x
-      region_2$region_y = region_2_y
-      region_2$region_min = min(region_2_y)
-      region_2$region_argmin = region_2_x[which.min(region_2_y), ]
-      print("Proposed region 2:") # See comment above pertaining to propsed region 1
-      print(region_2)
 
+    print(sprintf("Preparing region_1"))
+    region_1 = region
+    region_1$bound_matrix[d, 2] = med
+    region_1$region_x = region_1_x
+    region_1$region_y = region_1_y
+    region_1$region_min = min(region_1_y)
+    region_1$region_argmin = region_1_x[which.min(region_1_y), ]
+    print("Proposed region 1:") # The a_max value is inherited from "region", i.e. it hasn't been computed yet for this proposed subregion
+    print(region_1)
+    
+    print(sprintf("Preparing region_2"))
+    region_2 = region
+    region_2$bound_matrix[d, 1] = med
+    region_2$region_x = region_2_x
+    region_2$region_y = region_2_y
+    region_2$region_min = min(region_2_y)
+    region_2$region_argmin = region_2_x[which.min(region_2_y), ]
+    print("Proposed region 2:") # See comment above pertaining to propsed region 1
+    print(region_2)
+    
+    # if(split_crit == "avg") {
+    #   region_1_y_avg = mean(region_1_y)
+    #   region_2_y_avg = mean(region_2_y)
+      
+    #   if(region_1_y_avg < lowest_y_avg_val || region_2_y_avg < lowest_y_avg_val){
+    #     lowest_y_avg_val = min(region_1_y_avg, region_2_y_avg)
+    #     dim_to_split = d
+    #     split_point = med
+        
+    #     split_region_1_x = region_1_x
+    #     split_region_1_y = region_1_y
+    #     split_region_2_x = region_2_x
+    #     split_region_2_y = region_2_y
+    #   }
+    # }
+    if(split_crit == "y_min_minus_a_max") {
       if (r_package == "dice") {
         region_1_km_x <- region_1$region_x
         region_1_km_y <- region_1$region_y
@@ -174,7 +175,7 @@ split_and_fit = function(region,
       print(sprintf("Current lowest region value: %s", lowest_y_min_minus_a_max_val))
      
       print(sprintf("Comparing region_1_value and region_2_value to lowest_y_min_minus_a_max_val"))
-      if(region_1_value < lowest_y_min_minus_a_max_val | region_2_value < lowest_y_min_minus_a_max_val) {
+      if(region_1_value < lowest_y_min_minus_a_max_val || region_2_value < lowest_y_min_minus_a_max_val) {
         print(sprintf("New best region value observed: %s; updating best observed", min(region_1_value, region_2_value)))
         lowest_y_min_minus_a_max_val <- min(region_1_value, region_2_value)
         dim_to_split = d
@@ -194,115 +195,161 @@ split_and_fit = function(region,
         region_2_return <- region_2
       }
     }
+    if (split_crit == "maximizeEI") {
+      if (r_package == "dice") {
+        print(sprintf("Optimizing region_1_acq_func_max"))
+        region_1_acq_func_max <- max_EI(
+          model = region_model,
+          type = "UK",
+          lower = region_1$bound_matrix[, 1],
+          upper = region_1$bound_matrix[, 2],
+          control = dice_ctrl
+          )
+        print(sprintf("Optimizing region_2_acq_func_max"))
+        region_2_acq_func_max <- max_EI(
+          model = region_model,
+          type = "UK",
+          lower = region_2$bound_matrix[, 1],
+          upper = region_2$bound_matrix[, 2],
+          control = dice_ctrl
+          )
+        region_1_value <- region_1$region_min - region_1_acq_func_max$value
+        region_2_value <- region_2$region_min - region_2_acq_func_max$value
+      } else if (r_package == "ego") {
+
+      }
+      print(sprintf("Values of proposed regions 1 and 2, respectively: %s, %s", region_1_value, region_2_value))
+      print(sprintf("Current lowest region value: %s", lowest_y_min_minus_a_max_val))
+     
+      print(sprintf("Comparing region_1_value and region_2_value to lowest_y_min_minus_a_max_val"))
+      if(region_1_value < lowest_y_min_minus_a_max_val || region_2_value < lowest_y_min_minus_a_max_val) {
+        print(sprintf("New best region value observed: %s; updating best observed", min(region_1_value, region_2_value)))
+        lowest_y_min_minus_a_max_val <- min(region_1_value, region_2_value)
+        dim_to_split = d
+        # split_point = med
+        
+        if (r_package == "dice") {
+          # I need to figure out what I need to save here
+          region_1_a_max <- region_1_acq_func_max$value
+          region_2_a_max <- region_2_acq_func_max$value
+          region_1_ei_argmax <- region_1_acq_func_max$par
+          region_2_ei_argmax <- region_2_acq_func_max$par
+        } else if (r_package == "ego") {
+
+        }
+        region_1_return <- region_1
+        region_2_return <- region_2
+      }
+    }
   }
 
   print(sprintf("Dimension chosen for splitting: %s", dim_to_split))
   
-  if(split_crit == "avg") {
-    region_1_return = region
-    region_1_return$bound_matrix[dim_to_split, 2] = split_point
-    region_1_return$region_x = split_region_1_x
-    region_1_return$region_y = split_region_1_y
-    region_1_return$region_min = min(split_region_1_y)
-    region_1_return$region_argmin = split_region_1_x[which.min(split_region_1_y), ]
+  # if(split_crit == "avg") {
+  #   region_1_return = region
+  #   region_1_return$bound_matrix[dim_to_split, 2] = split_point
+  #   region_1_return$region_x = split_region_1_x
+  #   region_1_return$region_y = split_region_1_y
+  #   region_1_return$region_min = min(split_region_1_y)
+  #   region_1_return$region_argmin = split_region_1_x[which.min(split_region_1_y), ]
     
-    region_2_return = region
-    region_2_return$bound_matrix[dim_to_split, 1] = split_point
-    region_2_return$region_x = split_region_2_x
-    region_2_return$region_y = split_region_2_y
-    region_2_return$region_min = min(split_region_2_y)
-    region_2_return$region_argmin = split_region_2_x[which.min(split_region_2_y), ]
+  #   region_2_return = region
+  #   region_2_return$bound_matrix[dim_to_split, 1] = split_point
+  #   region_2_return$region_x = split_region_2_x
+  #   region_2_return$region_y = split_region_2_y
+  #   region_2_return$region_min = min(split_region_2_y)
+  #   region_2_return$region_argmin = split_region_2_x[which.min(split_region_2_y), ]
     
-    region_1_descr <- DescribeX(
-      x_names = x_names_arg,
-      x_min = region_1_return$bound_matrix[, 1],
-      x_max = region_1_return$bound_matrix[, 2],
-      support = rep("Continuous", dim)
-    )
+  #   region_1_descr <- DescribeX(
+  #     x_names = x_names_arg,
+  #     x_min = region_1_return$bound_matrix[, 1],
+  #     x_max = region_1_return$bound_matrix[, 2],
+  #     support = rep("Continuous", dim)
+  #   )
     
-    region_1_init <- Initialize(
-      x_design = region_1_return$region_x,
-      x_describe = region_1_descr,
-      fun = test_func
-    )
+  #   region_1_init <- Initialize(
+  #     x_design = region_1_return$region_x,
+  #     x_describe = region_1_descr,
+  #     fun = test_func
+  #   )
     
-    region_2_descr <- DescribeX(
-      x_names = x_names_arg,
-      x_min = region_2_return$bound_matrix[, 1],
-      x_max = region_2_return$bound_matrix[, 2],
-      support = rep("Continuous", dim)
-    )
+  #   region_2_descr <- DescribeX(
+  #     x_names = x_names_arg,
+  #     x_min = region_2_return$bound_matrix[, 1],
+  #     x_max = region_2_return$bound_matrix[, 2],
+  #     support = rep("Continuous", dim)
+  #   )
     
-    region_2_init <- Initialize(
-      x_design = region_2_return$region_x,
-      x_describe = region_2_descr,
-      fun = test_func
-    )
+  #   region_2_init <- Initialize(
+  #     x_design = region_2_return$region_x,
+  #     x_describe = region_2_descr,
+  #     fun = test_func
+  #   )
     
-    region_1_bo <- EGO(
-      fun = test_func,
-      reg_model = ~1,
-      ego_init = region_1_init,
-      x_describe = region_1_descr,
-      nsteps = 1,
-      control = ctrl
-    )
+  #   region_1_bo <- EGO(
+  #     fun = test_func,
+  #     reg_model = ~1,
+  #     ego_init = region_1_init,
+  #     x_describe = region_1_descr,
+  #     nsteps = 1,
+  #     control = ctrl
+  #   )
     
-    first_NA_index <- min(which(is.na(run_obs_vec)))
-    latest_obs <- tail(region_1_bo$y, n = 1)
-    run_obs_vec[first_NA_index] <- latest_obs
-    best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
-    print(sprintf("New observation in first new subregion: %s", latest_obs))
-    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+  #   first_NA_index <- min(which(is.na(run_obs_vec)))
+  #   latest_obs <- tail(region_1_bo$y, n = 1)
+  #   run_obs_vec[first_NA_index] <- latest_obs
+  #   best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+  #   print(sprintf("New observation in first new subregion: %s", latest_obs))
+  #   # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
-    region_2_bo <- EGO(
-      fun = test_func,
-      reg_model = ~1,
-      ego_init = region_2_init,
-      x_describe = region_2_descr,
-      nsteps = 1,
-      control = ctrl
-    )
+  #   region_2_bo <- EGO(
+  #     fun = test_func,
+  #     reg_model = ~1,
+  #     ego_init = region_2_init,
+  #     x_describe = region_2_descr,
+  #     nsteps = 1,
+  #     control = ctrl
+  #   )
     
-    first_NA_index <- min(which(is.na(run_obs_vec)))
-    latest_obs <- tail(region_2_bo$y, n = 1)
-    run_obs_vec[first_NA_index] <- latest_obs
-    best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
-    print(sprintf("New observation in second new subregion: %s", latest_obs))
-    # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
+  #   first_NA_index <- min(which(is.na(run_obs_vec)))
+  #   latest_obs <- tail(region_2_bo$y, n = 1)
+  #   run_obs_vec[first_NA_index] <- latest_obs
+  #   best_so_far_vec[first_NA_index] <- min(run_obs_vec[(1:first_NA_index)])
+  #   print(sprintf("New observation in second new subregion: %s", latest_obs))
+  #   # print(sprintf("Best so far: %s", best_so_far_vec[first_NA_index]))
     
-    region_1_return$region_x <- region_1_bo$x
-    region_1_return$region_y <- region_1_bo$y
-    new_region_1_obs = tail(region_1_bo$y, n = 1)
-    if (new_region_1_obs < region_1_return$region_min) {
-      region_1_return$region_min = new_region_1_obs
-      region_1_return$region_argmin = region_1_bo$x[nrow(region_1_bo$x), ]
-      if (new_region_1_obs < best_y_so_far) {
-        best_y_so_far = new_region_1_obs
-        where_best_y_so_far = region_1_bo$x[nrow(region_1_bo$x), ]
-        print(sprintf("New best: %s", best_y_so_far))
-        print(sprintf("Recorded at: %s", where_best_y_so_far))
-      }
-    }
-    region_1_return$region_a_max <- region_1_bo$ac_val_track
+  #   region_1_return$region_x <- region_1_bo$x
+  #   region_1_return$region_y <- region_1_bo$y
+  #   new_region_1_obs = tail(region_1_bo$y, n = 1)
+  #   if (new_region_1_obs < region_1_return$region_min) {
+  #     region_1_return$region_min = new_region_1_obs
+  #     region_1_return$region_argmin = region_1_bo$x[nrow(region_1_bo$x), ]
+  #     if (new_region_1_obs < best_y_so_far) {
+  #       best_y_so_far = new_region_1_obs
+  #       where_best_y_so_far = region_1_bo$x[nrow(region_1_bo$x), ]
+  #       print(sprintf("New best: %s", best_y_so_far))
+  #       print(sprintf("Recorded at: %s", where_best_y_so_far))
+  #     }
+  #   }
+  #   region_1_return$region_a_max <- region_1_bo$ac_val_track
     
-    region_2_return$region_x <- region_2_bo$x
-    region_2_return$region_y <- region_2_bo$y
-    new_region_2_obs = tail(region_2_bo$y, n = 1)
-    if (new_region_2_obs < region_2_return$region_min) {
-      region_2_return$region_min = new_region_2_obs
-      region_2_return$region_argmin = region_2_bo$x[nrow(region_2_bo$x), ]
-      if (new_region_2_obs < best_y_so_far) {
-        best_y_so_far = new_region_2_obs
-        where_best_y_so_far = region_2_bo$x[nrow(region_2_bo$x), ]
-        print(sprintf("New best: %s", best_y_so_far))
-        print(sprintf("Recorded at: %s", where_best_y_so_far))
-      }
-    }
-    region_2_return$region_a_max <- region_2_bo$ac_val_track
-  }
+  #   region_2_return$region_x <- region_2_bo$x
+  #   region_2_return$region_y <- region_2_bo$y
+  #   new_region_2_obs = tail(region_2_bo$y, n = 1)
+  #   if (new_region_2_obs < region_2_return$region_min) {
+  #     region_2_return$region_min = new_region_2_obs
+  #     region_2_return$region_argmin = region_2_bo$x[nrow(region_2_bo$x), ]
+  #     if (new_region_2_obs < best_y_so_far) {
+  #       best_y_so_far = new_region_2_obs
+  #       where_best_y_so_far = region_2_bo$x[nrow(region_2_bo$x), ]
+  #       print(sprintf("New best: %s", best_y_so_far))
+  #       print(sprintf("Recorded at: %s", where_best_y_so_far))
+  #     }
+  #   }
+  #   region_2_return$region_a_max <- region_2_bo$ac_val_track
+  # }
   
-  if(split_crit == "y_min_minus_a_max") {
+  if(split_crit == "y_min_minus_a_max" || split_crit == "maximizeEI") {
     print(sprintf("Updating run_obs_vec, best_so_far_vec and ei_vals_vec with region 1 observation"))
     first_NA_index <- min(which(is.na(run_obs_vec)))
     if (r_package == "dice") {
@@ -535,7 +582,7 @@ explore_region <- function(region,
                   split_called = 0)
       )
     }
-    # if (a_max < tol | num_obs_so_far >= num_obs) {
+    # if (a_max < tol || num_obs_so_far >= num_obs) {
     #   if (a_max < tol) {
     #     print(sprintf("a_max %s is less than tol %s, so rejecting region.", a_max, tol))
     #   }
@@ -558,15 +605,44 @@ explore_region <- function(region,
   # we need to split the region into 2 subregions
   
   print("n_max limit met; splitting region.")
-  
+
+  if (split_crit == "maximizeEI") {
+    if (r_package == "dice") {
+      print(sprintf("Fitting km model to pass to split_and_fit()"))
+      region_model <- km(
+        formula = ~1,
+        design = region_x,
+        response = region_y,
+        covtype = "powexp", # "matern5_2",
+        nugget = 1e-09,
+        control = c(dice_ctrl, trace = FALSE),
+        optim.method = "gen"
+      )
+    } else if (r_package == "ego") {
+      print(sprintf("Assigning last_GaSP (from last EGO step) to pass to split_and_fit()"))
+      region_model <- bo$last_GaSP
+      # I think I would have to modify EGO
+      # to have some kind of max_EI equivalent
+      # in order to implement this
+      # (I think the model already exists
+      # as the last_GaSP object in EGO,
+      # so no need to fit a model here (is that right?),
+      # but there is no max_EI equivalent
+      # that can use last_GaSP)
+    }
+  } else {
+    region_model <- 0
+  }
+
   new_subregions = split_and_fit(region = region,
+                                 region_model = region_model,
                                  best_y_so_far = best_y_so_far,
                                  where_best_y_so_far = where_best_y_so_far,
                                  run_obs_vec = run_obs_vec,
                                  best_so_far_vec = best_so_far_vec,
                                  ei_vals_vec = ei_vals_vec,
                                  split_crit = split_crit)
-  
+
   new_subregion_1 = new_subregions$region_1
   new_subregion_2 = new_subregions$region_2
   new_best_y = new_subregions$new_best_y
@@ -574,7 +650,7 @@ explore_region <- function(region,
   run_obs_vec <- new_subregions$run_obs
   best_so_far_vec <- new_subregions$best_so_far
   ei_vals_vec <- new_subregions$ei_vals
-  
+
   return(list(new_region_1 = new_subregion_1,
               new_region_2 = new_subregion_2,
               best_y = new_best_y,
@@ -582,7 +658,7 @@ explore_region <- function(region,
               run_obs = run_obs_vec,
               best_so_far = best_so_far_vec,
               ei_vals = ei_vals_vec,
-	      num_obs_exceeded = 0,
+	            num_obs_exceeded = 0,
               split_called = 1)
   )
 }
