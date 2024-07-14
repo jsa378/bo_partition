@@ -193,11 +193,13 @@ print(init_region)
 
 all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
 rejected_regions = list() # will contain the regions that we reject
+
 smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
 
 # Now begin the outer optimization loop
 # Loop as long as there are promising regions to explore
+# (while we're within our total observation budget)
 
 while (length(all_regions) > 0) {
   
@@ -206,7 +208,7 @@ while (length(all_regions) > 0) {
   n_obs = min(which(is.na(run_obs))) - 1
   
   # If we reach our observation budget (num_subseq_obs),
-  # exit the loop,
+  # exit this while loop,
   # else we save our partial progress and continue
   
   if ( n_obs >= num_subseq_obs ) {
@@ -238,8 +240,8 @@ while (length(all_regions) > 0) {
   }
   
   # Set up vector to hold region values
-  # and loop over regions,
-  # putting their values in the vector
+  # and loop over the region list,
+  # putting the region values in the vector
   
   region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
   
@@ -258,7 +260,7 @@ while (length(all_regions) > 0) {
   print("Region to explore:")
   print(region_to_explore)
   
-  # Send the region to explore_region()
+  # Send the region chosen for exploration to explore_region()
   
   results = explore_region(region = region_to_explore,
                            best_y_so_far = smallest_y_so_far,
@@ -272,16 +274,17 @@ while (length(all_regions) > 0) {
                            split_crit = split_crit_param)
   
   # Update observation records
+  # with output from explore_region()
   
   run_obs <- results$run_obs
   best_so_far <- results$best_so_far
   ei_vals <- results$ei_vals
-  smallest_y_so_far = results$best_y
-  where_smallest_y_so_far = results$where_best_y
+  smallest_y_so_far <- results$best_y
+  where_smallest_y_so_far <- results$where_best_y
   
   # If explore_region() returned because
   # we reached our observation budget,
-  # go to the top of the while loop again
+  # go directly to the top of the while loop
   
   if (results$num_obs_exceeded == 1) {
     next
@@ -289,10 +292,10 @@ while (length(all_regions) > 0) {
   
   # If explore_region() returned because
   # we either rejected or split the region,
-  # we remove the explored region
+  # in either case we remove the explored region
   # from the list of promising regions
 
-  all_regions = all_regions[-index_of_region_to_explore]
+  all_regions <- all_regions[-index_of_region_to_explore]
   
   # If explore_region() returned because
   # we rejected the region,
@@ -307,28 +310,28 @@ while (length(all_regions) > 0) {
   if (results$split_called == 0) {
     
     print("Region rejected, split not called.")
-    rejected_regions = c(rejected_regions, list(results$region))
+    rejected_regions <- c(rejected_regions, list(results$region))
     
   } else if (results$split_called == 1) {
     
     print("Region split.")
     
-    new_region_1 = results$new_region_1
-    new_region_2 = results$new_region_2
+    new_region_1 <- results$new_region_1
+    new_region_2 <- results$new_region_2
     
     print("First new subregion:")
     print(new_region_1)
     print("Second new subregion:")
     print(new_region_2)
     
-    all_regions = c(all_regions, list(new_region_1, new_region_2))
+    all_regions <- c(all_regions, list(new_region_1, new_region_2))
   }
 }
 
 # At this point, the Bayesian optimization is done
 
-# If there were promising regions remaimning
-# at termination, we print them out
+# If there were still promising regions
+# remaining at termination, we print them out
 
 if (length(all_regions) == 0) {
   
@@ -371,7 +374,7 @@ if (length(rejected_regions) == 0) {
   
 }
 
-# Print ouf the best value we found
+# Print out the best value we found
 # and where we found it
 
 print("Best y observed:")
@@ -381,13 +384,13 @@ print("at location:")
 print(where_smallest_y_so_far)
 
 # Now we check how many observations we gathered,
-# since we may have quit early
+# since we may have quit before reaching num_subseq_obs
 
 n_obs = min(which(is.na(run_obs))) - 1
 
 print(sprintf("Used %s out of a total budget of %s observations.", n_obs, num_subseq_obs))
 
-# Now we save the record vectors
+# Now we save the trimmed record vectors for plotting
 
 write.table(run_obs[1:(n_obs)],
             file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
@@ -405,7 +408,7 @@ write.table(ei_vals[1:(n_obs)],
             col.names = FALSE
 )
 
-# Compute the runtime and print it out
+# Compute the duration of this code and print it out
 
 end <- Sys.time()
 duration <- end - start
