@@ -40,7 +40,10 @@ update_records <- function(region,
   
   for (new_obs_index in 1:num_new_obs) {
     
-    best_so_far_vec[first_NA_index + (new_obs_index - 1)] <- min(c(best_so_far_vec, new_y[1:new_obs_index]))
+    best_so_far_vec[first_NA_index + new_obs_index - 1] <- min(run_obs_vec[1:(first_NA_index + new_obs_index - 1)])
+      
+      # min(c(best_so_far_vec[1:(first_NA_index - 1)],
+                                                              #      new_y[1:new_obs_index]))
     
   }
   
@@ -148,6 +151,12 @@ explore_region <- function(region,
     new_y <- test_func(new_x)
     new_ei_val <- acq_func_max$value
     
+    print(paste(c("New observation ", new_y, " at location ", new_x,
+                  " with EI value ", new_ei_val)))
+    
+    # print(sprintf("New observation %s, at location %s, with EI value %s",
+    #               new_y, new_x, new_ei_val))
+    
     # Update our records
     
     update <- update_records(region = region,
@@ -160,6 +169,8 @@ explore_region <- function(region,
                              new_y = new_y,
                              new_ei_vals = new_ei_val
     )
+    
+    print("Results of")
     
     region <- update$region
     
@@ -182,10 +193,16 @@ explore_region <- function(region,
     n <- n + 1
     num_obs_so_far <- num_obs_so_far + 1
     
+    print(paste(c("Taken ", n, "observations in region, with maximum ", n_max), collapse = " "))
+    print(paste(c("Taken ", num_obs_so_far, "observations overall, with maximum ", num_subseq_obs), collapse = " "))
+    
+    # print(sprintf("Taken %s observations in region, with maximum %s", n, n_max))
+    # print(sprintf("Taken %s observations so far overall, with maximum %s", num_obs_so_far, num_subseq_obs))
+    
     # Investigate the stopping conditions for this while loop
     # First we check if we've met our total observation budget, num_subseq_obs
     
-    if (num_obs_so_far >= num_obs) {
+    if (num_obs_so_far >= num_subseq_obs) {
       
       print("Total observation budget reached while exploring region, so returning region.")
       
@@ -242,6 +259,8 @@ explore_region <- function(region,
   
   # Now we pass everything to split_and_fit()
   # and return to the main while loop
+  
+  print("Splitting region")
   
   new_subregions = split_and_fit(region = region,
                                  region_model = region_model)

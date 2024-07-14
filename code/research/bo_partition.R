@@ -47,9 +47,9 @@ if (working == "remote") {
   test_func_name <- "rastr"
   dim <- 2
   num_init_obs <- 20
-  num_subseq_obs <- 100
+  num_subseq_obs <- 1 # 100
   num_runs <- 10
-  n_max_param <- 25
+  n_max_param <- 30 # 25
   tol_param <- 0.1
   save_dir <- "/Users/jesse/Downloads/cedar_test_output/research_testing/"
   slurm_job_id <- seed_value
@@ -61,7 +61,7 @@ if (working == "remote") {
                              test_func_name, dim, num_runs, num_init_obs, seed_value)
   
   sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
-  # sink(file = sink_file)
+  sink(file = sink_file)
 }
 
 # A function (and some settings) to dump an .rda file
@@ -110,9 +110,9 @@ set.seed(seed_value)
 # best observation seen so far (best_so_far),
 # the EI value associated with every observation (ei_vals)
 
-run_obs <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
-best_so_far <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
-ei_vals <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
+run_obs <- matrix(data = NA, nrow = 1, ncol = 2 * num_subseq_obs)
+best_so_far <- matrix(data = NA, nrow = 1, ncol = 2 * num_subseq_obs)
+ei_vals <- matrix(data = NA, nrow = 1, ncol = 2 * num_subseq_obs)
 
 # Load the initial observation points
 # and then evaluate the test function at those points
@@ -129,7 +129,7 @@ init_y <- apply(X = init_points, MARGIN = 1, FUN = test_func)
 
 dice_ctrl <- list(
   pop.size = 1024,
-  max.generations = 100,
+  max.generations = 50, # 100,
   wait.generations = 10,
   BFGSburnin = 5
 )
@@ -211,7 +211,7 @@ while (length(all_regions) > 0) {
   # exit this while loop,
   # else we save our partial progress and continue
   
-  if ( n_obs >= num_subseq_obs ) {
+  if (n_obs >= num_subseq_obs) {
     
     print("Total observation budget reached or exceeded; terminating.")
     break
@@ -270,8 +270,7 @@ while (length(all_regions) > 0) {
                            ei_vals_vec = ei_vals,
                            n_max = n_max_param,
                            num_obs_so_far = n_obs,
-                           tol = tol_param,
-                           split_crit = split_crit_param)
+                           tol = tol_param)
   
   # Update observation records
   # with output from explore_region()
@@ -284,10 +283,14 @@ while (length(all_regions) > 0) {
   
   # If explore_region() returned because
   # we reached our observation budget,
+  # then we need to the region, and then
   # go directly to the top of the while loop
   
   if (results$num_obs_exceeded == 1) {
+    
+    all_regions[[index_of_region_to_explore]] <- results$region
     next
+
   }
   
   # If explore_region() returned because
