@@ -47,10 +47,10 @@ if (working == "remote") {
   test_func_name <- "rastr"
   dim <- 2
   num_init_obs <- 20
-  num_subseq_obs <- 1 # 100
+  num_subseq_obs <- 10 # 100
   num_runs <- 10
   n_max_param <- 30 # 25
-  tol_param <- 0.1
+  tol_param <- 1 # 0.1
   save_dir <- "/Users/jesse/Downloads/cedar_test_output/research_testing/"
   slurm_job_id <- seed_value
   
@@ -93,7 +93,7 @@ paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
 paste(c("Number of dimensions:", dim), collapse = " ")
 paste(c("Number of initial observations:", num_init_obs), collapse = " ")
-paste(c("Number of subsequent  observations:", num_subseq_obs), collapse = " ")
+paste(c("Number of subsequent observations:", num_subseq_obs), collapse = " ")
 paste(c("Number of runs:", num_runs), collapse = " ")
 paste(c("n_max parameter:", n_max_param), collapse = " ")
 paste(c("tol parameter:", tol_param), collapse = " ")
