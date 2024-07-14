@@ -1,5 +1,6 @@
 library(DiceOptim)
 library(lhs)
+library(doBy)
 
 # Begin timing how long the code takes to run
 
@@ -49,8 +50,8 @@ if (working == "remote") {
   num_init_obs <- 20
   num_subseq_obs <- 10 # 100
   num_runs <- 10
-  n_max_param <- 30 # 25
-  tol_param <- 1 # 0.1
+  n_max_param <- 25
+  tol_param <- 0.1
   save_dir <- "/Users/jesse/Downloads/cedar_test_output/research_testing/"
   slurm_job_id <- seed_value
   
