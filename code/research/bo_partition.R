@@ -2,6 +2,7 @@ library(DiceOptim)
 library(lhs)
 library(doBy)
 library(collapse)
+library(dplyr)
 
 # Begin timing how long the code takes to run
 

@@ -377,6 +377,7 @@ gen_points <- function(region,
 
 split_and_fit <- function(region,
                           region_model,
+                          biggest_EI_vals = 10,
                           min_split_width = 1e-2) {
   
   # Begin timing how long split_and_fit() takes to run
@@ -384,10 +385,22 @@ split_and_fit <- function(region,
   start <- Sys.time()
   print(sprintf("Beginning split_and_fit"))
   
+  ### Begin test code ###
+  
+  region <- init_region
+  region_model <- gp_model
+  
+  dimension <- ncol(region$region_x)
+  biggest_EI_vals <- 3
+  
+  min_split_width <- 1e-2
+  
+  ### End test code ###
+  
   # Bind the dimension
   # and the region x and y points
   
-  dimension <- ncol(region$region_x)
+  # dimension <- ncol(region$region_x)
   
   region_x = region$region_x
   region_y = region$region_y
@@ -398,13 +411,6 @@ split_and_fit <- function(region,
   
   # First we generate the points
   
-  ### Begin test code ###
-  
-  region <- init_region
-  region_model <- gp_model
-  
-  ### End test code ###
-  
   EI_points <- gen_points(region = region,
                           num_points = 10) # change to 1000/10000 when working
   
@@ -414,12 +420,27 @@ split_and_fit <- function(region,
   
   EI_values <- apply(X = EI_points, MARGIN = 1, FUN = EI, region_model)
 
-  biggest_ei_vals_indices <- which.maxn(EI_values, n = 5) # change to 10/100 when working
+  biggest_ei_vals_indices <- which.maxn(EI_values, n = biggest_EI_vals)
   biggest_ei_vals_points <- EI_points[biggest_ei_vals_indices, ]
+  
+  # We need to keep track of how many of the
+  # points leading to the biggest EI values
+  # are contained in a proposed subregion
+  # The variable binding below will serve as our running tally
+  # The second binding is to keep track of region volume
+  
+  num_biggest_EI_vals_contained <- 0
+  smallest_region_volume <- Inf
   
   # Now we begin the splitting process
   
   for (d in 1:dimension) {
+    
+    ### Begin test code ###
+    
+    d <- 1
+    
+    ### End test code ###
     
     print(sprintf("Splitting on dimension %s", d))
     
@@ -431,9 +452,23 @@ split_and_fit <- function(region,
     
     for (p in 1:length(percentiles)) {
       
+      ### Begin test code ###
+      
+      p <- 1
+      
+      ### End test code ###
+      
       percentile <- percentiles[p]
       
-      print(sprintf("Splitting at percentile %s", percentiles_vec[p]))
+      print(sprintf("Splitting at percentile %s in dimension %s, which takes value %s",
+                    percentiles_vec[p], d, percentile))
+      
+      # Split region_x and region_y
+      
+      # I think a lot of this code could go into a new function,
+      # call it prep_subregions(), which would take
+      # as arguments a region, a dimension, and a percentile
+      # and return the two subregions
       
       region_1_x = region_x[region_x[, d] < percentile, ]
       region_1_y = region_y[which(region_x[, d] < percentile)]
@@ -445,9 +480,6 @@ split_and_fit <- function(region,
       
       region_1_x_d_width <- region_1_x_d_range[2] - region_1_x_d_range[1]
       region_2_x_d_width <- region_2_x_d_range[2] - region_2_x_d_range[1]
-      
-      # region_1_x_split_dim_range <- max(region_1_x[, d]) - min(region_1_x[, d])
-      # region_2_x_split_dim_range <- max(region_2_x[, d]) - min(region_2_x[, d])
       
       if(region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
         
@@ -462,15 +494,164 @@ split_and_fit <- function(region,
         
         next
       }
+      
+      # Now we prepare the two prospective new subregions
+      # Note that the EI values (a_max) for each subregion
+      # are incorrect, since we have not fit
+      # Gaussian process models or optimized EI
+      # for these subregions
+      
+      print(sprintf("Preparing region_1"))
+      region_1 = region
+      region_1$bound_matrix[d, 2] = percentile
+      region_1$region_x = region_1_x
+      region_1$region_y = region_1_y
+      region_1$region_min = min(region_1_y)
+      region_1$region_argmin = region_1_x[which.min(region_1_y), ]
+      print("Proposed region 1:")
+      print(region_1)
+      
+      print(sprintf("Preparing region_2"))
+      region_2 = region
+      region_2$bound_matrix[d, 1] = percentile
+      region_2$region_x = region_2_x
+      region_2$region_y = region_2_y
+      region_2$region_min = min(region_2_y)
+      region_2$region_argmin = region_2_x[which.min(region_2_y), ]
+      print("Proposed region 2:")
+      print(region_2)
+      
+      # Next, we must determine how many
+      # of the biggest EI points lie in
+      # each prospective subregion
+      
+      is_point_in_region_1 <- matrix(data = NA, nrow = biggest_EI_vals, ncol = 1)
+      
+      for (EI_point in 1:biggest_EI_vals) {
+        is_point_in_region_1[EI_point, 1] <- all(between(biggest_ei_vals_points[EI_point, ],
+                                                         region_1$bound_matrix[, 1],
+                                                         region_1$bound_matrix[, 2]))
+      }
+      
+      num_points_in_region_1 <- sum(is_point_in_region_1)
+      num_points_in_region_2 <- biggest_EI_vals - num_points_in_region_1
+      
+      # Now that we know how many of the biggest EI points
+      # are in region_1 and region_2,
+      # we check whether either of them contains
+      # more of the biggest EI points
+      # than the current best
+      
+      subregions_that_are_good <- which(
+        c(num_points_in_region_1, num_points_in_region_2) >= num_biggest_EI_vals_contained
+      )
+      
+      is_either_subregion_at_least_as_good_as_current_best <- any(
+        subregions_that_are_good
+        )
+      
+      if (is_either_subregion_at_least_as_good_as_current_best) {
+
+        num_biggest_EI_vals_contained <- max(num_points_in_region_1, num_points_in_region_2)
+        
+        region_1_volume <- fprod(region_1$bound_matrix[, 2] - region_1$bound_matrix[, 1])
+        region_2_volume <- fprod(region_2$bound_matrix[, 2] - region_2$bound_matrix[, 1])
+        
+        are_both_subregions_good <- (length(subregions_that_are_good) == 2)
+        
+        if (are_both_subregions_good) {
+          if (min(region_1_volume, region_2_volume) < smallest_region_volume) {
+            dim_to_split <- d
+            percentile_to_split <- percentile
+            
+            region_1_return <- region_1
+            region_2_return <- region_2
+          }
+        }
+        
+        is_region_1_good <- (subregions_that_are_good == 1)
+        
+        if (is_region_1_good) {
+          if (region_1_volume < smallest_region_volume) {
+            dim_to_split <- d
+            percentile_to_split <- percentile
+            
+            region_1_return <- region_1
+            region_2_return <- region_2
+          }
+        } else {
+          if (region_2_volume < smallest_region_volume) {
+            dim_to_split <- d
+            percentile_to_split <- percentile
+            
+            region_1_return <- region_1
+            region_2_return <- region_2
+          }
+        }
+      }
     }
-    
-    # I need to check the above code carefully
-    # and then proceed to prepare the
-    # prospective new subregions
-    # and determine how many of the biggest EI value locations
-    # fall in each subregion
-    
   }
+  
+  # Now we have chosen our prospective subregions,
+  # so we need to fit Gaussian process models
+  # for each, and optimize EI for each
+    
+    # Fit the Gaussian process model
+    
+    print(sprintf("Fitting Gaussian process model"))
+  
+  region_1_gp_model <- km(
+    formula = ~1,
+    design = region_1_return$region_x,
+    response = region_1_return$region_y,
+    covtype = "powexp",
+    nugget = 1e-09,
+    control = c(dice_ctrl, trace = FALSE),
+    optim.method = "gen"
+  )
+  
+  # Feed the Gaussian process model
+  # to the acquisition-function maximizer
+  
+  print(sprintf("Optimizing acquisition function"))
+  
+  region_1_acq_func_max <- max_EI(
+    model = region_1_gp_model,
+    type = "UK",
+    lower = region_1_return$bound_matrix[, 1],
+    upper = region_1_return$bound_matrix[, 2],
+    control = dice_ctrl
+  )
+  
+  # Fit the Gaussian process model
+  
+  print(sprintf("Fitting Gaussian process model"))
+  
+  region_2_gp_model <- km(
+    formula = ~1,
+    design = region_2_return$region_x,
+    response = region_2_return$region_y,
+    covtype = "powexp",
+    nugget = 1e-09,
+    control = c(dice_ctrl, trace = FALSE),
+    optim.method = "gen"
+  )
+  
+  # Feed the Gaussian process model
+  # to the acquisition-function maximizer
+  
+  print(sprintf("Optimizing acquisition function"))
+  
+  region_2_acq_func_max <- max_EI(
+    model = region_2_gp_model,
+    type = "UK",
+    lower = region_2_return$bound_matrix[, 1],
+    upper = region_2_return$bound_matrix[, 2],
+    control = dice_ctrl
+  )
+  
+  region_1_return$region_a_max <- region_1_acq_func_max$value
+  region_2_return$region_a_max <- region_2_acq_func_max$value
   
   end <- Sys.time()
   duration <- end - start
