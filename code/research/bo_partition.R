@@ -1,6 +1,7 @@
 library(DiceOptim)
 library(lhs)
 library(doBy)
+library(collapse)
 
 # Begin timing how long the code takes to run
 
@@ -48,7 +49,7 @@ if (working == "remote") {
   test_func_name <- "rastr"
   dim <- 2
   num_init_obs <- 20
-  num_subseq_obs <- 10 # 100
+  num_subseq_obs <- 5 # 100
   num_runs <- 10
   n_max_param <- 25
   tol_param <- 0.1
@@ -62,7 +63,7 @@ if (working == "remote") {
                              test_func_name, dim, num_runs, num_init_obs, seed_value)
   
   sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
-  sink(file = sink_file)
+  # sink(file = sink_file)
 }
 
 # A function (and some settings) to dump an .rda file
@@ -158,6 +159,64 @@ acq_func_max <- max_EI(
   control = dice_ctrl
 )
 
+# Set up the initial region list
+
+init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
+                   region_x = init_points,
+                   region_y = init_y,
+                   region_min = min(init_y),
+                   region_argmin = init_points[which.min(init_y), ],
+                   region_a_max = acq_func_max$value
+)
+
+print("Initial region:")
+print(init_region)
+
+# Keep track of best observation so far
+# and where it was observed
+
+smallest_y_so_far = init_region$region_min
+where_smallest_y_so_far = init_region$region_argmin
+
+# We may as well take an observation
+# at acq_func_max$par, because
+# not doing so would lead to
+# redundant work in explore_region()
+
+first_x <- acq_func_max$par
+first_y <- test_func(first_x)
+first_ei_val <- acq_func_max$value
+
+print(paste(c("First observation ", first_y, " at location ",
+              first_x, " with EI value ", first_ei_val)))
+
+# Update our records
+
+first_update <- update_records(region = init_region,
+                               best_y_so_far = smallest_y_so_far,
+                               where_best_y_so_far = where_smallest_y_so_far,
+                               run_obs_vec = run_obs,
+                               best_so_far_vec = best_so_far,
+                               ei_vals_vec = ei_vals,
+                               new_x = first_x,
+                               new_y = first_y,
+                               new_ei_vals = first_ei_val
+                               )
+
+init_region <- first_update$region
+
+smallest_y_so_far <- first_update$new_best_y
+where_smallest_y_so_far <- first_update$where_new_best_y
+
+run_obs <- first_update$run_obs
+best_so_far <- first_update$best_so_far
+ei_vals <- first_update$ei_vals
+
+# Set up region lists
+
+all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
+rejected_regions = list() # will contain the regions that we reject
+
 # Experimenting with adding points to gp_model
 # The means don't seem to change
 
@@ -175,28 +234,6 @@ acq_func_max <- max_EI(
 # 
 # pred <- predict(object = gp_model, newdata = test_point, type = "UK")
 # pred$mean
-
-# Set up the initial region list
-
-init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
-                   region_x = init_points,
-                   region_y = init_y,
-                   region_min = min(init_y),
-                   region_argmin = init_points[which.min(init_y), ],
-                   region_a_max = acq_func_max$value
-)
-
-print("Initial region:")
-print(init_region)
-
-# Set up region lists
-# and keep track of best observation so far
-
-all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
-rejected_regions = list() # will contain the regions that we reject
-
-smallest_y_so_far = init_region$region_min
-where_smallest_y_so_far = init_region$region_argmin
 
 # Now begin the outer optimization loop
 # Loop as long as there are promising regions to explore
