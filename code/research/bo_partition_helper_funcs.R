@@ -375,10 +375,96 @@ gen_points <- function(region,
 
 ### End test code ###
 
+prep_subregions <- function(region,
+                            split_dimension,
+                            split_point,
+                            min_split_width = 1e-2) {
+  
+  # Bind the region x and y points
+  
+  region_x = region$region_x
+  region_y = region$region_y
+  
+  # Split region_x and region_y
+  
+  region_1_x = region_x[region_x[, split_dimension] < split_point, ]
+  region_1_y = region_y[which(region_x[, split_dimension] < split_point)]
+  
+  region_2_x = region_x[region_x[, split_dimension] >= split_point, ]
+  region_2_y = region_y[which(region_x[, split_dimension] >= split_point)]
+  
+  # Compute the widths of region_1 and region_1
+  # on the splitting dimension
+  # If either is narrower than min_split_width,
+  # we won't split at this point on this dimension
+  
+  region_1_x_d_range <- frange(region_1_x[, split_dimension])
+  region_2_x_d_range <- frange(region_2_x[, split_dimension])
+  
+  region_1_x_d_width <- region_1_x_d_range[2] - region_1_x_d_range[1]
+  region_2_x_d_width <- region_2_x_d_range[2] - region_2_x_d_range[1]
+  
+  if(region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
+    
+    print(sprintf("One of region_1_x_d_width (%s) or region_1_x_d_width (%s)
+                      is <= min_split_width (%s), when splitting on
+                      dimension %d at split_point %s",
+                  region_1_x_d_width, region_2_x_d_width, min_split_width,
+                  split_dimension, split_point))
+    
+    print(sprintf("Therefore we are going to not going to consider splitting
+                      on dimension %s at split_point %s", split_dimension, split_point))
+    
+    return(0)
+
+  }
+  
+  # Now we prepare the two prospective new subregions
+  # Note that the EI values (a_max) for each subregion
+  # are incorrect, since we have not fit
+  # Gaussian process models or optimized EI
+  # for these subregions
+  
+  print(sprintf("Preparing region_1"))
+  
+  region_1 = region
+  
+  region_1$bound_matrix[split_dimension, 2] = split_point
+  
+  region_1$region_x = region_1_x
+  region_1$region_y = region_1_y
+  
+  region_1$region_min = min(region_1_y)
+  region_1$region_argmin = region_1_x[which.min(region_1_y), ]
+  
+  print("Proposed region 1:")
+  print(region_1)
+  
+  print(sprintf("Preparing region_2"))
+  
+  region_2 = region
+  
+  region_2$bound_matrix[split_dimension, 1] = split_point
+  
+  region_2$region_x = region_2_x
+  region_2$region_y = region_2_y
+  
+  region_2$region_min = min(region_2_y)
+  region_2$region_argmin = region_2_x[which.min(region_2_y), ]
+  
+  print("Proposed region 2:")
+  print(region_2)
+  
+  return(list(subregion_1 = region_1,
+              subregion_2 = region_2
+              )
+         )
+}
+
 split_and_fit <- function(region,
                           region_model,
-                          biggest_EI_vals = 10,
-                          min_split_width = 1e-2) {
+                          biggest_EI_vals = 10
+                          ) {
   
   # Begin timing how long split_and_fit() takes to run
   
@@ -393,17 +479,14 @@ split_and_fit <- function(region,
   dimension <- ncol(region$region_x)
   biggest_EI_vals <- 3
   
-  min_split_width <- 1e-2
-  
   ### End test code ###
   
+  print("The region we are spliting is:")
+  print(region)
+  
   # Bind the dimension
-  # and the region x and y points
   
   # dimension <- ncol(region$region_x)
-  
-  region_x = region$region_x
-  region_y = region$region_y
   
   # We need to prepare
   # the points at which we will evaluate EI,
@@ -414,14 +497,24 @@ split_and_fit <- function(region,
   EI_points <- gen_points(region = region,
                           num_points = 10) # change to 1000/10000 when working
   
+  print("The points at which we will evaluate EI are:")
+  print(EI_points)
+  
   # Next, we evaluate EI for each of the (scaled, shifted) LHS points
   # and find which indices correspond to the biggest EI values
   # and then we isolate those particular EI points
   
   EI_values <- apply(X = EI_points, MARGIN = 1, FUN = EI, region_model)
+  
+  print("The EI values are:")
+  print(EI_values)
 
   biggest_ei_vals_indices <- which.maxn(EI_values, n = biggest_EI_vals)
   biggest_ei_vals_points <- EI_points[biggest_ei_vals_indices, ]
+  
+  print(sprintf("The points leading to the %s biggest EI values are:",
+                biggest_EI_vals))
+  print(biggest_ei_vals_points)
   
   # We need to keep track of how many of the
   # points leading to the biggest EI values
@@ -448,7 +541,11 @@ split_and_fit <- function(region,
     # of the region_x points on dimension d
     
     percentiles_vec <- c(0.25, 0.50, 0.75)
-    percentiles <- fquantile(region_x[, d], percentiles_vec)
+    percentiles <- fquantile(region$region_x[, d], percentiles_vec)
+    
+    print(sprintf("The %s percentiles for the region x points
+                   in dimension %s are: %s",
+                  percentiles_vec, d, percentiles))
     
     for (p in 1:length(percentiles)) {
       
@@ -460,65 +557,31 @@ split_and_fit <- function(region,
       
       percentile <- percentiles[p]
       
-      print(sprintf("Splitting at percentile %s in dimension %s, which takes value %s",
-                    percentiles_vec[p], d, percentile))
+      print(sprintf("Splitting at percentile %s (which takes value %s) in dimension %s",
+                    percentiles_vec[p], percentile, d))
       
-      # Split region_x and region_y
+      # Prepare the subregions
       
-      # I think a lot of this code could go into a new function,
-      # call it prep_subregions(), which would take
-      # as arguments a region, a dimension, and a percentile
-      # and return the two subregions
+      subregions <- prep_subregions(region = region,
+                                    split_dimension = d,
+                                    split_point = percentile
+                                    )
       
-      region_1_x = region_x[region_x[, d] < percentile, ]
-      region_1_y = region_y[which(region_x[, d] < percentile)]
-      region_2_x = region_x[region_x[, d] >= percentile, ]
-      region_2_y = region_y[which(region_x[, d] >= percentile)]
+      # Check if the split was unsuccessful because
+      # a very narrow subregion would have been created
+      # If the split was unsuccessful, try the next split
+      # (If unsuccessful, prep_subregions returns zero)
       
-      region_1_x_d_range <- frange(region_1_x[, d])
-      region_2_x_d_range <- frange(region_2_x[, d])
-      
-      region_1_x_d_width <- region_1_x_d_range[2] - region_1_x_d_range[1]
-      region_2_x_d_width <- region_2_x_d_range[2] - region_2_x_d_range[1]
-      
-      if(region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
-        
-        print(sprintf("One of region_1_x_d_width (%s) or region_1_x_d_width (%s)
-                      is <= min_split_width (%s), when splitting on
-                      dimension %d at percentile %s",
-                      region_1_x_d_width, region_2_x_d_width, min_split_width,
-                      d, percentile))
-        
-        print(sprintf("Therefore we are going to not going to consider splitting
-                      on dimension %s at percentile %s", d, percentile))
-        
+      if (is.numeric(subregions)) {
         next
       }
       
-      # Now we prepare the two prospective new subregions
-      # Note that the EI values (a_max) for each subregion
-      # are incorrect, since we have not fit
-      # Gaussian process models or optimized EI
-      # for these subregions
+      region_1 <- subregions[[1]]
+      region_2 <- subregions[[2]]
       
-      print(sprintf("Preparing region_1"))
-      region_1 = region
-      region_1$bound_matrix[d, 2] = percentile
-      region_1$region_x = region_1_x
-      region_1$region_y = region_1_y
-      region_1$region_min = min(region_1_y)
-      region_1$region_argmin = region_1_x[which.min(region_1_y), ]
-      print("Proposed region 1:")
+      print("Proposed subregion 1:")
       print(region_1)
-      
-      print(sprintf("Preparing region_2"))
-      region_2 = region
-      region_2$bound_matrix[d, 1] = percentile
-      region_2$region_x = region_2_x
-      region_2$region_y = region_2_y
-      region_2$region_min = min(region_2_y)
-      region_2$region_argmin = region_2_x[which.min(region_2_y), ]
-      print("Proposed region 2:")
+      print("Proposed subregion 2:")
       print(region_2)
       
       # Next, we must determine how many
@@ -536,69 +599,126 @@ split_and_fit <- function(region,
       num_points_in_region_1 <- sum(is_point_in_region_1)
       num_points_in_region_2 <- biggest_EI_vals - num_points_in_region_1
       
+      print(sprintf("The number of the biggest EI points in region 1 is
+                     %s, and the number in region 2 is %s",
+                    num_points_in_region_1, num_points_in_region_2))
+      
       # Now that we know how many of the biggest EI points
       # are in region_1 and region_2,
       # we check whether either of them contains
-      # more of the biggest EI points
-      # than the current best
+      # at least as many of the biggest EI points
+      # as the current best
       
       subregions_that_are_good <- which(
         c(num_points_in_region_1, num_points_in_region_2) >= num_biggest_EI_vals_contained
       )
       
+      print(sprintf("The subregions that contain at least
+                     as mahy points as the current best are: %s",
+                    subregions_that_are_good))
+      
       is_either_subregion_at_least_as_good_as_current_best <- any(
         subregions_that_are_good
         )
+      
+      # If either subregion contains at least as many
+      # of the biggest EI points as the current best,
+      # we compute the region volumes
+      # and then work through the three possible cases
+      # (described below)
       
       if (is_either_subregion_at_least_as_good_as_current_best) {
 
         num_biggest_EI_vals_contained <- max(num_points_in_region_1, num_points_in_region_2)
         
-        region_1_volume <- fprod(region_1$bound_matrix[, 2] - region_1$bound_matrix[, 1])
-        region_2_volume <- fprod(region_2$bound_matrix[, 2] - region_2$bound_matrix[, 1])
+        region_1_dim_lengths <- region_1$bound_matrix[, 2] - region_1$bound_matrix[, 1]
+        region_2_dim_lengths <- region_2$bound_matrix[, 2] - region_2$bound_matrix[, 1]
+        
+        region_1_volume <- fprod(region_1_dim_lengths)
+        region_2_volume <- fprod(region_2_dim_lengths)
         
         are_both_subregions_good <- (length(subregions_that_are_good) == 2)
-        
-        if (are_both_subregions_good) {
-          if (min(region_1_volume, region_2_volume) < smallest_region_volume) {
-            dim_to_split <- d
-            percentile_to_split <- percentile
-            
-            region_1_return <- region_1
-            region_2_return <- region_2
-          }
-        }
-        
         is_region_1_good <- (subregions_that_are_good == 1)
         
-        if (is_region_1_good) {
-          if (region_1_volume < smallest_region_volume) {
+        if (are_both_subregions_good) {
+          
+          # Both subregions contain at least as many points
+          # as the current best, in which case we keep this split
+          # if the minimum of the two subregion volumes
+          # is smaller than the current best
+          
+          min_region_volume <- min(region_1_volume, region_2_volume)
+            
+          if (min_region_volume < smallest_region_volume) {
+
+            smallest_region_volume <- min_region_volume
+            
             dim_to_split <- d
             percentile_to_split <- percentile
             
             region_1_return <- region_1
             region_2_return <- region_2
+            
+          }
+        } else if (is_region_1_good) {
+          
+          # Only the first subregion contains at least as many points
+          # as the current best, in which case we keep this split
+          # if the volume of the first subregion
+          # is smaller than the current best
+          
+          if (region_1_volume < smallest_region_volume) {
+            
+            smallest_region_volume <- region_1_volume
+            
+            dim_to_split <- d
+            percentile_to_split <- percentile
+            
+            region_1_return <- region_1
+            region_2_return <- region_2
+            
           }
         } else {
+          
+          # Only the second subregion contains at least as many points
+          # as the current best, in which cased we keep this split
+          # if the volume of the second subregion
+          # is smaller than the current best
+          
           if (region_2_volume < smallest_region_volume) {
+            
+            smallest_region_volume <- region_2_volume
+            
             dim_to_split <- d
             percentile_to_split <- percentile
             
             region_1_return <- region_1
             region_2_return <- region_2
+            
           }
         }
       }
     }
   }
   
-  # Now we have chosen our prospective subregions,
+  print(sprintf("The chosen split is on dimension %s
+                 at point %s",
+                dim_to_split, percentile_to_split))
+  
+  print("The first new subregion is:")
+  print(region_1_return)
+  
+  print("The second new subregion is:")
+  print(region_2_return)
+  
+  # Now we have chosen our new subregions,
   # so we need to fit Gaussian process models
   # for each, and optimize EI for each
     
     # Fit the Gaussian process model
     
-    print(sprintf("Fitting Gaussian process model"))
+    print(sprintf("Fitting Gaussian process model
+                   for first new subregion"))
   
   region_1_gp_model <- km(
     formula = ~1,
@@ -613,7 +733,8 @@ split_and_fit <- function(region,
   # Feed the Gaussian process model
   # to the acquisition-function maximizer
   
-  print(sprintf("Optimizing acquisition function"))
+  print(sprintf("Optimizing acquisition function
+                 for first new subregion"))
   
   region_1_acq_func_max <- max_EI(
     model = region_1_gp_model,
@@ -625,7 +746,8 @@ split_and_fit <- function(region,
   
   # Fit the Gaussian process model
   
-  print(sprintf("Fitting Gaussian process model"))
+  print(sprintf("Fitting Gaussian process model
+                 for second new subregion"))
   
   region_2_gp_model <- km(
     formula = ~1,
@@ -640,7 +762,8 @@ split_and_fit <- function(region,
   # Feed the Gaussian process model
   # to the acquisition-function maximizer
   
-  print(sprintf("Optimizing acquisition function"))
+  print(sprintf("Optimizing acquisition function
+                 for second new subregion"))
   
   region_2_acq_func_max <- max_EI(
     model = region_2_gp_model,
@@ -649,6 +772,9 @@ split_and_fit <- function(region,
     upper = region_2_return$bound_matrix[, 2],
     control = dice_ctrl
   )
+  
+  # Update the a_max values
+  # for the two new subregions
   
   region_1_return$region_a_max <- region_1_acq_func_max$value
   region_2_return$region_a_max <- region_2_acq_func_max$value
@@ -659,7 +785,7 @@ split_and_fit <- function(region,
   print("Region split in:")
   print(duration)
 
-  print(sprintf("Returning region_1 and region_2 from split_and_fit"))
+  print(sprintf("Returning new subregions from split_and_fit"))
 
   return(list(region_1 = region_1_return,
               region_2 = region_2_return
