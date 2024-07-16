@@ -64,7 +64,7 @@ if (working == "remote") {
                              test_func_name, dim, num_runs, num_init_obs, seed_value)
   
   sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
-  # sink(file = sink_file)
+  sink(file = sink_file)
 }
 
 # A function (and some settings) to dump an .rda file
