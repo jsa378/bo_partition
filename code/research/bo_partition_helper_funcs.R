@@ -302,10 +302,15 @@ explore_region <- function(region,
   # Now we pass everything to split_and_fit()
   # and return to the main while loop
   
-  print("Splitting region")
+  print(sprintf("Splitting region; evaluating EI at %s
+                 points and splitting based on top %s EI values",
+                how_many_EI_points_param,
+                top_n_EI_values_param))
   
   new_subregions = split_and_fit(region = region,
-                                 region_model = region_model)
+                                 region_model = region_model,
+                                 how_many_EI_points = how_many_EI_points_param,
+                                 top_n_EI_vals = top_n_EI_vals_param)
   
   new_subregion_1 = new_subregions$region_1
   new_subregion_2 = new_subregions$region_2

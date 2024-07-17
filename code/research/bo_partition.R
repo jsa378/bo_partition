@@ -17,7 +17,7 @@ working <- "local"
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
   if (length(args) < 10) {
-    stop("Ten arguments must be supplied:
+    stop("Twelve arguments must be supplied:
     seed value (int),
     test function (string),
     dim (int),
@@ -26,6 +26,8 @@ if (working == "remote") {
     num runs (int),
     n_max_param (int),
     tol_param (float),
+    how_many_EI_points_param (int),
+    top_n_EI_vals_param (int),
     save dir (no type),
     slurm job id (int)", call. = FALSE)
   }
@@ -37,14 +39,17 @@ if (working == "remote") {
   num_runs <- as.integer(args[6])
   n_max_param <- as.integer(args[7])
   tol_param <- as.numeric(args[8])
-  save_dir <- as.character(args[9])
-  slurm_job_id <- as.integer(args[10])
+  how_many_EI_points_param <- as.integer(args[9])
+  top_n_EI_vals_param <- as.integer(args[10])
+  save_dir <- as.character(args[11])
+  slurm_job_id <- as.integer(args[12])
 
   source("/home/jsa378/bo_partition/code/test_funcs.R")
   source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
   
   init_points_loc <- sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
                              test_func_name, dim, num_runs, num_init_obs, seed_value)
+
 } else if (working == "local") {
   seed_value <- 1
   test_func_name <- "rastr"
@@ -54,6 +59,8 @@ if (working == "remote") {
   num_runs <- 10
   n_max_param <- 25
   tol_param <- 0.1
+  how_many_EI_points_param <- 10
+  top_n_EI_vals_param <- 3
   save_dir <- "/Users/jesse/Downloads/cedar_test_output/research_testing/"
   slurm_job_id <- seed_value
   
@@ -65,6 +72,7 @@ if (working == "remote") {
   
   sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/research_testing/bo_partition_test.txt")
   sink(file = sink_file)
+
 }
 
 # A function (and some settings) to dump an .rda file
@@ -197,40 +205,6 @@ print(init_region)
 
 smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
-
-# # We may as well take an observation
-# # at acq_func_max$par, because
-# # not doing so would lead to
-# # redundant work in explore_region()
-# 
-# first_x <- acq_func_max$par
-# first_y <- test_func(first_x)
-# first_ei_val <- acq_func_max$value
-# 
-# print(paste(c("First observation ", first_y, " at location ",
-#               first_x, " with EI value ", first_ei_val)))
-# 
-# # Update our records
-# 
-# first_update <- update_records(region = init_region,
-#                                best_y_so_far = smallest_y_so_far,
-#                                where_best_y_so_far = where_smallest_y_so_far,
-#                                run_obs_vec = run_obs,
-#                                best_so_far_vec = best_so_far,
-#                                ei_vals_vec = ei_vals,
-#                                new_x = first_x,
-#                                new_y = first_y,
-#                                new_ei_vals = first_ei_val
-#                                )
-# 
-# init_region <- first_update$region
-# 
-# smallest_y_so_far <- first_update$new_best_y
-# where_smallest_y_so_far <- first_update$where_new_best_y
-# 
-# run_obs <- first_update$run_obs
-# best_so_far <- first_update$best_so_far
-# ei_vals <- first_update$ei_vals
 
 # Set up region lists
 
