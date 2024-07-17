@@ -50,7 +50,7 @@ if (working == "remote") {
   test_func_name <- "rastr"
   dim <- 2
   num_init_obs <- 20
-  num_subseq_obs <- 5 # 100
+  num_subseq_obs <- 100
   num_runs <- 10
   n_max_param <- 25
   tol_param <- 0.1
@@ -162,12 +162,31 @@ acq_func_max <- max_EI(
 
 # Set up the initial region list
 
+# The region_a_par value is only created
+# when creating a new region,
+# so the initial region here and
+# when splitting a region, at the end
+# of split_and_fit()
+
+# It is used to take the initial sample
+# at the beginning of explore_region().
+# region_a_par is never updated,
+# because I don't think doing so
+# would serve any purpose;
+# once a region goes into
+# explore_region(), we will never
+# explore it again, since we either
+# reach our total observation budget,
+# we reject the region, or
+# we split the region
+
 init_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
                    region_x = init_points,
                    region_y = init_y,
                    region_min = min(init_y),
                    region_argmin = init_points[which.min(init_y), ],
-                   region_a_max = acq_func_max$value
+                   region_a_max = acq_func_max$value,
+                   region_a_par = acq_func_max$par
 )
 
 print("Initial region:")
@@ -179,39 +198,39 @@ print(init_region)
 smallest_y_so_far = init_region$region_min
 where_smallest_y_so_far = init_region$region_argmin
 
-# We may as well take an observation
-# at acq_func_max$par, because
-# not doing so would lead to
-# redundant work in explore_region()
-
-first_x <- acq_func_max$par
-first_y <- test_func(first_x)
-first_ei_val <- acq_func_max$value
-
-print(paste(c("First observation ", first_y, " at location ",
-              first_x, " with EI value ", first_ei_val)))
-
-# Update our records
-
-first_update <- update_records(region = init_region,
-                               best_y_so_far = smallest_y_so_far,
-                               where_best_y_so_far = where_smallest_y_so_far,
-                               run_obs_vec = run_obs,
-                               best_so_far_vec = best_so_far,
-                               ei_vals_vec = ei_vals,
-                               new_x = first_x,
-                               new_y = first_y,
-                               new_ei_vals = first_ei_val
-                               )
-
-init_region <- first_update$region
-
-smallest_y_so_far <- first_update$new_best_y
-where_smallest_y_so_far <- first_update$where_new_best_y
-
-run_obs <- first_update$run_obs
-best_so_far <- first_update$best_so_far
-ei_vals <- first_update$ei_vals
+# # We may as well take an observation
+# # at acq_func_max$par, because
+# # not doing so would lead to
+# # redundant work in explore_region()
+# 
+# first_x <- acq_func_max$par
+# first_y <- test_func(first_x)
+# first_ei_val <- acq_func_max$value
+# 
+# print(paste(c("First observation ", first_y, " at location ",
+#               first_x, " with EI value ", first_ei_val)))
+# 
+# # Update our records
+# 
+# first_update <- update_records(region = init_region,
+#                                best_y_so_far = smallest_y_so_far,
+#                                where_best_y_so_far = where_smallest_y_so_far,
+#                                run_obs_vec = run_obs,
+#                                best_so_far_vec = best_so_far,
+#                                ei_vals_vec = ei_vals,
+#                                new_x = first_x,
+#                                new_y = first_y,
+#                                new_ei_vals = first_ei_val
+#                                )
+# 
+# init_region <- first_update$region
+# 
+# smallest_y_so_far <- first_update$new_best_y
+# where_smallest_y_so_far <- first_update$where_new_best_y
+# 
+# run_obs <- first_update$run_obs
+# best_so_far <- first_update$best_so_far
+# ei_vals <- first_update$ei_vals
 
 # Set up region lists
 

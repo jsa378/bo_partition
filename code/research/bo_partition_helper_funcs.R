@@ -100,6 +100,54 @@ explore_region <- function(region,
                            num_obs_so_far,
                            tol = 0.1) {
   
+  # The first thing we do is take an observation
+  # at region$region_a_par, because we already
+  # fit a Gaussian process model and optimized
+  # EI for this (sub)region,
+  # either at the very beginning(for init_region)
+  # or at the end of split_and_fit(),
+  # so re-doing that work
+  # before sampling would be redundant
+  
+  # Note that the EI value has not changed,
+  # so region$region_a_max should be the same
+  # after update_region()
+  
+  new_x <- region$region_a_par
+  new_y <- test_func(new_x)
+  new_ei_val <- region$region_a_max
+  
+  print(paste(c("New observation ", new_y, " at location ", new_x,
+                " with EI value ", new_ei_val)))
+  
+  # Update our records
+  
+  update <- update_records(region = region,
+                           best_y_so_far = best_y_so_far,
+                           where_best_y_so_far = where_best_y_so_far,
+                           run_obs_vec = run_obs_vec,
+                           best_so_far_vec = best_so_far_vec,
+                           ei_vals_vec = ei_vals_vec,
+                           new_x = new_x,
+                           new_y = new_y,
+                           new_ei_vals = new_ei_val
+  )
+  
+  region <- update$region
+  
+  best_y_so_far <- update$new_best_y
+  where_best_y_so_far <- update$where_new_best_y
+  
+  run_obs_vec <- update$run_obs
+  best_so_far_vec <- update$best_so_far
+  ei_vals_vec <- update$ei_vals
+  
+  # Because we will never begin explore_region()
+  # with a region containing n_max - 1 points
+  # (I don't think), adding one observation
+  # here should never affect the
+  # while (n < m_max condition)
+  
   # Binding the x and y points
   # and computing how many observations
   # we have in this region
@@ -108,6 +156,7 @@ explore_region <- function(region,
   region_y = region$region_y
   
   n = nrow(region_x)
+  num_obs_so_far <- num_obs_so_far + 1
   
   # Begin the main explore_region() loop
   # In this loop, we do Bayesian optimization,
@@ -437,8 +486,8 @@ prep_subregions <- function(region,
   region_1$region_min = min(region_1_y)
   region_1$region_argmin = region_1_x[which.min(region_1_y), ]
   
-  print("Proposed region 1:")
-  print(region_1)
+  # print("Proposed region 1:")
+  # print(region_1)
   
   print(sprintf("Preparing region_2"))
   
@@ -452,8 +501,8 @@ prep_subregions <- function(region,
   region_2$region_min = min(region_2_y)
   region_2$region_argmin = region_2_x[which.min(region_2_y), ]
   
-  print("Proposed region 2:")
-  print(region_2)
+  # print("Proposed region 2:")
+  # print(region_2)
   
   return(list(subregion_1 = region_1,
               subregion_2 = region_2
@@ -897,9 +946,13 @@ split_and_fit <- function(region,
   
   # Update the a_max values
   # for the two new subregions
+  # and also the a_par values
   
   region_1_return$region_a_max <- region_1_acq_func_max$value
   region_2_return$region_a_max <- region_2_acq_func_max$value
+  
+  region_1_return$region_a_par <- region_1_acq_func_max$par
+  region_2_return$region_a_par <- region_2_acq_func_max$par
   
   end <- Sys.time()
   duration <- end - start
