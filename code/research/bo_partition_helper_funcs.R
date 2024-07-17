@@ -619,7 +619,7 @@ split_and_fit <- function(region,
       
       print(sprintf("The current record for smallest region volume
                     containing %s of the %s points leading to the
-                    highest EI values is:",
+                    highest EI values is: %s",
                     most_EI_vals, top_n_EI_vals,
                     smallest_subregion_vol))
       
@@ -636,7 +636,7 @@ split_and_fit <- function(region,
         c(num_points_in_region_1, num_points_in_region_2) > most_EI_vals
       )
 
-      print(sprintf("The subregions that contain
+      print(sprintf("The subregions (if any) that contain
                      more points as the current best are: %s",
                     subregions_that_are_better))
 
@@ -646,16 +646,16 @@ split_and_fit <- function(region,
       
       # We also check whether at least one
       # of the subregions contains the same
-      # number of EI points sa the current record,
+      # number of EI points as the current record,
       # but we only use this information if
       # no subregion contains strictly more
       # EI points than the current record
       
       subregions_that_are_as_good <- which(
-        c(num_points_in_region_1, num_points_in_region_2) == num_biggest_EI_vals_contained
+        c(num_points_in_region_1, num_points_in_region_2) == most_EI_vals
       )
 
-      print(sprintf("The subregions that contain
+      print(sprintf("The subregions (if any) that contain
                      as many points as the current best are: %s",
                     subregions_that_are_as_good))
 
@@ -663,72 +663,67 @@ split_and_fit <- function(region,
         subregions_that_are_as_good
         )
       
+      # If neither of these conditions is satisfied,
+      # we reject this split and move on to
+      # the next one
+      
       if (is_either_subregion_better_than_current_best) {
         
         # At least one of the subregions contains
         # strictly more points than the current record,
-        # so are they tied?
+        # so this is the new best split
+        
+        dim_to_split <- d
+        point_to_split <- percentile
+        percentile_to_split <- percentiles_vec[p]
+        
+        region_1_return <- region_1
+        region_2_return <- region_2
+        
+        # The only issue in this case is
+        # how to re-set most_EI_vals
+        # and smallest_subregion_vol
 
-        # If they are tied, set smallest_subregion_vol
+        # If region_1 and region_2 are tied,
+        # set smallest_subregion_vol
         # to be the minimum of the region volumes,
-        # re-set most_EI_vals
-        # and save the split information
+        # and re-set most_EI_vals
         
         are_the_subregions_tied <- (num_points_in_region_1 == num_points_in_region_2)
         
         if (are_the_subregions_tied) {
           
           min_region_volume <- min(region_1_volume, region_2_volume)
+
           smallest_subregion_vol <- min_region_volume
-          
           most_EI_vals <- num_points_in_region_1
-          
-          dim_to_split <- d
-          percentile_to_split <- percentile
-          
-          region_1_return <- region_1
-          region_2_return <- region_2
+
           
         } else {
           
-          # Since they are not tied,
+          # If they are not tied,
           # one subregion contains more points
           # than the other
           
-          # If region_1 contains more than region_2,
+          # If region_1 contains more points
+          # than region_2,
           # we re-set the records using region_1
-          # information, and save the split information
           
           is_region_1_better <- (num_points_in_region_1 > num_points_in_region_2)
           
           if (is_region_1_better) {
 
             smallest_subregion_vol <- region_1_volume
-
             most_EI_vals <- num_points_in_region_1
-
-            dim_to_split <- d
-            percentile_to_split <- percentile
-
-            region_1_return <- region_1
-            region_2_return <- region_2
 
           } else {
             
             # Since region_1 was not better,
             # region_2 must have been better,
             # so we re-set the records using region_2
-            # information, and save the split information
 
             smallest_subregion_vol <- region_2_volume
-
             most_EI_vals <- num_points_in_region_2
-
-            dim_to_split <- d
-            percentile_to_split <- percentile
-
-            region_1_return <- region_1
-            region_2_return <- region_2
 
           }
           
@@ -742,60 +737,72 @@ split_and_fit <- function(region,
         # contains the same number of EI points
         # as the current record
         
+        # If this is true, we don't have to
+        # re-set most_EI_vals, but we might
+        # have to re-set smallest_subregion_vol
+        
         # (If this is false, we discard this split
         # and consider the next possible split)
         
-        # If region_1 tied most_EI_vals,
-        # then if region_1_volume beats
-        # the record, we re-set the records
-        # using region_1_information,
-        # and save the split information
+        # If region_1 and region_2 are tied,
+        # we only re-set smallest_subregion_vol
+        # if the minimum of the region volumes
+        # is less than smallest_subregion_vol
         
-        if (num_points_in_region_1 == most_EI_vals) {
+        are_both_subregions_as_good <- (length(subregions_that_are_as_good) == 2)
+        is_only_region_1_as_good <- (subregions_that_are_as_good == 1)
+        
+        if (are_both_subregions_as_good) {
           
-          if (region_1_volume < smallest_subregion_vol) {
+          min_subregion_volume <- min(region_1_volume, region_2_volume)
+          
+          if (min_subregion_volume < smallest_subregion_vol) {
             
-            smallest_subregion_vol <- region_1_volume
+            smallest_subregion_vol <- min_subregion_volume
             
             dim_to_split <- d
-            percentile_to_split <- percentile
+            point_to_split <- percentile
+            percentile_to_split <- percentiles_vec[p]
             
             region_1_return <- region_1
             region_2_return <- region_2
             
           }
           
-        }
-        
-        # If region_2 tied most_EI_vals,
-        # then if region_2_volume beats
-        # the record, we re-set the records
-        # using region_2_information,
-        # and save the split information
-        
-        # Note that if neither region_1
-        # nor region_2 have a smaller volume
-        # than smallest_subregion_vol,
-        # we discard this split
-        # and consider the next possible split
-        
-        # Note that if both region_1 and region_2
-        # tie most_EI_vals, and both
-        # have smaller region volumes
-        # than smallest_subregion_vol
-        # then we are implicitly
-        # setting smallest_subregion_vol
-        # to be the minimum of the two region
-        # volumes
-        
-        if (num_points_in_region_2 == most_EI_vals) {
+        } else if (is_only_region_1_as_good) {
+          
+          # If only region_1 tied, then
+          # we only re-set smallest_subregion_vol
+          # if region_1_volume is less than
+          # smallest_subregion_vol
+          
+          if (region_1_volume < smallest_subregion_vol) {
+            
+            smallest_subregion_vol <- region_1_volume
+            
+            dim_to_split <- d
+            point_to_split <- percentile
+            percentile_to_split <- percentiles_vec[p]
+            
+            region_1_return <- region_1
+            region_2_return <- region_2
+            
+          }
+          
+        } else {
+          
+          # Only region_2 tied, in which case
+          # we only re-set smallest_subregion_vol
+          # if region_2_volume is smaller than
+          # smallest_subregion_vol
           
           if (region_2_volume < smallest_subregion_vol) {
             
             smallest_subregion_vol <- region_2_volume
             
             dim_to_split <- d
-            percentile_to_split <- percentile
+            point_to_split <- percentile
+            percentile_to_split <- percentiles_vec[p]
             
             region_1_return <- region_1
             region_2_return <- region_2
@@ -805,174 +812,20 @@ split_and_fit <- function(region,
         }
         
       }
-      
-      
-      
-      
-      ###############
-      
-      
-      
-      
-      
-      # Now that we know how many of the biggest EI points
-      # are in region_1 and region_2,
-      # we check whether either of them contains
-      # at least as many of the biggest EI points
-      # as the current best
-      
 
-      
-      # subregions_that_are_better <- which(
-      #   c(num_points_in_region_1, num_points_in_region_2) > num_biggest_EI_vals_contained
-      # )
-      # 
-      # print(sprintf("The subregions that contain
-      #                more points as the current best are: %s",
-      #               subregions_that_are_better))
-      # 
-      # subregions_that_are_as_good <- which(
-      #   c(num_points_in_region_1, num_points_in_region_2) == num_biggest_EI_vals_contained
-      # )
-      # 
-      # print(sprintf("The subregions that contain
-      #                as many points as the current best are: %s",
-      #               subregions_that_are_as_good))
-      # 
-      # is_either_subregion_better_than_current_best <- any(
-      #   subregions_that_are_better
-      # )
-      # 
-      # is_either_subregion_as_good_as_current_best <- any(
-      #   subregions_that_are_as_good
-      #   )
-      # 
-      # # Compute the region volumes
-      # 
-      # region_1_dim_lengths <- region_1$bound_matrix[, 2] - region_1$bound_matrix[, 1]
-      # region_2_dim_lengths <- region_2$bound_matrix[, 2] - region_2$bound_matrix[, 1]
-      # 
-      # region_1_volume <- fprod(region_1_dim_lengths)
-      # region_2_volume <- fprod(region_2_dim_lengths)
-      # 
-      # # If either subregion contains (strictly) more of
-      # # the biggest EI points than the current best,
-      # # then we work through the possible cases
-      # # (described below)
-      # 
-      # # If either subregion contains as many
-      # # of the biggest EI points as the current best,
-      # # then we work through the possible cases
-      # # (described below)
-      # 
-      # if (is_either_subregion_better_than_current_best) {
-      #   
-      #   # Do both subregions contain strictly more
-      #   # points than the current best?
-      #   
-      #   are_both_subregions_better <- (length(subregions_that_are_better) == 2)
-      #   
-      #   if (are_both_subregions_better) {
-      #     
-      #     # Does one of the subregions contain strictly
-      #     # more points than the other?
-      #     
-      #     
-      #     
-      #   }
-      #   
-      #   num_biggest_EI_vals_contained <- max(num_points_in_region_1, num_points_in_region_2)
-      #   
-      #   
-      #   
-      # }
-      
-      # if (is_either_subregion_at_least_as_good_as_current_best) {
-      # 
-      #   num_biggest_EI_vals_contained <- max(num_points_in_region_1, num_points_in_region_2)
-      #   
-      #   region_1_dim_lengths <- region_1$bound_matrix[, 2] - region_1$bound_matrix[, 1]
-      #   region_2_dim_lengths <- region_2$bound_matrix[, 2] - region_2$bound_matrix[, 1]
-      #   
-      #   region_1_volume <- fprod(region_1_dim_lengths)
-      #   region_2_volume <- fprod(region_2_dim_lengths)
-      #   
-      #   are_both_subregions_good <- (length(subregions_that_are_good) == 2)
-      #   is_region_1_good <- (subregions_that_are_good == 1)
-      #   
-      #   if (are_both_subregions_good) {
-      #     
-      #     # Both subregions contain at least as many points
-      #     # as the current best, in which case we keep this split
-      #     # if the minimum of the two subregion volumes
-      #     # is smaller than the current best
-      #     
-      #     min_region_volume <- min(region_1_volume, region_2_volume)
-      #       
-      #     if (min_region_volume < smallest_region_volume) {
-      # 
-      #       smallest_region_volume <- min_region_volume
-      #       
-      #       dim_to_split <- d
-      #       percentile_to_split <- percentile
-      #       
-      #       region_1_return <- region_1
-      #       region_2_return <- region_2
-      #       
-      #     }
-      #   } else if (is_region_1_good) {
-      #     
-      #     # Only the first subregion contains at least as many points
-      #     # as the current best, in which case we keep this split
-      #     # if the volume of the first subregion
-      #     # is smaller than the current best
-      #     
-      #     if (region_1_volume < smallest_region_volume) {
-      #       
-      #       smallest_region_volume <- region_1_volume
-      #       
-      #       dim_to_split <- d
-      #       percentile_to_split <- percentile
-      #       
-      #       region_1_return <- region_1
-      #       region_2_return <- region_2
-      #       
-      #     }
-      #   } else {
-      #     
-      #     # Only the second subregion contains at least as many points
-      #     # as the current best, in which cased we keep this split
-      #     # if the volume of the second subregion
-      #     # is smaller than the current best
-      #     
-      #     if (region_2_volume < smallest_region_volume) {
-      #       
-      #       smallest_region_volume <- region_2_volume
-      #       
-      #       dim_to_split <- d
-      #       percentile_to_split <- percentile
-      #       
-      #       region_1_return <- region_1
-      #       region_2_return <- region_2
-      #       
-      #     }
-      #   }
-      # }
-      
-      
-      
-      ################
-      
-      
-      
-      
-      
     }
+
   }
   
   print(sprintf("The chosen split is on dimension %s
-                 at point %s",
-                dim_to_split, percentile_to_split))
+                 at percentile %s, which takes value %s",
+                dim_to_split, percentile_to_split, point_to_split))
+  
+  print(sprintf("This split leads to a new subregion
+                 containing %s of the top %s
+                 EI points, with region volume
+                 %s", most_EI_vals, top_n_EI_vals,
+                smallest_subregion_vol))
   
   print("The first new subregion is:")
   print(region_1_return)
@@ -1064,11 +917,11 @@ split_and_fit <- function(region,
 
 ### Begin test code ###
 
-init_region_split <- split_and_fit(region = init_region,
-                                   region_model = gp_model,
-                                   how_many_EI_points = 10,
-                                   top_n_EI_vals = 3
-                                   )
-sink(file = NULL)
+# init_region_split <- split_and_fit(region = init_region,
+#                                    region_model = gp_model,
+#                                    how_many_EI_points = 10,
+#                                    top_n_EI_vals = 3
+#                                    )
+# sink(file = NULL)
 
 ### End test code ###
