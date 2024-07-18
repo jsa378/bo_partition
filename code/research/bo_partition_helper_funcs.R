@@ -305,7 +305,7 @@ explore_region <- function(region,
   print(sprintf("Splitting region; evaluating EI at %s
                  points and splitting based on top %s EI values",
                 how_many_EI_points_param,
-                top_n_EI_values_param))
+                top_n_EI_vals_param))
   
   new_subregions = split_and_fit(region = region,
                                  region_model = region_model,
@@ -665,6 +665,9 @@ split_and_fit <- function(region,
 
       region_1_volume <- fprod(region_1_dim_lengths)
       region_2_volume <- fprod(region_2_dim_lengths)
+      
+      print(sprintf("region_1_volume: %s", region_1_volume))
+      print(sprintf("region_2_volume: %s", region_2_volume))
       
       print(sprintf("The current record for a subregion containing
                     the highest number of the %s points leading

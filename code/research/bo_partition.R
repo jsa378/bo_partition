@@ -12,11 +12,11 @@ start <- Sys.time()
 # This is to set whether parameters are set in this file (local)
 # or in a job submission script (remotely)
 
-working <- "local"
+working <- "remote"
 
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
-  if (length(args) < 10) {
+  if (length(args) < 12) {
     stop("Twelve arguments must be supplied:
     seed value (int),
     test function (string),
@@ -108,6 +108,8 @@ paste(c("Number of subsequent observations:", num_subseq_obs), collapse = " ")
 paste(c("Number of runs:", num_runs), collapse = " ")
 paste(c("n_max parameter:", n_max_param), collapse = " ")
 paste(c("tol parameter:", tol_param), collapse = " ")
+paste(c("how_many_EI_points_param:", how_many_EI_points_param), collapse = " ")
+paste(c("top_n_EI_vals_param:", top_n_EI_vals_param), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
 paste(c("Test func. lower bound scalar:", test_lbound_scalar), collapse = " ")
 paste(c("Test func. upper bound scalar:", test_ubound_scalar), collapse = " ")
@@ -140,7 +142,7 @@ init_y <- apply(X = init_points, MARGIN = 1, FUN = test_func)
 
 dice_ctrl <- list(
   pop.size = 1024,
-  max.generations = 50, # 100,
+  max.generations = 100,
   wait.generations = 10,
   BFGSburnin = 5
 )
@@ -354,10 +356,10 @@ while (length(all_regions) > 0) {
     new_region_1 <- results$new_region_1
     new_region_2 <- results$new_region_2
     
-    print("First new subregion:")
-    print(new_region_1)
-    print("Second new subregion:")
-    print(new_region_2)
+    # print("First new subregion:")
+    # print(new_region_1)
+    # print("Second new subregion:")
+    # print(new_region_2)
     
     all_regions <- c(all_regions, list(new_region_1, new_region_2))
   }
