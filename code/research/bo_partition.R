@@ -12,7 +12,7 @@ start <- Sys.time()
 # This is to set whether parameters are set in this file (local)
 # or in a job submission script (remotely)
 
-working <- "remote"
+working <- "local"
 
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
@@ -59,8 +59,8 @@ if (working == "remote") {
   num_runs <- 10
   n_max_param <- 25
   tol_param <- 0.1
-  how_many_EI_points_param <- 10
-  top_n_EI_vals_param <- 3
+  how_many_EI_points_param <- 1000
+  top_n_EI_vals_param <- 10
   save_dir <- "/Users/jesse/Downloads/cedar_test_output/research_testing/"
   slurm_job_id <- seed_value
   
@@ -282,13 +282,18 @@ while (length(all_regions) > 0) {
   for (region_index in 1:length(all_regions)){
     
     current_region = all_regions[[region_index]]
-    region_values[region_index] = current_region$region_min - current_region$region_a_max
+    # region_values[region_index] = current_region$region_min - current_region$region_a_max
+    region_values[region_index] <- current_region$region_a_max
     
   }
   
+  print("The region values are:")
+  print(region_values)
+  
   # Select the region to explore
 
-  index_of_region_to_explore <- which.min(region_values)
+  # index_of_region_to_explore <- which.min(region_values)
+  index_of_region_to_explore <- which.max(region_values)
   region_to_explore = all_regions[[index_of_region_to_explore]]
   
   print("Region to explore:")
@@ -356,10 +361,10 @@ while (length(all_regions) > 0) {
     new_region_1 <- results$new_region_1
     new_region_2 <- results$new_region_2
     
-    # print("First new subregion:")
-    # print(new_region_1)
-    # print("Second new subregion:")
-    # print(new_region_2)
+    print("First new subregion:")
+    print(new_region_1)
+    print("Second new subregion:")
+    print(new_region_2)
     
     all_regions <- c(all_regions, list(new_region_1, new_region_2))
   }

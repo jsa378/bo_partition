@@ -184,10 +184,12 @@ explore_region <- function(region,
     # Feed the Gaussian process model
     # to the acquisition-function maximizer
     
-    print(sprintf("Optimizing acquisition function"))
+    print(sprintf("Optimizing acquisition function using plugin %s",
+                  best_y_so_far))
     
     acq_func_max <- max_EI(
       model = gp_model,
+      plugin = best_y_so_far,
       type = "UK",
       lower = region$bound_matrix[, 1],
       upper = region$bound_matrix[, 2],
@@ -310,7 +312,8 @@ explore_region <- function(region,
   new_subregions = split_and_fit(region = region,
                                  region_model = region_model,
                                  how_many_EI_points = how_many_EI_points_param,
-                                 top_n_EI_vals = top_n_EI_vals_param)
+                                 top_n_EI_vals = top_n_EI_vals_param,
+                                 best_y_so_far = best_y_so_far)
   
   new_subregion_1 = new_subregions$region_1
   new_subregion_2 = new_subregions$region_2
@@ -518,7 +521,8 @@ prep_subregions <- function(region,
 split_and_fit <- function(region,
                           region_model,
                           how_many_EI_points = 1000,
-                          top_n_EI_vals = 10
+                          top_n_EI_vals = 10,
+                          best_y_so_far
                           ) {
   
   # Begin timing how long split_and_fit() takes to run
@@ -552,17 +556,22 @@ split_and_fit <- function(region,
   EI_points <- gen_points(region = region,
                           num_points = how_many_EI_points)
   
-  print("The points at which we will evaluate EI are:")
-  print(EI_points)
+  # print("The points at which we will evaluate EI are:")
+  # print(EI_points)
   
   # Next, we evaluate EI for each of the (scaled, shifted) LHS points
   # and find which indices correspond to the biggest EI values
   # and then we isolate those particular EI points
   
-  EI_values <- apply(X = EI_points, MARGIN = 1, FUN = EI, region_model)
+  EI_values <- apply(X = EI_points,
+                     MARGIN = 1,
+                     FUN = EI,
+                     model = region_model,
+                     plugin = best_y_so_far,
+                     type = "UK")
   
-  print("The EI values are:")
-  print(EI_values)
+  # print("The EI values are:")
+  # print(EI_values)
 
   biggest_ei_vals_indices <- which.maxn(EI_values, n = top_n_EI_vals)
   biggest_ei_vals_points <- EI_points[biggest_ei_vals_indices, ]
@@ -884,11 +893,11 @@ split_and_fit <- function(region,
                  %s", most_EI_vals, top_n_EI_vals,
                 smallest_subregion_vol))
   
-  print("The first new subregion is:")
-  print(region_1_return)
-  
-  print("The second new subregion is:")
-  print(region_2_return)
+  # print("The first new subregion is:")
+  # print(region_1_return)
+  # 
+  # print("The second new subregion is:")
+  # print(region_2_return)
   
   # Now we have chosen our new subregions,
   # so we need to fit Gaussian process models
@@ -913,10 +922,12 @@ split_and_fit <- function(region,
   # to the acquisition-function maximizer
   
   print(sprintf("Optimizing acquisition function
-                 for first new subregion"))
+                 for first new subregion using plugin %s",
+                best_y_so_far))
   
   region_1_acq_func_max <- max_EI(
     model = region_1_gp_model,
+    plugin = best_y_so_far,
     type = "UK",
     lower = region_1_return$bound_matrix[, 1],
     upper = region_1_return$bound_matrix[, 2],
@@ -942,10 +953,12 @@ split_and_fit <- function(region,
   # to the acquisition-function maximizer
   
   print(sprintf("Optimizing acquisition function
-                 for second new subregion"))
+                 for second new subregion using plugin %s",
+                best_y_so_far))
   
   region_2_acq_func_max <- max_EI(
     model = region_2_gp_model,
+    plugin = best_y_so_far,
     type = "UK",
     lower = region_2_return$bound_matrix[, 1],
     upper = region_2_return$bound_matrix[, 2],
