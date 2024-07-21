@@ -1,5 +1,5 @@
-library(GaSP)
-library(EGOmod)
+# library(GaSP)
+# library(EGOmod)
 library(DiceOptim)
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -22,7 +22,25 @@ num_obs <- as.integer(args[5])
 num_runs <- as.integer(args[6])
 save_dir <- as.character(args[7])
 
-source("/home/jsa378/bo_partition/code/test_funcs.R")
+working <- "local"
+
+if (working == "local") {
+  
+  source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+  
+  init_points_loc <- sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+                             test_func_name, dim, num_runs, num_init_obs, seed_value)
+    
+} else if (working == "remote") {
+  
+  source("/home/jsa378/bo_partition/code/test_funcs.R")
+  
+  init_points_loc <- sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+          test_func_name, dim, num_runs, num_init_obs, seed_value)
+  
+}
+
+
 # source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
 paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
@@ -35,11 +53,11 @@ paste(c("Save directory:", save_dir), collapse = " ")
 
 set.seed(seed_value)
 
-test_func_string <- test_func_name
-x_names_arg <- character(0)
-for (d in 1:dim){
-  x_names_arg <- c(x_names_arg, sprintf("x%s", d))
-}
+# test_func_string <- test_func_name
+# x_names_arg <- character(0)
+# for (d in 1:dim){
+#   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
+# }
 run_obs <- matrix(data = NA, nrow = 1, ncol = num_obs)
 best_so_far <- matrix(data = NA, nrow = 1, ncol = num_obs)
 
@@ -57,12 +75,12 @@ paste(c("Test func. lower bound vector:", test_lbound), collapse = " ")
 paste(c("Test func. upper bound vector:", test_ubound), collapse = " ")
 paste(c("Test func. argmin:", test_argmin), collapse = " ")
 
-descr <- DescribeX(
-  x_names = x_names_arg,
-  x_min = test_lbound,
-  x_max = test_ubound,
-  support = rep("Continuous", dim)
-)
+# descr <- DescribeX(
+#   x_names = x_names_arg,
+#   x_min = test_lbound,
+#   x_max = test_ubound,
+#   support = rep("Continuous", dim)
+# )
 
 dice_ctrl <- list(
   pop.size = 1024,
@@ -74,26 +92,28 @@ dice_ctrl <- list(
 start <- Sys.time()
 
 init_points <- read.table(
-  file = sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
-                 test_func_name, dim, num_runs, num_init_obs, seed_value),
+  file = init_points_loc,
   header = FALSE,
   sep = "",
   dec = "."
 )
+init_y <- apply(X = init_points, MARGIN = 1, FUN = test_func)
 
-init <- Initialize(
-  x_design = init_points,
-  x_describe = descr,
-  fun = test_func
-)
+# init <- Initialize(
+#   x_design = init_points,
+#   x_describe = descr,
+#   fun = test_func
+# )
 
-km_x <- init$x_design
-km_y <- init$y_design
+# km_x <- init$x_design
+# km_y <- init$y_design
+
 gp_model <- km(
   formula = ~1,
-  design = km_x,
-  response = km_y,
+  design = init_points,
+  response = init_y,
   covtype = "powexp",
+  nugget = 1e-09,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
