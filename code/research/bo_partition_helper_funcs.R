@@ -91,6 +91,7 @@ update_records <- function(region,
 }
 
 explore_region <- function(region,
+                           next_highest_a_max,
                            best_y_so_far,
                            where_best_y_so_far,
                            run_obs_vec,
@@ -104,10 +105,16 @@ explore_region <- function(region,
   # at region$region_a_par, because we already
   # fit a Gaussian process model and optimized
   # EI for this (sub)region,
-  # either at the very beginning(for init_region)
+  # either at the very beginning (for init_region)
   # or at the end of split_and_fit(),
   # so re-doing that work
   # before sampling would be redundant
+  
+  # Also, if we switched to another region
+  # last time we explored this region,
+  # we didn't take the sample suggested
+  # by acq_func_max$par, so we can just
+  # go ahead and take that sample now
   
   # Note that the EI value has not changed,
   # so region$region_a_max should be the same
@@ -196,6 +203,59 @@ explore_region <- function(region,
       control = dice_ctrl
     )
     
+    # Check if acq_func_max$value is high enough
+    # to warrant taking the sample
+    
+    # First we check if it's below our
+    # tolerance threshold
+    
+    # Next we check if it's below the a_max
+    # of our second-best region
+    
+    region$region_a_max <- acq_func_max$value
+    region$region_a_par <- acq_func_max$par
+    
+    if (acq_func_max$value < tol) {
+      
+      print(sprintf("Optimized value of EI (%s) is below tol (%s),
+                    so rejecting region", acq_func_max$value, tol))
+
+      return(list(region = region,
+                  best_y = best_y_so_far,
+                  where_best_y = where_best_y_so_far,
+                  run_obs = run_obs_vec,
+                  best_so_far = best_so_far_vec,
+                  ei_vals = ei_vals_vec,
+                  reject = 1,
+                  switch = 0,
+                  num_obs_exceeded = 0,
+                  split_called = 0)
+      )
+      
+    } else if (acq_func_max$value < next_highest_a_max) {
+      
+      print(sprintf("Optimized value of EI (%s) is below a_max
+      of next-best region (%s), so exiting explore_region()",
+                    acq_func_max$value, tol))
+      
+      return(list(region = region,
+                  best_y = best_y_so_far,
+                  where_best_y = where_best_y_so_far,
+                  run_obs = run_obs_vec,
+                  best_so_far = best_so_far_vec,
+                  ei_vals = ei_vals_vec,
+                  reject = 0,
+                  switch = 1,
+                  num_obs_exceeded = 0,
+                  split_called = 0)
+      )
+      
+    }
+    
+    # If neither of those possibilities occurred,
+    # the sample is attractive enough to take,
+    # so we go ahead and take it
+    
     # Bind the new data
     # related to the new acquisition
     
@@ -243,8 +303,7 @@ explore_region <- function(region,
     print(paste(c("Taken ", n, "observations in region, with maximum ", n_max), collapse = " "))
     print(paste(c("Taken ", num_obs_so_far, "observations overall, with maximum ", num_subseq_obs), collapse = " "))
 
-    # Investigate the stopping conditions for this while loop
-    # First we check if we've met our total observation budget, num_subseq_obs
+    # Check if we've met our total observation budget, num_subseq_obs
     
     if (num_obs_so_far >= num_subseq_obs) {
       
@@ -256,24 +315,9 @@ explore_region <- function(region,
                   run_obs = run_obs_vec,
                   best_so_far = best_so_far_vec,
                   ei_vals = ei_vals_vec,
-                  num_obs_exceeded = 1)
-      )
-    }
-    
-    # Next, we check if the latest EI value
-    # is below our tolerance threshold
-    
-    if (new_ei_val < tol) {
-      
-      print(sprintf("new_ei_val (%s) is less than tol (%s), so rejecting region.", new_ei_val, tol))
-      
-      return(list(region = region,
-                  best_y = best_y_so_far,
-                  where_best_y = where_best_y_so_far,
-                  run_obs = run_obs_vec,
-                  best_so_far = best_so_far_vec,
-                  ei_vals = ei_vals_vec,
-                  num_obs_exceeded = 0,
+                  reject = 0,
+                  switch = 0,
+                  num_obs_exceeded = 1,
                   split_called = 0)
       )
     }
@@ -325,6 +369,8 @@ explore_region <- function(region,
               run_obs = run_obs_vec,
               best_so_far = best_so_far_vec,
               ei_vals = ei_vals_vec,
+              reject = 0,
+              switch = 0,
               num_obs_exceeded = 0,
               split_called = 1)
          )

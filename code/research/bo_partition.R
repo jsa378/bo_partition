@@ -277,31 +277,71 @@ while (length(all_regions) > 0) {
   # and loop over the region list,
   # putting the region values in the vector
   
-  region_values = matrix(data = NA, nrow = 1, ncol = length((all_regions)))
+  # I gather the region bounds just to make
+  # it easier to tell in the print-out
+  # which region values correspond to which region
+  
+  region_values = matrix(data = NA, nrow = 1, ncol = length(all_regions))
   
   for (region_index in 1:length(all_regions)){
     
     current_region = all_regions[[region_index]]
-    # region_values[region_index] = current_region$region_min - current_region$region_a_max
     region_values[region_index] <- current_region$region_a_max
+    
+    if (region_index == 1) {
+      
+      region_bounds <- current_region$bound_matrix
+      
+    } else {
+      
+      region_bounds <- cbind(region_bounds, current_region$bound_matrix)
+      
+    }
     
   }
   
-  print("The region values (a_maxes) are:")
+  print("The region bounds are:")
+  print(region_bounds)
+  
+  print("The corresponding region values (a_maxes) are:")
   print(region_values)
   
   # Select the region to explore
-
-  # index_of_region_to_explore <- which.min(region_values)
-  index_of_region_to_explore <- which.max(region_values)
+  
+  # We also want the second-highest region value
+  # to feed to explore_region (for switching)
+  # If there is only one promising region,
+  # this is moot, so set it to Inf,
+  # otherwise we extract the
+  # second-highest region value
+  
+  region_indices <- which.maxn(region_values, n = 2)
+  index_of_region_to_explore <- region_indices[1]
+  
   region_to_explore = all_regions[[index_of_region_to_explore]]
   
+  if (length(region_indices == 1)) {
+    
+    next_highest_a_max <- Inf
+    
+  } else {
+    
+    index_of_second_best_region <- region_indices[2]
+    second_best_region <- all_regions[[index_of_second_best_region]]
+    
+    next_highest_a_max <- second_best_region$region_a_max
+    
+  }
+
   print("Region to explore:")
   print(region_to_explore)
   
+  print(sprintf("Next highest a_max value: %s", next_highest_a_max))
+  
   # Send the region chosen for exploration to explore_region()
   
-  results = explore_region(region = region_to_explore,
+  results <- explore_region(region = region_to_explore,
+                           next_highest_a_max = next_highest_a_max,
                            best_y_so_far = smallest_y_so_far,
                            where_best_y_so_far = where_smallest_y_so_far,
                            run_obs_vec = run_obs,
@@ -322,10 +362,13 @@ while (length(all_regions) > 0) {
   
   # If explore_region() returned because
   # we reached our observation budget,
-  # then we need to the region, and then
+  # then we need to update the region, and then
   # go directly to the top of the while loop
   
-  if (results$num_obs_exceeded == 1) {
+  # Same control flow if explore_region()
+  # returned because we're switching regions
+  
+  if (results$num_obs_exceeded == 1 || results$switch == 1) {
     
     all_regions[[index_of_region_to_explore]] <- results$region
     next
@@ -349,7 +392,7 @@ while (length(all_regions) > 0) {
   # we put the two new regions
   # in the list of promising regions
 
-  if (results$split_called == 0) {
+  if (results$reject == 1) {
     
     print("Region rejected, split not called.")
     rejected_regions <- c(rejected_regions, list(results$region))
