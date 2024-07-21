@@ -1,0 +1,5 @@
+# Note to myslf about the files in this folder:
+
+The `.R` files in this folder are a rewrite of the  `.R` files in the `v1` folder. Some changes to the algorithm have been made, most notably in `split_and_fit()` (which was compeltely rewritten). The code in this folder is generally much more clearly written and has many more comments. I feel more confident that the code as it is in this folder is a sound basis for further experimentation.
+
+However, I am going to make a new set of `.R` files, based on the `.R` files in this folder, because I'm going to try to modify `explore_region()` to switch to exploring a different region whenever the `a_max` for the region it's currently exploring drops below the region with the next-highest `a_max`. I think implementing this change will be significant enough that I want to leave these `.R` files here and implement those changes in a separate copy of these `.R` files, which will eventually go in their own `v3` folder.
