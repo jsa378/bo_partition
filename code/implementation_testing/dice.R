@@ -40,6 +40,8 @@ if (working == "local") {
   
 }
 
+  sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_reg_dice/seed_%s/seed_%s.txt", seed_value, seed_value)
+  sink(file = sink_file)
 
 # source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
@@ -113,7 +115,7 @@ gp_model <- km(
   design = init_points,
   response = init_y,
   covtype = "powexp",
-  nugget = 1e-09,
+  nugget = 1e-08 * var(init_y), # 1e-09,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
@@ -145,3 +147,7 @@ write.table(best_so_far,
 end <- Sys.time()
 duration <- end - start
 print(duration)
+
+if (working == "local") {
+  sink(file = NULL)
+}

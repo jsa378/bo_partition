@@ -12,12 +12,12 @@ start <- Sys.time()
 # This is to set whether parameters are set in this file (local)
 # or in a job submission script (remotely)
 
-working <- "local"
+working <- "remote"
 
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
   if (length(args) < 12) {
-    stop("Twelve arguments must be supplied:
+    stop("Thirteen arguments must be supplied:
     seed value (int),
     test function (string),
     dim (int),
@@ -28,6 +28,7 @@ if (working == "remote") {
     tol_param (float),
     how_many_EI_points_param (int),
     top_n_EI_vals_param (int),
+    point_share_tol (float),
     save dir (no type),
     slurm job id (int)", call. = FALSE)
   }
@@ -41,14 +42,24 @@ if (working == "remote") {
   tol_param <- as.numeric(args[8])
   how_many_EI_points_param <- as.integer(args[9])
   top_n_EI_vals_param <- as.integer(args[10])
-  save_dir <- as.character(args[11])
-  slurm_job_id <- as.integer(args[12])
+  point_share_tol_param <- as.numeric(args[11])
+  save_dir <- as.character(args[12])
+  slurm_job_id <- as.integer(args[13])
 
-  source("/home/jsa378/bo_partition/code/test_funcs.R")
-  source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
+  # source("/home/jsa378/bo_partition/code/test_funcs.R")
+  # source("/home/jsa378/bo_partition/code/research/bo_partition_helper_funcs.R")
   
-  init_points_loc <- sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  # init_points_loc <- sprintf("/home/jsa378/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
+  #                            test_func_name, dim, num_runs, num_init_obs, seed_value)
+
+  source("/Users/jesse/Downloads/bo_partition/code/test_funcs.R")
+  source("/Users/jesse/Downloads/bo_partition/code/research/v5/bo_partition_helper_funcs.R")
+  
+  init_points_loc <- sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
                              test_func_name, dim, num_runs, num_init_obs, seed_value)
+  
+  sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v5/seed_%s/seed_%s.txt", seed_value, seed_value)
+  sink(file = sink_file)
 
 } else if (working == "local") {
   seed_value <- 1
@@ -100,7 +111,7 @@ test_argmin <- test_func_list[[test_func_name]]$argmin
 
 paste(c("Slurm job ID:", slurm_job_id), collapse = " ")
 print(sprintf("Job beginning at: %s", Sys.time()))
-paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
+paste(c("Partition-Bayesian optimization v5 (like v4 but with point sharing) with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
 paste(c("Number of dimensions:", dim), collapse = " ")
 paste(c("Number of initial observations:", num_init_obs), collapse = " ")
@@ -110,6 +121,7 @@ paste(c("n_max parameter:", n_max_param), collapse = " ")
 paste(c("tol parameter:", tol_param), collapse = " ")
 paste(c("how_many_EI_points_param:", how_many_EI_points_param), collapse = " ")
 paste(c("top_n_EI_vals_param:", top_n_EI_vals_param), collapse = " ")
+paste(c("point_share_tol_param:", point_share_tol_param), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
 paste(c("Test func. lower bound scalar:", test_lbound_scalar), collapse = " ")
 paste(c("Test func. upper bound scalar:", test_ubound_scalar), collapse = " ")
@@ -311,7 +323,7 @@ while (length(all_regions) > 0) {
   # We also want the second-highest region value
   # to feed to explore_region (for switching)
   # If there is only one promising region,
-  # this is moot, so set it to Inf,
+  # this is moot, so set it to -1,
   # otherwise we extract the
   # second-highest region value
   
@@ -320,9 +332,9 @@ while (length(all_regions) > 0) {
   
   region_to_explore = all_regions[[index_of_region_to_explore]]
   
-  if (length(region_indices == 1)) {
+  if (length(region_indices) == 1) {
     
-    next_highest_a_max <- Inf
+    next_highest_a_max <- -1
     
   } else {
     
@@ -507,3 +519,4 @@ print(duration)
 if (working == "local") {
   sink(file = NULL)
 }
+sink(file = NULL)

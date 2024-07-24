@@ -215,28 +215,11 @@ explore_region <- function(region,
     region$region_a_max <- acq_func_max$value
     region$region_a_par <- acq_func_max$par
     
-    if (acq_func_max$value < tol) {
-      
-      print(sprintf("Optimized value of EI (%s) is below tol (%s),
-                    so rejecting region", acq_func_max$value, tol))
-
-      return(list(region = region,
-                  best_y = best_y_so_far,
-                  where_best_y = where_best_y_so_far,
-                  run_obs = run_obs_vec,
-                  best_so_far = best_so_far_vec,
-                  ei_vals = ei_vals_vec,
-                  reject = 1,
-                  switch = 0,
-                  num_obs_exceeded = 0,
-                  split_called = 0)
-      )
-      
-    } else if (acq_func_max$value < next_highest_a_max) {
+    if (acq_func_max$value < next_highest_a_max) {
       
       print(sprintf("Optimized value of EI (%s) is below a_max
       of next-best region (%s), so exiting explore_region()",
-                    acq_func_max$value, tol))
+                    acq_func_max$value, next_highest_a_max))
       
       return(list(region = region,
                   best_y = best_y_so_far,
@@ -322,6 +305,25 @@ explore_region <- function(region,
       )
     }
   
+  }
+  
+  if (region$region_a_max < tol) {
+    
+    print(sprintf("Optimized value of EI (%s) is below tol (%s),
+                    so rejecting region", region$region_a_max, tol))
+    
+    return(list(region = region,
+                best_y = best_y_so_far,
+                where_best_y = where_best_y_so_far,
+                run_obs = run_obs_vec,
+                best_so_far = best_so_far_vec,
+                ei_vals = ei_vals_vec,
+                reject = 1,
+                switch = 0,
+                num_obs_exceeded = 0,
+                split_called = 0)
+    )
+    
   }
   
   # If the control flow reaches this point,
@@ -495,6 +497,19 @@ prep_subregions <- function(region,
   
   region_2_x = region_x[region_x[, split_dimension] >= split_point, ]
   region_2_y = region_y[which(region_x[, split_dimension] >= split_point)]
+
+  if (nrow(region_1_x) == 0 || nrow(region_2_x) == 0) {
+
+    print(sprintf("One of region_1 (num points: %s) or 
+    region_2 (num_points: %s) has zero points, so we 
+    will not consider splitting on dimension %s 
+    at split_point %s",
+    nrow(region_1_x), nrow(region_2_x),
+    split_dimension, split_point))
+
+    return(0)
+
+  }
   
   # Compute the widths of region_1 and region_1
   # on the splitting dimension
@@ -507,7 +522,7 @@ prep_subregions <- function(region,
   region_1_x_d_width <- region_1_x_d_range[2] - region_1_x_d_range[1]
   region_2_x_d_width <- region_2_x_d_range[2] - region_2_x_d_range[1]
   
-  if(region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
+  if (region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
     
     print(sprintf("One of region_1_x_d_width (%s) or region_1_x_d_width (%s)
                       is <= min_split_width (%s), when splitting on
@@ -679,6 +694,11 @@ split_and_fit <- function(region,
       
       # Check if the split was unsuccessful because
       # a very narrow subregion would have been created
+
+      # (Alternatively, the split might have been
+      # unsuccessful because it would have led to a
+      # new subregion with zero points)
+
       # If the split was unsuccessful, try the next split
       # (If unsuccessful, prep_subregions returns zero)
       

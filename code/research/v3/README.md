@@ -1,0 +1,5 @@
+# Note to myslf about the files in this folder:
+
+The main change in these files as opposed to those in `v2` is that now `explore_region()` will switch to exploring the next-best region when the current region's `a_max` is below the `a_max` of the next-best region. I briefly described this in `README.md` in the `v2` folder.
+
+The next modification I plan to make is, in `explore_region()`, to move the `acq_func_max$value < tol` check outside the `while (n < n_max)` loop. In other words, I will only consider rejecting a region after it has `n_max` observations in it. I think this could work well in tandem with the region switching that's already been implemented, because an unpromising region won't be explored while there are still more promising regions to explore (since we explore the region with the highest `a_max` value).

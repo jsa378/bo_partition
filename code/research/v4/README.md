@@ -1,0 +1,3 @@
+# Note to myslf about the files in this folder:
+
+The main change in these files as opposed to those in `v3` is that now `explore_region()` can only reject regions *after* they have accumulated `n_max` observations. In other words, there is a "reject or split" decision that is made once a region has accumulatd `n_max` observations. This decision is made based on whether the last optimized value of the EI function is less than `tol` (in which case we reject the region) or at lesat `tol` (in which case we split the region).
