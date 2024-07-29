@@ -115,7 +115,7 @@ gp_model <- km(
   design = init_points,
   response = init_y,
   covtype = "powexp",
-  nugget = 1e-08 * var(init_y), # 1e-09,
+  nugget = 1e-01, # 1e-09,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )

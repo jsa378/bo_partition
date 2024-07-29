@@ -15,12 +15,12 @@ do
     # Rscript /Users/jesse/Downloads/bo_partition/code/research/v3/bo_partition.R ${i} "rastr" 2 20 100 10 25 0.1 1000 10 "/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v3/seed_${i}/" ${i}
 
     echo "BEGINNING RUN ${i} OF PARTITION-BO V4 (MINOR CHANGES PLUS SWITCHING, PLUS NO EARLY REJECTIONS)"
-    mkdir /Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v4/seed_${i}    
-    Rscript /Users/jesse/Downloads/bo_partition/code/research/v4/bo_partition.R ${i} "rastr" 2 20 100 10 25 0.1 1000 10 "/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v4/seed_${i}/" ${i}
+    mkdir /Users/jesse/Downloads/meetings/05_9aug24/2dim_v4/seed_${i}    
+    Rscript /Users/jesse/Downloads/bo_partition/code/research/v4/bo_partition.R ${i} "rastr" 2 20 200 10 120 0.1 1000 10 "/Users/jesse/Downloads/meetings/05_9aug24/2dim_v4/seed_${i}/" ${i}
 
     echo "BEGINNING RUN ${i} OF PARTITION-BO V5 (LIKE V4 BUT WITH POINT SHARING)"
-    mkdir /Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v5/seed_${i}    
-    Rscript /Users/jesse/Downloads/bo_partition/code/research/v5/bo_partition.R ${i} "rastr" 2 20 100 10 25 0.1 1000 10 0 "/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v5/seed_${i}/" ${i}
+    mkdir /Users/jesse/Downloads/meetings/05_9aug24/2dim_v5/seed_${i}    
+    Rscript /Users/jesse/Downloads/bo_partition/code/research/v5/bo_partition.R ${i} "rastr" 2 20 200 10 120 0.1 1000 10 1e-2 "/Users/jesse/Downloads/meetings/05_9aug24/2dim_v5/seed_${i}/" ${i}
 done
 
 # conda activate 54805

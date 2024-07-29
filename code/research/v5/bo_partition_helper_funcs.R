@@ -307,24 +307,29 @@ explore_region <- function(region,
   
   }
   
-  if (region$region_a_max < tol) {
-    
-    print(sprintf("Optimized value of EI (%s) is below tol (%s),
-                    so rejecting region", region$region_a_max, tol))
-    
-    return(list(region = region,
-                best_y = best_y_so_far,
-                where_best_y = where_best_y_so_far,
-                run_obs = run_obs_vec,
-                best_so_far = best_so_far_vec,
-                ei_vals = ei_vals_vec,
-                reject = 1,
-                switch = 0,
-                num_obs_exceeded = 0,
-                split_called = 0)
-    )
-    
+  if (num_obs_so_far > (num_subseq_obs / 2)) {
+
+    if (region$region_a_max < tol) {
+      
+      print(sprintf("Optimized value of EI (%s) is below tol (%s),
+                      so rejecting region", region$region_a_max, tol))
+      
+      return(list(region = region,
+                  best_y = best_y_so_far,
+                  where_best_y = where_best_y_so_far,
+                  run_obs = run_obs_vec,
+                  best_so_far = best_so_far_vec,
+                  ei_vals = ei_vals_vec,
+                  reject = 1,
+                  switch = 0,
+                  num_obs_exceeded = 0,
+                  split_called = 0)
+      )
+      
+    }
+
   }
+
   
   # If the control flow reaches this point,
   # the region we've been exploring is still promising,
@@ -520,21 +525,39 @@ prep_subregions <- function(region,
   region_1_x_d_range <- frange(region_1_x[, split_dimension])
   region_2_x_d_range <- frange(region_2_x[, split_dimension])
   
-  region_1_x_d_width <- region_1_x_d_range[2] - region_1_x_d_range[1]
-  region_2_x_d_width <- region_2_x_d_range[2] - region_2_x_d_range[1]
+  region_1_x_d_point_spread <- region_1_x_d_range[2] - region_1_x_d_range[1]
+  region_2_x_d_point_spread <- region_2_x_d_range[2] - region_2_x_d_range[1]
   
-  if (region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
+  if (region_1_x_d_point_spread <= min_split_width || region_2_x_d_point_spread <= min_split_width) {
     
-    print(sprintf("One of region_1_x_d_width (%s) or region_1_x_d_width (%s)
+    print(sprintf("One of region_1_x_d_point_spread (%s) or region_2_x_d_point_spread (%s)
                       is <= min_split_width (%s), when splitting on
                       dimension %d at split_point %s",
-                  region_1_x_d_width, region_2_x_d_width, min_split_width,
+                  region_1_x_d_point_spread, region_2_x_d_point_spread, min_split_width,
                   split_dimension, split_point))
     
     print(sprintf("Therefore we are going to not going to consider splitting
                       on dimension %s at split_point %s", split_dimension, split_point))
     
     return(0)
+
+  }
+
+  region_1_x_d_width <- split_point - region$bound_matrix[split_dimension, 1]
+  region_2_x_d_width <- region$bound_matrix[split_dimension, 2] - split_point
+
+  if (region_1_x_d_width <= min_split_width || region_2_x_d_width <= min_split_width) {
+
+    print(sprintf("One of region_1_x_d_width (%s) or region_2_x_d_width (%s)
+     is <= min_split_width (%s), when splitting on dimension %s
+     at split point %s",
+     region_1_x_d_width, region_2_x_d_width, min_split_width,
+     split_dimension, split_point))
+
+     print(sprintf("Therefore we are not going to consider splitting 
+     on dimension %s at split point %s", split_dimension, split_point))
+
+     return(0)
 
   }
   
@@ -665,9 +688,48 @@ split_and_fit <- function(region,
     
     # Determine the 0.25, 0.50, 0.75 percentiles
     # of the region_x points on dimension d
+
+    # I only want to calculate percentiles based on points
+    # that are actually within the region bounds in dimension d
+    # When I run this code with point_share_tol_param = 0,
+    # this modification should have no effect at all
+
+    indices_within_d_bounds <- which(
+      round(region$region_x[, d], digits = 4) <= round(region$bound_matrix[d, 2], digits = 4)
+      &
+      round(region$region_x[, d], digits = 4) >= round(region$bound_matrix[d, 1], digits = 4)
+      )
+
+    indices_not_within_d_bounds <- which(!(
+      round(region$region_x[, d], digits = 4) <= round(region$bound_matrix[d, 2], digits = 4)
+      &
+      round(region$region_x[, d], digits = 4) >= round(region$bound_matrix[d, 1], digits = 4)
+    ))
+
+    points_within_d_bounds <- region$region_x[indices_within_d_bounds, ]
+    points_not_within_d_bounds <- region$region_x[indices_not_within_d_bounds, ]
+
+    print(sprintf("The points within the region bounds in dimension %s 
+    [%s, %s] are:",
+    d, region$bound_matrix[d, 1], region$bound_matrix[d, 2]))
+    print(points_within_d_bounds)
+
+    print(sprintf("The points not within the region bounds in dimension %s 
+    [%s, %s] are:",
+    d, region$bound_matrix[d, 1], region$bound_matrix[d, 2]))
+    print(points_not_within_d_bounds)
+
+    print(sprintf("Of the %s points in the region, %s are within the 
+    region bounds in dimension %s [%s, %s], and %s are not within the 
+    region bounds in dimension %d [%s, %s]", 
+    nrow(region$region_x), nrow(points_within_d_bounds),
+    d, region$bound_matrix[d, 1], region$bound_matrix[d, 2], 
+    nrow(points_not_within_d_bounds), d,
+    region$bound_matrix[d, 1], region$bound_matrix[d, 2]))
     
     percentiles_vec <- c(0.25, 0.50, 0.75)
-    percentiles <- fquantile(region$region_x[, d], percentiles_vec)
+    # percentiles <- fquantile(region$region_x[, d], percentiles_vec)
+    percentiles <- fquantile(points_within_d_bounds[, d], percentiles_vec)
     
     print(sprintf("The %s percentiles for the region x points
                    in dimension %s are respectively: %s",

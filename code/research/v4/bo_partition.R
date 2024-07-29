@@ -56,7 +56,8 @@ if (working == "remote") {
   init_points_loc <- sprintf("/Users/jesse/Downloads/bo_partition/code/implementation_testing/init_points/%s_%s_dim_%s_runs_%s_init_points/run_%s_init_points.csv",
                              test_func_name, dim, num_runs, num_init_obs, seed_value)
   
-  sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v4/seed_%s/seed_%s.txt", seed_value, seed_value)
+  # sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_v4/seed_%s/seed_%s.txt", seed_value, seed_value)
+  sink_file <- sprintf("%sseed_%s.txt", save_dir, seed_value)
   sink(file = sink_file)
 
 } else if (working == "local") {

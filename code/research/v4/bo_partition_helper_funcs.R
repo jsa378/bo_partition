@@ -306,25 +306,31 @@ explore_region <- function(region,
     }
   
   }
-  
-  if (region$region_a_max < tol) {
-    
-    print(sprintf("Optimized value of EI (%s) is below tol (%s),
-                    so rejecting region", region$region_a_max, tol))
-    
-    return(list(region = region,
-                best_y = best_y_so_far,
-                where_best_y = where_best_y_so_far,
-                run_obs = run_obs_vec,
-                best_so_far = best_so_far_vec,
-                ei_vals = ei_vals_vec,
-                reject = 1,
-                switch = 0,
-                num_obs_exceeded = 0,
-                split_called = 0)
-    )
-    
+
+  if (num_obs_so_far > (num_subseq_obs / 2)) {
+
+    if (region$region_a_max < tol) {
+      
+      print(sprintf("Optimized value of EI (%s) is below tol (%s),
+                      so rejecting region", region$region_a_max, tol))
+      
+      return(list(region = region,
+                  best_y = best_y_so_far,
+                  where_best_y = where_best_y_so_far,
+                  run_obs = run_obs_vec,
+                  best_so_far = best_so_far_vec,
+                  ei_vals = ei_vals_vec,
+                  reject = 1,
+                  switch = 0,
+                  num_obs_exceeded = 0,
+                  split_called = 0)
+      )
+      
+    }
+
   }
+  
+
   
   # If the control flow reaches this point,
   # the region we've been exploring is still promising,
