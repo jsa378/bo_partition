@@ -10,9 +10,9 @@
 module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
-TEST_FUNC="rastr"
-DIM=5
-NUM_INIT_OBS=40
+TEST_FUNC="schwef"
+DIM=2
+NUM_INIT_OBS=20
 NUM_RUNS=10
 SAVE_DIR=/home/jsa378/bo_partition/code/implementation_testing/init_points/${TEST_FUNC}_${DIM}_dim_${NUM_RUNS}_runs_${NUM_INIT_OBS}_init_points/
 

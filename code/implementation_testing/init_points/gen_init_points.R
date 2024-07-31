@@ -1,5 +1,5 @@
 library(GaSP)
-library(EGOmod2)
+library(EGOmod)
 
 args = commandArgs(trailingOnly = TRUE)
 if (length(args) < 5){
