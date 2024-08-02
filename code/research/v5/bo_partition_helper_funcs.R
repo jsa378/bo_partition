@@ -307,7 +307,7 @@ explore_region <- function(region,
   
   }
   
-  if (num_obs_so_far > (num_subseq_obs / 2)) {
+  # if (num_obs_so_far > (num_subseq_obs / 2)) {
 
     if (region$region_a_max < tol) {
       
@@ -328,7 +328,7 @@ explore_region <- function(region,
       
     }
 
-  }
+  # }
 
   
   # If the control flow reaches this point,
