@@ -21,7 +21,7 @@ N_MAX=50 # $(($DIM * 5))
 TOL=0.1
 HOW_MANY_EI_POINTS=1000
 TOP_N_EI_VALS=10
-SAVE_DIR=/home/jsa378/scratch/v4_${TEST_FUNC}_${DIM}_${NUM_INIT_OBS}_${NUM_SUBSEQ_OBS}/
+SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_v4_${DIM}_dim_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_numsubseqobs/
 NUM_ARRAY_JOBS=10
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 3))
 
