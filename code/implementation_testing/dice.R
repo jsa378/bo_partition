@@ -9,7 +9,7 @@ if (length(args) < 7) {
   test function (string),
   dim (int),
   num init obs (int),
-  num obs (int),
+  num subseq obs (int),
   num runs (int),
   save dir (no type)", call. = FALSE)
 }
@@ -18,11 +18,23 @@ seed_value <- as.integer(args[1])
 test_func_name <- args[2]
 dim <- as.integer(args[3])
 num_init_obs <- as.integer(args[4])
-num_obs <- as.integer(args[5])
+num_subseq_obs <- as.integer(args[5])
 num_runs <- as.integer(args[6])
 save_dir <- as.character(args[7])
+slurm_job_id <- as.integer(args[8])
 
-working <- "local"
+# A function (and some settings) to dump an .rda file
+# in the event of an R error (for debugging purposes)
+
+dump_and_quit <- function() {
+  # Save debugging info to file last.dump.rda
+  dump.frames(dumpto = sprintf("last.dump%s", slurm_job_id), to.file = TRUE)
+  # Quit R with error status
+  q(status = 1)
+}
+options(error = dump_and_quit, CBoundsCheck = TRUE)
+
+working <- "remote"
 
 if (working == "local") {
   
@@ -40,8 +52,8 @@ if (working == "local") {
   
 }
 
-  sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_reg_dice/seed_%s/seed_%s.txt", seed_value, seed_value)
-  sink(file = sink_file)
+  # sink_file <- sprintf("/Users/jesse/Downloads/cedar_test_output/26jul24meeting/10runs/2dim_reg_dice/seed_%s/seed_%s.txt", seed_value, seed_value)
+  # sink(file = sink_file)
 
 # source("/home/jsa378/bo_partition/code/new/arbitrary_dim/helper_funcs.R")
 
@@ -49,7 +61,7 @@ paste(c("Bayesian optimization with seed value:", seed_value), collapse = " ")
 paste(c("Test function:", test_func_name), collapse = " ")
 paste(c("Dimension:", dim), collapse = " ")
 paste(c("Number of initial observations:", num_init_obs), collapse = " ")
-paste(c("Number of observations:", num_obs), collapse = " ")
+paste(c("Number of subsequent observations:", num_subseq_obs), collapse = " ")
 paste(c("Number of runs:", num_runs), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
 
@@ -60,8 +72,8 @@ set.seed(seed_value)
 # for (d in 1:dim){
 #   x_names_arg <- c(x_names_arg, sprintf("x%s", d))
 # }
-run_obs <- matrix(data = NA, nrow = 1, ncol = num_obs)
-best_so_far <- matrix(data = NA, nrow = 1, ncol = num_obs)
+run_obs <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
+best_so_far <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -115,21 +127,21 @@ gp_model <- km(
   design = init_points,
   response = init_y,
   covtype = "powexp",
-  nugget = 1e-01, # 1e-09,
+  nugget = 1e-09,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
 dice_bo <- EGO.nsteps(
   model = gp_model,
   fun = test_func,
-  nsteps = num_obs,
+  nsteps = num_subseq_obs,
   lower = test_lbound,
   upper = test_ubound,
   control = dice_ctrl
 )
 
 run_obs[1, ] <- dice_bo$value
-for(obs in 1:num_obs){
+for(obs in 1:num_subseq_obs){
   best_so_far[obs] <- min(dice_bo$value[(1:obs)])
 }
 

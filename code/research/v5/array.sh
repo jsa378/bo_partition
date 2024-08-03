@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-wjwelch    # replace this with your own account
-#SBATCH --mem-per-cpu=1000M      # memory; default unit is megabytes
+#SBATCH --mem-per-cpu=4000M      # memory; default unit is megabytes
 #SBATCH --array=1-10             # number of array jobs, inclusive
-#SBATCH --time=1-00:00           # time (DD-HH:MM)
+#SBATCH --time=3-00:00           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
@@ -15,9 +15,9 @@ SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="schwef"
 DIM=5
 NUM_INIT_OBS=40
-NUM_SUBSEQ_OBS=200
+NUM_SUBSEQ_OBS=400
 NUM_RUNS=10
-N_MAX=50 # $(($DIM * 5))
+N_MAX=100 # $(($DIM * 5))
 TOL=0.1
 HOW_MANY_EI_POINTS=1000
 TOP_N_EI_VALS=10

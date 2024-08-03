@@ -274,17 +274,17 @@ while (length(all_regions) > 0) {
     print("Saving partial progress.")
     
     write.table(run_obs[1:(n_obs)],
-                file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+                file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
                 row.names = FALSE,
                 col.names = FALSE
     )
     write.table(best_so_far[1:(n_obs)],
-                file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+                file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
                 row.names = FALSE,
                 col.names = FALSE
     )
     write.table(ei_vals[1:(n_obs)],
-                file = sprintf("%sbo_partition_seed_%s_ei_vals.csv", save_dir, seed_value),
+                file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
                 row.names = FALSE,
                 col.names = FALSE
     )
@@ -495,17 +495,17 @@ print(sprintf("Used %s out of a total budget of %s observations.", n_obs, num_su
 # Now we save the trimmed record vectors for plotting
 
 write.table(run_obs[1:(n_obs)],
-            file = sprintf("%sbo_partition_seed_%s_obs.csv", save_dir, seed_value),
+            file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
             row.names = FALSE,
             col.names = FALSE
 )
 write.table(best_so_far[1:(n_obs)],
-            file = sprintf("%sbo_partition_seed_%s_best_so_far.csv", save_dir, seed_value),
+            file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
             row.names = FALSE,
             col.names = FALSE
 )
 write.table(ei_vals[1:(n_obs)],
-            file = sprintf("%sbo_partition_seed_%s_ei_vals.csv", save_dir, seed_value),
+            file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
             row.names = FALSE,
             col.names = FALSE
 )

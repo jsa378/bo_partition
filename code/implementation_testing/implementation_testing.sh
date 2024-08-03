@@ -7,16 +7,17 @@
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
 
+ulimit -c unlimited
 module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
 SEED=$SLURM_ARRAY_TASK_ID
-TEST_FUNC="rastr"
-DIM=10
+TEST_FUNC="schwef"
+DIM=5
 NUM_INIT_OBS=40
-NUM_OBS=200
+NUM_SUBSEQ_OBS=400
 NUM_RUNS=10
-SAVE_DIR=/home/jsa378/scratch/dice_${TEST_FUNC}_${DIM}_${NUM_INIT_OBS}_${NUM_OBS}_${NUM_RUNS}/
+SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_SUBSEQ_OBS}_numsubseqobs/
 NUM_ARRAY_JOBS=10
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 2))
 
@@ -32,7 +33,7 @@ else
 fi
 
 # Rscript /home/jsa378/bo_partition/code/implementation_testing/ego.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR
-Rscript /home/jsa378/bo_partition/code/implementation_testing/dice.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR
+Rscript /home/jsa378/bo_partition/code/implementation_testing/dice.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_SUBSEQ_OBS $NUM_RUNS $SAVE_DIR $SLURM_JOB_ID
 
 # module load python/3.11.5 
 # virtualenv --no-download $SLURM_TMPDIR/env
@@ -41,16 +42,16 @@ Rscript /home/jsa378/bo_partition/code/implementation_testing/dice.R $SEED $TEST
 # pip install -r /home/jsa378/python/bo_requirements.txt
 # python /home/jsa378/bo_partition/code/implementation_testing/python.py $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR
 
-NUM_FILES=$(find $SAVE_DIR -type f -name '*.csv' | wc -l)
-if [ "$NUM_FILES" -eq "$NUM_CSVS" ]
-then
-  echo "This is the last of the array jobs to finish, so we will make the plots now."
-  module load python/3.11.5 
-  virtualenv --no-download $SLURM_TMPDIR/env
-  source $SLURM_TMPDIR/env/bin/activate
-  pip install --no-index --upgrade pip
-  pip install --no-index -r /home/jsa378/python/plot_requirements.txt
-  python /home/jsa378/bo_partition/code/implementation_testing/plots.py $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR $NUM_ARRAY_JOBS
-else
-  echo "This is not the last job, so we can't make the plots yet."
-fi
+# NUM_FILES=$(find $SAVE_DIR -type f -name '*.csv' | wc -l)
+# if [ "$NUM_FILES" -eq "$NUM_CSVS" ]
+# then
+#   echo "This is the last of the array jobs to finish, so we will make the plots now."
+#   module load python/3.11.5 
+#   virtualenv --no-download $SLURM_TMPDIR/env
+#   source $SLURM_TMPDIR/env/bin/activate
+#   pip install --no-index --upgrade pip
+#   pip install --no-index -r /home/jsa378/python/plot_requirements.txt
+#   python /home/jsa378/bo_partition/code/implementation_testing/plots.py $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR $NUM_ARRAY_JOBS
+# else
+#   echo "This is not the last job, so we can't make the plots yet."
+# fi
