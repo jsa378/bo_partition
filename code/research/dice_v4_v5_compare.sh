@@ -1,6 +1,6 @@
 TEST_FUNC="schwef"
 DIM=5
-NUM_SUBSEQ_OBS=400
+NUM_SUBSEQ_OBS=5 # 400
 N_MAX=100
 
 mkdir /home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_SUBSEQ_OBS}_numsubseqobs

@@ -74,6 +74,7 @@ set.seed(seed_value)
 # }
 run_obs <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
 best_so_far <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
+ei_vals <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -105,13 +106,13 @@ dice_ctrl <- list(
 
 start <- Sys.time()
 
-init_points <- read.table(
+x_points <- read.table(
   file = init_points_loc,
   header = FALSE,
   sep = "",
   dec = "."
 )
-init_y <- apply(X = init_points, MARGIN = 1, FUN = test_func)
+y_points <- apply(X = x_points, MARGIN = 1, FUN = test_func)
 
 # init <- Initialize(
 #   x_design = init_points,
@@ -124,37 +125,99 @@ init_y <- apply(X = init_points, MARGIN = 1, FUN = test_func)
 
 gp_model <- km(
   formula = ~1,
-  design = init_points,
-  response = init_y,
+  design = x_points,
+  response = y_points,
   covtype = "powexp",
   nugget = 1e-09,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
-dice_bo <- EGO.nsteps(
-  model = gp_model,
-  fun = test_func,
-  nsteps = num_subseq_obs,
-  lower = test_lbound,
-  upper = test_ubound,
-  control = dice_ctrl
-)
+# dice_bo <- EGO.nsteps(
+#   model = gp_model,
+#   fun = test_func,
+#   nsteps = num_subseq_obs,
+#   lower = test_lbound,
+#   upper = test_ubound,
+#   control = dice_ctrl
+# )
 
-run_obs[1, ] <- dice_bo$value
-for(obs in 1:num_subseq_obs){
-  best_so_far[obs] <- min(dice_bo$value[(1:obs)])
+for (i in 1:num_subseq_obs) {
+  
+  acq_func_max <- max_EI(
+    model = gp_model,
+    type = "UK",
+    lower = test_lbound,
+    upper = test_ubound,
+    control = dice_ctrl
+  )
+  
+  new_obs <- test_func(acq_func_max$par)
+  
+  print(paste(c("New observation ", new_obs, "at location ", acq_func_max$par,
+                 "with EI value ", acq_func_max$value)))
+  
+  x_points <- rbind(x_points, acq_func_max$par)
+  y_points <- c(y_points, new_obs)
+  
+  run_obs[1, i] <- new_obs
+  best_so_far[1, i] <- min(run_obs[1, (1:i)])
+  ei_vals[1, i] <- acq_func_max$value
+    
+  print(sprintf("Taken %s observations out of a total budget of %s; continuing.",
+                i, num_subseq_obs))
+  print("Saving partial progress.")
+  
+  write.table(run_obs[1:i],
+              file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
+              row.names = FALSE,
+              col.names = FALSE
+  )
+  write.table(best_so_far[1:i],
+              file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
+              row.names = FALSE,
+              col.names = FALSE
+  )
+  write.table(ei_vals[1:i],
+              file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
+              row.names = FALSE,
+              col.names = FALSE
+  )
+  
+  gp_model <- km(
+    formula = ~1,
+    design = x_points,
+    response = y_points,
+    covtype = "powexp",
+    nugget = 1e-09,
+    control = c(dice_ctrl, trace = FALSE),
+    optim.method = "gen"
+  )
+  
 }
 
-write.table(run_obs,
-  file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
-  row.names = FALSE,
-  col.names = FALSE
-)
-write.table(best_so_far,
-  file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
-  row.names = FALSE,
-  col.names = FALSE
-)
+# run_obs[1, ] <- dice_bo$value
+# for(obs in 1:num_subseq_obs){
+#   best_so_far[obs] <- min(dice_bo$value[(1:obs)])
+# }
+
+# write.table(run_obs,
+#   file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
+#   row.names = FALSE,
+#   col.names = FALSE
+# )
+# write.table(best_so_far,
+#   file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
+#   row.names = FALSE,
+#   col.names = FALSE
+# )
+
+print("The x points are:")
+print(x_points)
+
+print("The y points are:")
+print(y_points)
+
+print("Bayesian optimization done.")
 
 end <- Sys.time()
 duration <- end - start
