@@ -128,7 +128,7 @@ gp_model <- km(
   design = x_points,
   response = y_points,
   covtype = "powexp",
-  nugget = 1e-09,
+  nugget = 1e-08, # 1e-09,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
@@ -188,7 +188,7 @@ for (i in 1:num_subseq_obs) {
     design = x_points,
     response = y_points,
     covtype = "powexp",
-    nugget = 1e-09,
+    nugget = 1e-08, # 1e-09,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )
