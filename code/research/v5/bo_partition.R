@@ -16,8 +16,8 @@ working <- "remote"
 
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
-  if (length(args) < 13) {
-    stop("Thirteen arguments must be supplied:
+  if (length(args) < 16) {
+    stop("Sixteen arguments must be supplied:
     seed value (int),
     test function (string),
     dim (int),
@@ -30,7 +30,10 @@ if (working == "remote") {
     top_n_EI_vals_param (int),
     point_share_tol (float),
     save dir (no type),
-    slurm job id (int)", call. = FALSE)
+    slurm job id (int),
+    covtype (string),
+    nugget (float),
+    min consider reject (int)", call. = FALSE)
   }
   seed_value <- as.integer(args[1])
   test_func_name <- args[2]
@@ -45,6 +48,9 @@ if (working == "remote") {
   point_share_tol_param <- as.numeric(args[11])
   save_dir <- as.character(args[12])
   slurm_job_id <- as.integer(args[13])
+  covtype_param <- args[14]
+  nugget_param <- as.numeric(args[15])
+  min_consider_reject <- as.integer(args[16])
 
   source("/home/jsa378/bo_partition/code/test_funcs.R")
   source("/home/jsa378/bo_partition/code/research/v5/bo_partition_helper_funcs.R")
@@ -128,6 +134,9 @@ paste(c("how_many_EI_points_param:", how_many_EI_points_param), collapse = " ")
 paste(c("top_n_EI_vals_param:", top_n_EI_vals_param), collapse = " ")
 paste(c("point_share_tol_param:", point_share_tol_param), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
+paste(c("Kernel type:", covtype_param), collapse = " ")
+paste(c("Nugget value", nugget_param), collapse = " ")
+paste(c("Must take more than this many obs. before considering rejecting:", min_consider_reject), collapse = "  ")
 paste(c("Test func. lower bound scalar:", test_lbound_scalar), collapse = " ")
 paste(c("Test func. upper bound scalar:", test_ubound_scalar), collapse = " ")
 paste(c("Test func. lower bound vector:", test_lbound), collapse = " ")
@@ -172,8 +181,8 @@ gp_model <- km(
   formula = ~1,
   design = init_points,
   response = init_y,
-  covtype = "powexp",
-  nugget = 1e-09,
+  covtype = covtype_param,
+  nugget = nugget_param,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )

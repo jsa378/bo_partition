@@ -182,8 +182,8 @@ explore_region <- function(region,
       formula = ~1,
       design = region_x,
       response = region_y,
-      covtype = "powexp",
-      nugget = 1e-09,
+      covtype = covtype_param,
+      nugget = nugget_param,
       control = c(dice_ctrl, trace = FALSE),
       optim.method = "gen"
     )
@@ -307,7 +307,7 @@ explore_region <- function(region,
   
   }
 
-  # if (num_obs_so_far > (num_subseq_obs / 2)) {
+  if (num_obs_so_far > min_consider_reject) {
 
     if (region$region_a_max < tol) {
       
@@ -328,7 +328,14 @@ explore_region <- function(region,
       
     }
 
-  # }
+  } else {
+
+    print(sprintf("Since the number of observations so far (%s) is not 
+    strictly more than the parameter min_consider_reject (%s), 
+    we do not consider rejecting this region, and instead split it.", 
+    num_obs_so_far, min_consider_reject))
+
+  }
   
 
   
@@ -347,8 +354,8 @@ explore_region <- function(region,
     formula = ~1,
     design = region_x,
     response = region_y,
-    covtype = "powexp",
-    nugget = 1e-09,
+    covtype = covtype_param,
+    nugget = nugget_param,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )
@@ -984,8 +991,8 @@ split_and_fit <- function(region,
     formula = ~1,
     design = region_1_return$region_x,
     response = region_1_return$region_y,
-    covtype = "powexp",
-    nugget = 1e-09,
+    covtype = covtype_param,
+    nugget = nugget_param,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )
@@ -1015,8 +1022,8 @@ split_and_fit <- function(region,
     formula = ~1,
     design = region_2_return$region_x,
     response = region_2_return$region_y,
-    covtype = "powexp",
-    nugget = 1e-09,
+    covtype = covtype_param,
+    nugget = nugget_param,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )

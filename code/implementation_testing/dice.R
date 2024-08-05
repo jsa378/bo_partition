@@ -3,15 +3,18 @@
 library(DiceOptim)
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 7) {
-  stop("Seven arguments must be supplied:
+if (length(args) < 10) {
+  stop("Ten arguments must be supplied:
   seed value (int),
   test function (string),
   dim (int),
   num init obs (int),
   num subseq obs (int),
   num runs (int),
-  save dir (no type)", call. = FALSE)
+  save dir (no type),
+  slurm job id (int),
+  covtype (string),
+  nugget (float)", call. = FALSE)
 }
 
 seed_value <- as.integer(args[1])
@@ -22,6 +25,8 @@ num_subseq_obs <- as.integer(args[5])
 num_runs <- as.integer(args[6])
 save_dir <- as.character(args[7])
 slurm_job_id <- as.integer(args[8])
+covtype_param <- args[9]
+nugget_param <- as.numeric(args[10])
 
 # A function (and some settings) to dump an .rda file
 # in the event of an R error (for debugging purposes)
@@ -64,6 +69,8 @@ paste(c("Number of initial observations:", num_init_obs), collapse = " ")
 paste(c("Number of subsequent observations:", num_subseq_obs), collapse = " ")
 paste(c("Number of runs:", num_runs), collapse = " ")
 paste(c("Save directory:", save_dir), collapse = " ")
+paste(c("Kernel type:", covtype_param), collapse = " ")
+paste(c("Nugget value", nugget_param), collapse = " ")
 
 set.seed(seed_value)
 
@@ -127,8 +134,8 @@ gp_model <- km(
   formula = ~1,
   design = x_points,
   response = y_points,
-  covtype = "powexp",
-  nugget = 1e-08, # 1e-09,
+  covtype = covtype_param,
+  nugget = nugget_param,
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
@@ -187,8 +194,8 @@ for (i in 1:num_subseq_obs) {
     formula = ~1,
     design = x_points,
     response = y_points,
-    covtype = "powexp",
-    nugget = 1e-08, # 1e-09,
+    covtype = covtype_param,
+    nugget = nugget_param,
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )

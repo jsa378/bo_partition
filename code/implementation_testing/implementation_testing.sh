@@ -15,9 +15,11 @@ SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="schwef"
 DIM=5
 NUM_INIT_OBS=40
-NUM_SUBSEQ_OBS=400
+NUM_SUBSEQ_OBS=5 # 400
 NUM_RUNS=10
 SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_SUBSEQ_OBS}_numsubseqobs/
+COVTYPE="matern5_2"
+NUGGET=1e-09
 NUM_ARRAY_JOBS=10
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 2))
 
@@ -33,7 +35,7 @@ else
 fi
 
 # Rscript /home/jsa378/bo_partition/code/implementation_testing/ego.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_OBS $NUM_RUNS $SAVE_DIR
-Rscript /home/jsa378/bo_partition/code/implementation_testing/dice.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_SUBSEQ_OBS $NUM_RUNS $SAVE_DIR $SLURM_JOB_ID
+Rscript /home/jsa378/bo_partition/code/implementation_testing/dice.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_SUBSEQ_OBS $NUM_RUNS $SAVE_DIR $SLURM_JOB_ID $COVTYPE $NUGGET
 
 # module load python/3.11.5 
 # virtualenv --no-download $SLURM_TMPDIR/env
