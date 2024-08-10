@@ -10,10 +10,10 @@
 module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
-TEST_FUNC="schwef"
+TEST_FUNC="rastr"
 DIM=10
-NUM_INIT_OBS=40
-NUM_RUNS=10
+NUM_INIT_OBS=$(($DIM * 20)) # 40
+NUM_RUNS=100
 SAVE_DIR=/home/jsa378/bo_partition/code/implementation_testing/init_points/${TEST_FUNC}_${DIM}_dim_${NUM_RUNS}_runs_${NUM_INIT_OBS}_init_points/
 
 printf "Generating $NUM_INIT_OBS init points for $NUM_RUNS runs for the $TEST_FUNC test function in dimension $DIM.\n"
