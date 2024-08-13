@@ -1,4 +1,5 @@
-library(DiceOptim)
+# library(DiceOptim)
+library(GaSP)
 
 start <- Sys.time()
 
@@ -72,14 +73,15 @@ paste(c("Test func. argmin:", test_argmin), collapse = " ")
 
 set.seed(seed_value)
 
-range_params <- matrix(data = NA, nrow = num_runs, ncol = dim)
+# range_params <- matrix(data = NA, nrow = num_runs, ncol = dim)
+theta_params <- matrix(data = NA, nrow = num_runs, ncol = dim)
 
-dice_ctrl <- list(
-  pop.size = 1024,
-  max.generations = 100,
-  wait.generations = 10,
-  BFGSburnin = 5
-)
+# dice_ctrl <- list(
+#   pop.size = 1024,
+#   max.generations = 100,
+#   wait.generations = 10,
+#   BFGSburnin = 5
+# )
 
 for (run in 1:num_runs) {
   
@@ -100,24 +102,36 @@ for (run in 1:num_runs) {
   print(init_points)
   
   print(sprintf("Fitting gp_model"))
-  gp_model <- km(
-    formula = ~1,
-    design = init_points,
-    response = init_y,
-    covtype = covtype_param,
+  # gp_model <- km(
+  #   formula = ~1,
+  #   design = init_points,
+  #   response = init_y,
+  #   covtype = covtype_param,
+  #   nugget = nugget_param,
+  #   control = c(dice_ctrl, trace = FALSE),
+  #   optim.method = "gen"
+  # )
+  gp_model <- Fit(
+    x = init_points,
+    y = init_y,
+    reg_model = ~1,
+    cor_family = covtype_param,
+    random_error = FALSE,
     nugget = nugget_param,
-    control = c(dice_ctrl, trace = FALSE),
-    optim.method = "gen"
+    fit_objective = "Likelihood",
+    alpha_max = 0,
+    model_comparison = "Objective"
   )
   
   print("The range parameters for this set of init points is:")
-  print(gp_model@covariance@range.val)
-  
-  range_params[run, ] <- gp_model@covariance@range.val
+  # print(gp_model@covariance@range.val)
+  print(gp_model$cor_par$Theta)
+  # range_params[run, ] <- gp_model@covariance@range.val
+  theta_params[run, ] <- gp_model$cor_par$Theta
   
   print("Saving partial progress.")
   
-  write.table(range_params[1:run, ],
+  write.table(theta_params[1:run, ], # range_params[1:run, ],
               file = sprintf("%s%s_init_obs.csv", save_dir, num_init_obs),
               row.names = FALSE,
               col.names = FALSE
@@ -126,7 +140,8 @@ for (run in 1:num_runs) {
 }
 
 print("The range parameter values (unscaled) are:")
-print(range_params)
+# print(range_params)
+print(theta_params)
 
 end <- Sys.time()
 duration <- end - start
