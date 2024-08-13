@@ -14,9 +14,9 @@ module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc mo
 SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="rastr"
 DIM=$SLURM_ARRAY_TASK_ID
-NUM_INIT_OBS=$(($DIM * 5)) # submit this script with 5, 10 and 20 here
+NUM_INIT_OBS=$(($DIM * 20)) # submit this script with 5, 10 and 20 here
 NUM_RUNS=100
-SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_${DIM}_dim_${NUM_INIT_OBS}_initoba/
+SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_${DIM}_dim_${NUM_INIT_OBS}_initobs/
 COVTYPE="gauss"
 NUGGET=1e-09
 
@@ -31,4 +31,4 @@ else
   echo "The save directory $SAVE_DIR exists, so we don't need to create it."
 fi
 
-Rscript /home/jsa378/bo_partition/code/research/v5/bo_partition.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_RUNS $SAVE_DIR $SLURM_JOB_ID $COVTYPE $NUGGET
+Rscript /home/jsa378/bo_partition/code/research/thetas/thetas.R $SEED $TEST_FUNC $DIM $NUM_INIT_OBS $NUM_RUNS $SAVE_DIR $SLURM_JOB_ID $COVTYPE $NUGGET
