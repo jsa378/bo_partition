@@ -1,0 +1,11 @@
+# Note to myslf about the files in this folder:
+
+(This note was written before `v6` had been implemented.)
+
+This `v6` version is derived from the `v4` version, not the `v5` version. The key change in `v5` as opposed to `v4` was that upon splitting a region into two new subregions, the two new subregions could share points at the border where they were split. This seemed to lead to slightly better performance than `v4`, but it also led to certain complications, for example because a subregion could now "contain" points that were not actually within the subregion bounds, which would mess up percentile calculations and also count towards the subregion `n_max` budget.
+
+The key change in this `v6` version compared to the `v4` version is that now, any time a model for a subregion $R$ is fit via `km()`, we pretend-extend the region bounds for $R$ by parameter $\epsilon$ in all directions, just to determine which $x$ and $y$ points will be used when fitting the `km()` model. Thus, if we are working in $\mathbb R^d$ and we have region bounds of $R$ of $\prod_{i = 1}^d [a_i, b_i]$, then when fitting with `km()`, we will include all $x$  points lying within $\prod_{i = 1}^d [a_i - \epsilon, b_i + \epsilon]$, and the corresponding $y$ points.
+
+The actual bounds of $R$, *i.e.* the bounds over which EI is optimized, are unchanged. Furthermore, the list of points "contained" within $R$ is unchanged. Thus we are essentially cheating slightly by possibly using nearby points when fitting the `km()` model, but not counting these towards the `n_max` budget of observations for the region.
+
+Accomplishing this requires writing a new helper function `augment_points()` that takes in all the $x$ and $y$ points over the entire domain $\mathcal X$, a subregion, and a parameter $\epsilon$, and determines which $x$ points fall within $\prod_{i = 1}^d [a_i - \epsilon, b_i + \epsilon]$, and the associated $y$ points. The output from `augment_points()` is the $x$ and $y$ points that will be used by `km()` to fit the model for $R$.
