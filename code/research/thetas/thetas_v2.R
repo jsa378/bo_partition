@@ -92,9 +92,9 @@ set.seed(seed_value)
 # )
 
 test_points_loc <- sprintf("/home/jsa378/bo_partition/code/implementation_testing/test_points/%s_%s_dim_%s_test_points/test_points.csv",
-                             test_func_name, dim, num_test_pts, run)
+                             test_func_name, dim, num_test_pts)
 test_points_y_loc <- sprintf("/home/jsa378/bo_partition/code/implementation_testing/test_points/%s_%s_dim_%s_test_points/test_points_y.csv",
-                             test_func_name, dim, num_test_pts, run)
+                             test_func_name, dim, num_test_pts)
 
 test_points <- read.table(
   file = test_points_loc,
