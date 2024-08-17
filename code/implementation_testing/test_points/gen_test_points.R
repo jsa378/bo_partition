@@ -1,6 +1,7 @@
 library(GaSP)
 library(EGOmod)
 library(lhs)
+library(collapse)
 
 args = commandArgs(trailingOnly = TRUE)
 if (length(args) < 4){
