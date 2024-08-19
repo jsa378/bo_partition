@@ -198,7 +198,7 @@ for (run in 1:num_runs) {
     write.table(run_fit_mat,
             file = sprintf("%srun_%s_fit_mat.csv", save_dir, run),
             row.names = FALSE,
-            col.names = TRUE
+            col.names = FALSE
     )
 
 
@@ -242,6 +242,12 @@ for (run in 1:num_runs) {
   colnames(run_fit_mat) <- c(rep("Theta", dim), "Obj.", "CVRMSE", "RMSE")  
   print("The run_fit_mat matrix is:")
   print(run_fit_mat)
+
+  if (run == 10) {
+
+    break
+
+  }
   
 }
 

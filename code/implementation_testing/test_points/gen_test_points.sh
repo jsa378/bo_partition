@@ -11,8 +11,8 @@ module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
 TEST_FUNC="rastr"
-DIM=2
-NUM_TEST_PTS=10000
+DIM=10
+NUM_TEST_PTS=50000
 SAVE_DIR=/home/jsa378/bo_partition/code/implementation_testing/test_points/${TEST_FUNC}_${DIM}_dim_${NUM_TEST_PTS}_test_points/
 
 printf "Generating $NUM_TEST_PTS test points for the $TEST_FUNC test function in dimension $DIM.\n"
