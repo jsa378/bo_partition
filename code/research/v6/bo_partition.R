@@ -241,13 +241,13 @@ print(init_region)
 # Keep track of best observation so far
 # and where it was observed
 
-smallest_y_so_far = init_region$region_min
-where_smallest_y_so_far = init_region$region_argmin
+smallest_y_so_far <- init_region$region_min
+where_smallest_y_so_far <- init_region$region_argmin
 
 # Set up region lists
 
-all_regions = list(init_region) # only contains promising regions, i.e. not regions we've rejected
-rejected_regions = list() # will contain the regions that we reject
+all_regions <- list(init_region) # only contains promising regions, i.e. not regions we've rejected
+rejected_regions <- list() # will contain the regions that we reject
 
 # Experimenting with adding points to gp_model
 # The means don't seem to change
@@ -317,11 +317,11 @@ while (length(all_regions) > 0) {
   # it easier to tell in the print-out
   # which region values correspond to which region
   
-  region_values = matrix(data = NA, nrow = 1, ncol = length(all_regions))
+  region_values <- matrix(data = NA, nrow = 1, ncol = length(all_regions))
   
   for (region_index in 1:length(all_regions)){
     
-    current_region = all_regions[[region_index]]
+    current_region <- all_regions[[region_index]]
     region_values[region_index] <- current_region$region_a_max
     
     if (region_index == 1) {
@@ -354,7 +354,7 @@ while (length(all_regions) > 0) {
   region_indices <- which.maxn(region_values, n = 2)
   index_of_region_to_explore <- region_indices[1]
   
-  region_to_explore = all_regions[[index_of_region_to_explore]]
+  region_to_explore <- all_regions[[index_of_region_to_explore]]
   
   if (length(region_indices) == 1) {
     

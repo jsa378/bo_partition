@@ -35,12 +35,19 @@ augment_points <- function(all_x,
   
   print("The epsilon vector is:")
   print(epsilon_vec)
+
+  # Augment the lower and upper bounds
+  # by epsilon in each direction
   
   aug_lower_bounds <- region$bound_matrix[, 1] - epsilon_vec
   aug_upper_bounds <- region$bound_matrix[, 2] + epsilon_vec
   
   print("The augmented region bounds are:")
   print(cbind(aug_lower_bounds, aug_upper_bounds))
+
+  # Loop over all the x observations,
+  # checking whether they're within
+  # the augmented bounds
   
   for (point in 1:num_pts) {
     
@@ -51,11 +58,19 @@ augment_points <- function(all_x,
                                )
     
   }
+
+  # Select the x points that were within
+  # the augmented region bounds,
+  # and the corresponding y values
   
   x_in_aug_reg <- all_x[is_point_in_aug_reg, ]
   y_in_aug_reg <- all_y[is_point_in_aug_reg, 1]
   
-  # Prepare data frames for joins
+  # Now we use joins to compare
+  # the points in the region with
+  # the points in the augmented region
+
+  # First, the joins require data frames
   
   reg_x_df <- as.data.frame(region$region_x)
   x_aug_df <- as.data.frame(x_in_aug_reg)
@@ -75,6 +90,12 @@ augment_points <- function(all_x,
 
   x_points_added <- anti_join(x_aug_df, reg_x_df)
   y_points_added <- anti_join(y_aug_df, reg_y_df)
+
+  # Lastly, I just print everything out
+  # so I can see what happened
+
+  print("All x and y points are as follows:")
+  print(cbind(all_x, all_y))
   
   print("The points within in the region are as follows:")
   print(cbind(region$region_x, region$region_y))
@@ -275,10 +296,10 @@ explore_region <- function(region,
   # and computing how many observations
   # we have in this region
   
-  region_x = region$region_x
-  region_y = region$region_y
+  region_x <- region$region_x
+  region_y <- region$region_y
   
-  n = nrow(region_x)
+  n <- nrow(region_x)
   num_obs_so_far <- num_obs_so_far + 1
   
   # Begin the main explore_region() loop
@@ -1147,9 +1168,9 @@ split_and_fit <- function(region,
                                            epsilon = epsilon_param)
   
   region_1_augmented_points <- augment_points(all_x = all_x_mat,
-                                           all_y = all_y_mat,
-                                           region = region_1_return,
-                                           epsilon_vec = region_1_epsilon_vec)
+                                              all_y = all_y_mat,
+                                              region = region_1_return,
+                                              epsilon_vec = region_1_epsilon_vec)
   
   region_1_aug_x_pts <- region_1_augmented_points$aug_x
   region_1_aug_y_pts <- region_1_augmented_points$aug_y
