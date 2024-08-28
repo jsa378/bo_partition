@@ -12,7 +12,7 @@ start <- Sys.time()
 # This is to set whether parameters are set in this file (local)
 # or in a job submission script (remotely)
 
-working <- "local" # "remote"
+working <- "remote" # "local"
 
 if (working == "remote") {
   args <- commandArgs(trailingOnly = TRUE)
@@ -83,7 +83,7 @@ if (working == "remote") {
   tol_param <- 0.1
   how_many_EI_points_param <- 1000
   top_n_EI_vals_param <- 10
-  epsilon_param <- 0 # 0.01
+  epsilon_param <- 0.01 # 0
   save_dir <- "/Users/jesse/Downloads/cedar_test_output/research_testing/"
   slurm_job_id <- seed_value
   covtype_param <- "powexp"

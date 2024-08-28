@@ -30,11 +30,11 @@ augment_points <- function(all_x,
   
   is_point_in_aug_reg <- matrix(data = NA, nrow = num_pts, ncol = 1)
   
-  print("The original region bounds are:")
-  print(region$bound_matrix)
+  # print("The original region bounds are:")
+  # print(region$bound_matrix)
   
-  print("The epsilon vector is:")
-  print(epsilon_vec)
+  # print("The epsilon vector is:")
+  # print(epsilon_vec)
 
   # Augment the lower and upper bounds
   # by epsilon in each direction
@@ -78,12 +78,56 @@ augment_points <- function(all_x,
   reg_y_df <- as.data.frame(region$region_y)
   y_aug_df <- as.data.frame(y_in_aug_reg)
   
+  # print("reg_x_df:")
+  # print(reg_x_df)
+  
+  # print("x_aug_df:")
+  # print(x_aug_df)
+  
+  # print("reg_y_df:")
+  # print(reg_y_df)
+  
+  # print("y_aug_df:")
+  # print(y_aug_df)
+  
+  # I need to make the column name of y_aug_df
+  # match the column name of y_in_aug_reg
+  # (This is only for the purpose of
+  # satisfying semi_join())
+  
+  colnames(y_aug_df) <- c("region$region_y")
+  
   # First, check that the region points
   # are a subset of the augmented points
   
-  print("Are all the region points among the augmented set of points?")
-  print(semi_join(reg_x_df, x_aug_df) == reg_x_df,
-        semi_join(reg_y_df, y_aug_df) == reg_y_df)
+  # print("Are all the region points among the augmented set of points?")
+  # print("(TRUE/FALSE for the x points first, and then the y points)")
+  # print(semi_join(reg_x_df, x_aug_df) == reg_x_df)
+  # print(semi_join(reg_y_df, y_aug_df) == reg_y_df)
+
+  # Instead of printing out entire data frames
+  # full of TRUE, as done above, we can juse use
+  # all() on the (column-bound) results of calling
+  # semi_join.
+
+  # If check_subset is all TRUE, then
+  # the if condition below will be FALSE,
+  # and the if statement will not execute.
+
+  check_subset <- cbind(
+    semi_join(reg_x_df, x_aug_df) == reg_x_df,
+    semi_join(reg_y_df, y_aug_df) == reg_y_df
+    )
+
+  if (!all(check_subset)) {
+
+    print("Warning! The points in the region are not a subset of the set of augmented points!")
+
+  } else {
+
+    print("The points in the region are a subset of the augmented points. Continue.")
+
+  }
   
   # Second, check which (if any) points have been added
   # i.e., whether the augmentation added any points
@@ -94,16 +138,16 @@ augment_points <- function(all_x,
   # Lastly, I just print everything out
   # so I can see what happened
 
-  print("All x and y points are as follows:")
-  print(cbind(all_x, all_y))
+  # print("All x and y points are as follows:")
+  # print(cbind(all_x, all_y))
   
-  print("The points within in the region are as follows:")
-  print(cbind(region$region_x, region$region_y))
+  # print("The points within in the region are as follows:")
+  # print(cbind(region$region_x, region$region_y))
   
-  print("The augmented set of points is as follows:")
-  print(cbind(x_in_aug_reg, y_in_aug_reg))
+  # print("The augmented set of points is as follows:")
+  # print(cbind(x_in_aug_reg, y_in_aug_reg))
   
-  print("The points added are as follows:")
+  print("The points added to the region are as follows:")
   print(cbind(x_points_added, y_points_added))
   
   return(list(aug_x = x_in_aug_reg,
@@ -139,14 +183,14 @@ update_records <- function(region,
   
   # Update the all_x_mat and all_y_mat
   
-  print("The original all_x_mat and all_y_mat are:")
-  print(cbind(all_x_mat, all_y_mat))
+  # print("The original all_x_mat and all_y_mat are:")
+  # print(cbind(all_x_mat, all_y_mat))
   
   all_x_mat <- rbind(all_x_mat, new_x)
   all_y_mat <- rbind(all_y_mat, new_y)
   
-  print("The updated all_x_mat and all_y_mat are:")
-  print(cbind(all_x_mat, all_y_mat))
+  # print("The updated all_x_mat and all_y_mat are:")
+  # print(cbind(all_x_mat, all_y_mat))
   
   # Find the index in our records
   # at which we will begin adding
