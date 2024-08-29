@@ -722,16 +722,16 @@ prep_subregions <- function(region,
   
   # Bind the region x and y points
   
-  region_x = region$region_x
-  region_y = region$region_y
+  region_x <- region$region_x
+  region_y <- region$region_y
   
   # Split region_x and region_y
   
-  region_1_x = region_x[region_x[, split_dimension] < split_point, ]
-  region_1_y = region_y[which(region_x[, split_dimension] < split_point)]
+  region_1_x <- region_x[region_x[, split_dimension] < split_point, ]
+  region_1_y <- region_y[which(region_x[, split_dimension] < split_point)]
   
-  region_2_x = region_x[region_x[, split_dimension] >= split_point, ]
-  region_2_y = region_y[which(region_x[, split_dimension] >= split_point)]
+  region_2_x <- region_x[region_x[, split_dimension] >= split_point, ]
+  region_2_y <- region_y[which(region_x[, split_dimension] >= split_point)]
 
   if (nrow(region_1_x) == 0 || nrow(region_2_x) == 0) {
 
@@ -780,30 +780,30 @@ prep_subregions <- function(region,
   
   print(sprintf("Preparing region_1"))
   
-  region_1 = region
+  region_1 <- region
   
-  region_1$bound_matrix[split_dimension, 2] = split_point
+  region_1$bound_matrix[split_dimension, 2] <- split_point
   
-  region_1$region_x = region_1_x
-  region_1$region_y = region_1_y
+  region_1$region_x <- region_1_x
+  region_1$region_y <- region_1_y
   
-  region_1$region_min = min(region_1_y)
-  region_1$region_argmin = region_1_x[which.min(region_1_y), ]
+  region_1$region_min <- min(region_1_y)
+  region_1$region_argmin <- region_1_x[which.min(region_1_y), ]
   
   # print("Proposed region 1:")
   # print(region_1)
   
   print(sprintf("Preparing region_2"))
   
-  region_2 = region
+  region_2 <- region
   
-  region_2$bound_matrix[split_dimension, 1] = split_point
+  region_2$bound_matrix[split_dimension, 1] <- split_point
   
-  region_2$region_x = region_2_x
-  region_2$region_y = region_2_y
+  region_2$region_x <- region_2_x
+  region_2$region_y <- region_2_y
   
-  region_2$region_min = min(region_2_y)
-  region_2$region_argmin = region_2_x[which.min(region_2_y), ]
+  region_2$region_min <- min(region_2_y)
+  region_2$region_argmin <- region_2_x[which.min(region_2_y), ]
   
   # print("Proposed region 2:")
   # print(region_2)

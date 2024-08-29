@@ -1,3 +1,7 @@
+# This is a "master script" that I can submit to sbatch
+# on Cedar, for comparison testing of various versions
+# of our method, and the baseline Dice package.
+
 # The parameters below need to match those
 # in the various .sh files being called below
 
@@ -15,9 +19,9 @@ N_MAX=25
 
 # Test regular Dice
 
-mkdir /home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_INIT_OBS}_initobs_${NUM_SUBSEQ_OBS}_subseqobs/
-cd /home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_INIT_OBS}_initobs_${NUM_SUBSEQ_OBS}_subseqobs/
-sbatch /home/jsa378/bo_partition/code/implementation_testing/implementation_testing.sh
+# mkdir /home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_INIT_OBS}_initobs_${NUM_SUBSEQ_OBS}_subseqobs/
+# cd /home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_INIT_OBS}_initobs_${NUM_SUBSEQ_OBS}_subseqobs/
+# sbatch /home/jsa378/bo_partition/code/implementation_testing/implementation_testing.sh
 
 # Test v4
 

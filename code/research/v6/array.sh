@@ -26,7 +26,7 @@ SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_v6_${DIM}_dim_${NUM_INIT_OBS}_initobs
 COVTYPE="powexp"
 NUGGET=1e-09
 MIN_CONSIDER_REJECT=-1 # $(($NUM_SUBSEQ_OBS / 2))
-NUM_ARRAY_JOBS=10
+NUM_ARRAY_JOBS=100
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 3))
 
 printf "The current job ID is: $SLURM_JOB_ID\n"
