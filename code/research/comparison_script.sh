@@ -25,15 +25,15 @@ N_MAX=25
 
 # Test v4
 
-mkdir /home/jsa378/scratch/${TEST_FUNC}_v4_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
-cd /home/jsa378/scratch/${TEST_FUNC}_v4_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
-sbatch /home/jsa378/bo_partition/code/research/v4/array.sh
+# mkdir /home/jsa378/scratch/${TEST_FUNC}_v4_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
+# cd /home/jsa378/scratch/${TEST_FUNC}_v4_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
+# sbatch /home/jsa378/bo_partition/code/research/v4/array.sh
 
 # Test v5
 
-mkdir /home/jsa378/scratch/${TEST_FUNC}_v5_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
-cd /home/jsa378/scratch/${TEST_FUNC}_v5_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
-sbatch /home/jsa378/bo_partition/code/research/v5/array.sh
+# mkdir /home/jsa378/scratch/${TEST_FUNC}_v5_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
+# cd /home/jsa378/scratch/${TEST_FUNC}_v5_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
+# sbatch /home/jsa378/bo_partition/code/research/v5/array.sh
 
 # Test v6
 
