@@ -13,11 +13,11 @@ module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc mo
 
 SEED=$SLURM_ARRAY_TASK_ID
 TEST_FUNC="rastr"
-DIM=2
-NUM_INIT_OBS=20
-NUM_SUBSEQ_OBS=100
+DIM=5
+NUM_INIT_OBS=50
+NUM_SUBSEQ_OBS=200
 NUM_RUNS=100 # This needs to match the "#SBATCH --array="" parameter above
-N_MAX=25 # $(($DIM * 5))
+N_MAX=100 # $(($DIM * 5))
 TOL=0.1
 HOW_MANY_EI_POINTS=1000
 TOP_N_EI_VALS=10
@@ -25,7 +25,7 @@ POINT_SHARE_TOL=1e-2
 SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_v5_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs/
 COVTYPE="powexp"
 NUGGET=1e-09
-MIN_CONSIDER_REJECT=-1 # $(($NUM_SUBSEQ_OBS / 2))
+MIN_CONSIDER_REJECT=100 # -1 # $(($NUM_SUBSEQ_OBS / 2))
 NUM_ARRAY_JOBS=100
 NUM_CSVS=$(($NUM_ARRAY_JOBS * 3))
 

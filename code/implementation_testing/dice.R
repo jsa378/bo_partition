@@ -82,6 +82,7 @@ set.seed(seed_value)
 run_obs <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
 best_so_far <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
 ei_vals <- matrix(data = NA, nrow = 1, ncol = num_subseq_obs)
+thetas <- matrix(data = NA, nrow = num_subseq_obs + 1, ncol = dim)
 
 test_func <- test_func_list[[test_func_name]]$func
 test_lbound_scalar <- test_func_list[[test_func_name]]$lbound_scalar
@@ -121,6 +122,9 @@ x_points <- read.table(
 )
 y_points <- apply(X = x_points, MARGIN = 1, FUN = test_func)
 
+print("Initial x and y points:")
+print(cbind(x_points, y_points))
+
 # init <- Initialize(
 #   x_design = init_points,
 #   x_describe = descr,
@@ -139,6 +143,12 @@ gp_model <- km(
   control = c(dice_ctrl, trace = FALSE),
   optim.method = "gen"
 )
+
+print("The theta values for the initial model are:")
+print(gp_model@covariance@range.val)
+
+thetas[1, ] <- gp_model@covariance@range.val
+
 # dice_bo <- EGO.nsteps(
 #   model = gp_model,
 #   fun = test_func,
@@ -199,7 +209,18 @@ for (i in 1:num_subseq_obs) {
     control = c(dice_ctrl, trace = FALSE),
     optim.method = "gen"
   )
-  
+
+  print("The theta values for the current model are:")
+  print(gp_model@covariance@range.val)
+
+  thetas[i + 1, ] <- gp_model@covariance@range.val
+
+  write.table(thetas[1:(i + 1), ],
+            file = sprintf("%sseed_%s_thetas.csv", save_dir, seed_value),
+            row.names = FALSE,
+            col.names = FALSE
+  )
+
 }
 
 # run_obs[1, ] <- dice_bo$value
