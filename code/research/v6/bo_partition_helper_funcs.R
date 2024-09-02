@@ -72,11 +72,11 @@ augment_points <- function(all_x,
 
   # First, the joins require data frames
   
-  reg_x_df <- as.data.frame(region$region_x)
-  x_aug_df <- as.data.frame(x_in_aug_reg)
+  # reg_x_df <- as.data.frame(region$region_x)
+  # x_aug_df <- as.data.frame(x_in_aug_reg)
   
-  reg_y_df <- as.data.frame(region$region_y)
-  y_aug_df <- as.data.frame(y_in_aug_reg)
+  # reg_y_df <- as.data.frame(region$region_y)
+  # y_aug_df <- as.data.frame(y_in_aug_reg)
   
   # print("reg_x_df:")
   # print(reg_x_df)
@@ -95,7 +95,7 @@ augment_points <- function(all_x,
   # (This is only for the purpose of
   # satisfying semi_join())
   
-  colnames(y_aug_df) <- c("region$region_y")
+  # colnames(y_aug_df) <- c("region$region_y")
   
   # First, check that the region points
   # are a subset of the augmented points
@@ -114,26 +114,26 @@ augment_points <- function(all_x,
   # the if condition below will be FALSE,
   # and the if statement will not execute.
 
-  check_subset <- cbind(
-    semi_join(reg_x_df, x_aug_df) == reg_x_df,
-    semi_join(reg_y_df, y_aug_df) == reg_y_df
-    )
+  # check_subset <- cbind(
+  #   semi_join(reg_x_df, x_aug_df) == reg_x_df,
+  #   semi_join(reg_y_df, y_aug_df) == reg_y_df
+  #   )
 
-  if (!all(check_subset)) {
+  # if (!all(check_subset)) {
 
-    print("Warning! The points in the region are not a subset of the set of augmented points!")
+  #   print("Warning! The points in the region are not a subset of the set of augmented points!")
 
-  } else {
+  # } else {
 
-    print("The points in the region are a subset of the augmented points. Continue.")
+  #   print("The points in the region are a subset of the augmented points. Continue.")
 
-  }
+  # }
   
   # Second, check which (if any) points have been added
   # i.e., whether the augmentation added any points
 
-  x_points_added <- anti_join(x_aug_df, reg_x_df)
-  y_points_added <- anti_join(y_aug_df, reg_y_df)
+  # x_points_added <- anti_join(x_aug_df, reg_x_df)
+  # y_points_added <- anti_join(y_aug_df, reg_y_df)
 
   # Lastly, I just print everything out
   # so I can see what happened
@@ -147,8 +147,8 @@ augment_points <- function(all_x,
   # print("The augmented set of points is as follows:")
   # print(cbind(x_in_aug_reg, y_in_aug_reg))
   
-  print("The points added to the region are as follows:")
-  print(cbind(x_points_added, y_points_added))
+  # print("The points added to the region are as follows:")
+  # print(cbind(x_points_added, y_points_added))
   
   return(list(aug_x = x_in_aug_reg,
               aug_y = y_in_aug_reg
