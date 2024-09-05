@@ -2,7 +2,7 @@
 #SBATCH --account=def-wjwelch    # replace this with your own account
 #SBATCH --mem-per-cpu=4000M      # memory; default unit is megabytes
 #SBATCH --array=1-100            # number of array jobs, inclusive
-#SBATCH --time=1-00:00           # time (DD-HH:MM)
+#SBATCH --time=3-00:00           # time (DD-HH:MM)
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jsa378@sfu.ca
 #SBATCH --output=name%j.out
