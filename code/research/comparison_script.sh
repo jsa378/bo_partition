@@ -10,7 +10,7 @@ DIM=5
 NUM_INIT_OBS=50
 NUM_SUBSEQ_OBS=200
 N_MAX=100
-EPSILON=0.01 # 0.05 # 0.1 # 0.25
+EPSILON=0.25 # 0.01 # 0.05 # 0.10 # 0.25
 
 # The reason I make the directories below
 # and then navigate into them before
