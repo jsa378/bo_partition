@@ -20,8 +20,8 @@ NUM_RUNS=100 # This needs to match the "#SBATCH --array="" parameter above
 SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_dice_${DIM}_dim_${NUM_INIT_OBS}_initobs_${NUM_SUBSEQ_OBS}_subseqobs/
 COVTYPE="powexp"
 NUGGET=1e-09
-NUM_ARRAY_JOBS=100
-NUM_CSVS=$(($NUM_ARRAY_JOBS * 4))
+# NUM_ARRAY_JOBS=100 # I don't think I use these last two variables anymore, do I?
+# NUM_CSVS=$(($NUM_ARRAY_JOBS * 4))
 
 printf "The current job ID is: $SLURM_JOB_ID\n"
 printf "The current array task ID is: $SLURM_ARRAY_TASK_ID\n"

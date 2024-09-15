@@ -183,23 +183,31 @@ for (i in 1:num_subseq_obs) {
   print(sprintf("Taken %s observations out of a total budget of %s; continuing.",
                 i, num_subseq_obs))
   print("Saving partial progress.")
-  
-  write.table(run_obs[1:i],
-              file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
-              row.names = FALSE,
-              col.names = FALSE
+
+  tryCatch(
+    expr = {
+      write.table(run_obs[1:i],
+                  file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
+                  row.names = FALSE,
+                  col.names = FALSE
+      )
+      write.table(best_so_far[1:i],
+                  file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
+                  row.names = FALSE,
+                  col.names = FALSE
+      )
+      write.table(ei_vals[1:i],
+                  file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
+                  row.names = FALSE,
+                  col.names = FALSE
+      )
+    },
+    error = function(e) {
+      print("Error: couldn't save partial progress.")
+      print(e)
+    }
   )
-  write.table(best_so_far[1:i],
-              file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
-              row.names = FALSE,
-              col.names = FALSE
-  )
-  write.table(ei_vals[1:i],
-              file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
-              row.names = FALSE,
-              col.names = FALSE
-  )
-  
+
   gp_model <- km(
     formula = ~1,
     design = x_points,
@@ -215,10 +223,18 @@ for (i in 1:num_subseq_obs) {
 
   thetas[i + 1, ] <- gp_model@covariance@range.val
 
-  write.table(thetas[1:(i + 1), ],
-            file = sprintf("%sseed_%s_thetas.csv", save_dir, seed_value),
-            row.names = FALSE,
-            col.names = FALSE
+  tryCatch(
+    expr = {
+      write.table(thetas[1:(i + 1), ],
+              file = sprintf("%sseed_%s_thetas.csv", save_dir, seed_value),
+              row.names = FALSE,
+              col.names = FALSE
+      )
+    },
+    error = function(e) {
+      print("Error: couldn't save theta values.")
+      print(e)
+    }
   )
 
 }

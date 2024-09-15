@@ -291,22 +291,31 @@ while (length(all_regions) > 0) {
     print(sprintf("Taken %s observations out of a total budget of %s; continuing.",
                   n_obs, num_subseq_obs))
     print("Saving partial progress.")
-    
-    write.table(run_obs[1:(n_obs)],
-                file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
-                row.names = FALSE,
-                col.names = FALSE
+
+    tryCatch(
+      expr = {
+        write.table(run_obs[1:(n_obs)],
+                    file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
+                    row.names = FALSE,
+                    col.names = FALSE
+        )
+        write.table(best_so_far[1:(n_obs)],
+                    file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
+                    row.names = FALSE,
+                    col.names = FALSE
+        )
+        write.table(ei_vals[1:(n_obs)],
+                    file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
+                    row.names = FALSE,
+                    col.names = FALSE
+        )
+      },
+      error = function(e) {
+        print("Error: couldn't save partial progress.")
+        print(e)
+      }
     )
-    write.table(best_so_far[1:(n_obs)],
-                file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
-                row.names = FALSE,
-                col.names = FALSE
-    )
-    write.table(ei_vals[1:(n_obs)],
-                file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
-                row.names = FALSE,
-                col.names = FALSE
-    )
+
   }
   
   # Set up vector to hold region values
@@ -518,21 +527,31 @@ print(sprintf("Used %s out of a total budget of %s observations.", n_obs, num_su
 
 # Now we save the trimmed record vectors for plotting
 
-write.table(run_obs[1:(n_obs)],
+tryCatch(
+  expr = {
+    write.table(run_obs[1:(n_obs)],
             file = sprintf("%sseed_%s_obs.csv", save_dir, seed_value),
             row.names = FALSE,
             col.names = FALSE
+    )
+    write.table(best_so_far[1:(n_obs)],
+                file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
+    write.table(ei_vals[1:(n_obs)],
+                file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
+                row.names = FALSE,
+                col.names = FALSE
+    )
+  },
+  error = function(e) {
+    print("Error: couldn't save trimmed vectors.")
+    print(e)
+  }
 )
-write.table(best_so_far[1:(n_obs)],
-            file = sprintf("%sseed_%s_best_so_far.csv", save_dir, seed_value),
-            row.names = FALSE,
-            col.names = FALSE
-)
-write.table(ei_vals[1:(n_obs)],
-            file = sprintf("%sseed_%s_ei_vals.csv", save_dir, seed_value),
-            row.names = FALSE,
-            col.names = FALSE
-)
+
+
 
 # Compute the duration of this code and print it out
 

@@ -55,7 +55,7 @@ dummy_region = list(bound_matrix = as.matrix(cbind(test_lbound, test_ubound)),
 )
 
 test_points <- gen_points(region = dummy_region, num_points = num_test_pts)
-test_points_y <- apply(X = test_points, MARGIN = 1, FUN = test_func)
+# test_points_y <- apply(X = test_points, MARGIN = 1, FUN = test_func)
 
 write.table(test_points,
             file = sprintf("%stest_points.csv", save_dir),
@@ -63,8 +63,8 @@ write.table(test_points,
             col.names = FALSE
 )
 
-write.table(test_points_y,
-            file = sprintf("%stest_points_y.csv", save_dir),
-            row.names = FALSE,
-            col.names = FALSE
-)
+# write.table(test_points_y,
+#             file = sprintf("%stest_points_y.csv", save_dir),
+#             row.names = FALSE,
+#             col.names = FALSE
+# )
