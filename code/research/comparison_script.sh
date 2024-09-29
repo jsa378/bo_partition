@@ -9,8 +9,8 @@ TEST_FUNC="rastr"
 DIM=5
 NUM_INIT_OBS=50
 NUM_SUBSEQ_OBS=5000
-N_MAX=100 # 250
-EPSILON=0.01 # 0.01 # 0.05 # 0.10 # 0.25
+N_MAX=250
+EPSILON=0.10 # 0.01 # 0.05 # 0.10 # 0.25
 
 # The reason I make the directories below
 # and then navigate into them before

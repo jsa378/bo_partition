@@ -17,11 +17,11 @@ DIM=5
 NUM_INIT_OBS=50
 NUM_SUBSEQ_OBS=5000
 NUM_RUNS=10 # This needs to match the "#SBATCH --array="" parameter above
-N_MAX=100 # 250
+N_MAX=250
 TOL=0.1
 HOW_MANY_EI_POINTS=1000
 TOP_N_EI_VALS=10
-EPSILON=0.01 # 0.01 # 0.05 # 0.10 # 0.25
+EPSILON=0.10 # 0.01 # 0.05 # 0.10 # 0.25
 SAVE_DIR=/home/jsa378/scratch/${TEST_FUNC}_v6_${DIM}_dim_${NUM_INIT_OBS}_initobs_${N_MAX}_nmax_${NUM_SUBSEQ_OBS}_subseqobs_${EPSILON}_epsilon/
 COVTYPE="powexp"
 NUGGET=1e-09
