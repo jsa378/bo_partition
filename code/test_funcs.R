@@ -1,28 +1,28 @@
-# ackley <- function(xx, a=20, b=0.2, c=2*pi)
-# {
-#   ##########################################################################
-#   #
-#   # INPUTS:
-#   #
-#   # xx = c(x1, x2, ..., xd)
-#   # a = constant (optional), with default value 20
-#   # b = constant (optional), with default value 0.2
-#   # c = constant (optional), with default value 2*pi
-#   #
-#   ##########################################################################
-#   
-#   d <- length(xx)
-#   
-#   sum1 <- sum(xx^2)
-#   sum2 <- sum(cos(c*xx))
-#   
-#   term1 <- -a * exp(-b*sqrt(sum1/d))
-#   term2 <- -exp(sum2/d)
-#   
-#   y <- term1 + term2 + a + exp(1)
-#   return(y)
-# }
-# 
+ackley <- function(xx, a=20, b=0.2, c=2*pi)
+{
+  ##########################################################################
+  #
+  # INPUTS:
+  #
+  # xx = c(x1, x2, ..., xd)
+  # a = constant (optional), with default value 20
+  # b = constant (optional), with default value 0.2
+  # c = constant (optional), with default value 2*pi
+  #
+  ##########################################################################
+  
+  d <- length(xx)
+  
+  sum1 <- sum(xx^2)
+  sum2 <- sum(cos(c*xx))
+  
+  term1 <- -a * exp(-b*sqrt(sum1/d))
+  term2 <- -exp(sum2/d)
+  
+  y <- term1 + term2 + a + exp(1)
+  return(y)
+}
+ 
 # cit <- function(xx)
 # {
 #   ##########################################################################
@@ -143,6 +143,106 @@ grie <- function(xx)
   return(y)
 }
 
+langer <- function(xx, m=5, cvec, A)
+{
+  ##########################################################################
+  #
+  # INPUTS:
+  #
+  # xx   = c(x1, x2, ..., xd)
+  # m    = constant (optional), with default value 5
+  # cvec = m-dimensional vector (optional), with default value c(1, 2, 5, 2, 3)
+  #        (when m=5)
+  # A    = (mxd)-dimensional matrix (optional), with default value:
+  #        [3  5]
+  #        [5  2]
+  #        [2  1]
+  #        [1  4]
+  #        [7  9]
+  #        (when m=5 and d=2)
+  #
+  ##########################################################################
+  
+  d <- length(xx)
+  
+  if (missing(cvec)) {
+    if (m == 5){
+      cvec <- c(1,2,5,2,3)
+    }
+    else {
+      stop('Value of the m-dimensional vector cvec is required.')
+    }
+  }
+  
+  # if (missing(A)) {
+  #   if (m==5 && d==2) {
+  #     A <- matrix(c(3,5,5,2,2,1,1,4,7,9),5,2,byrow=TRUE)
+  #   }
+  #   else {
+  #       stop('Value of the (mxd)-dimensional matrix A is required.')
+  #   }
+  # }
+
+  if(missing(A)) {
+    A <- matrix(c(3,5,5,2,2,1,1,4,7,9),5,2,byrow=TRUE)
+
+    if (d %% 2 == 0) {
+      A <- matrix(rep(A, d/2), ncol = d)
+    } else {
+      A <- matrix(rep(A, ceiling(d/2)), ncol = d + 1)
+      A <- A[, -ncol(A)]
+    }
+  }
+
+  xxmat <- matrix(rep(xx,times=m), m, d, byrow=TRUE)
+  inner <- rowSums((xxmat-A[,1:d])^2)	
+  outer <- sum(cvec * exp(-inner/pi) * cos(pi*inner))
+	
+  y <- outer
+  return(y)
+}
+
+levy <- function(xx)
+{
+  ##########################################################################
+  #
+  # INPUT:
+  #
+  # xx = c(x1, x2, ..., xd)
+  #
+  ##########################################################################
+  
+  d <- length(xx)
+  w <- 1 + (xx - 1)/4
+	
+  term1 <- (sin(pi*w[1]))^2 
+  term3 <- (w[d]-1)^2 * (1+1*(sin(2*pi*w[d]))^2)
+	
+  wi <- w[1:(d-1)]
+  sum <- sum((wi-1)^2 * (1+10*(sin(pi*wi+1))^2))
+	
+  y <- term1 + sum + term3
+  return(y)
+}
+
+michal <- function(xx, m=10)
+{
+  ##########################################################################
+  #
+  # INPUTS:
+  #
+  # xx = c(x1, x2)
+  # m = constant (optional), with default value 10
+  #
+  ##########################################################################
+  
+  ii <- c(1:length(xx))
+  sum <- sum(sin(xx) * (sin(ii*xx^2/pi))^(2*m))
+	
+  y <- -sum
+  return(y)
+}
+
 rastr <- function(xx)
 {
   ##########################################################################
@@ -176,6 +276,22 @@ schwef <- function(xx)
   sum <- sum(xx*sin(sqrt(abs(xx))))
 
   y <- 418.9829*d - sum
+  return(y)
+}
+
+stybt <- function(xx)
+{
+  ##########################################################################
+  #
+  # INPUT:
+  #
+  # xx = c(x1, x2, ..., xd)
+  #
+  ##########################################################################
+  
+  sum <- sum(xx^4 - 16*xx^2 + 5*xx)
+	
+  y <- sum/2
   return(y)
 }
 
@@ -271,6 +387,46 @@ schwef <- function(xx)
 # )
 
 test_func_list = list(
+  ackley = list(
+    func = ackley,
+    lbound_scalar = -32.768,
+    ubound_scalar = 32.768,
+    lbound = rep(-32.768, dim),
+    ubound = rep(32.768, dim),
+    argmin = rep(0, dim)
+  ),
+  grie = list(
+    func = grie,
+    lbound_scalar = -600,
+    ubound_scalar = 600,
+    lbound = rep(-600, dim),
+    ubound = rep(600, dim),
+    argmin = rep(0, dim)
+  ),
+  langer = list(
+    func = langer,
+    lbound_scalar = 0,
+    ubound_scalar = 10,
+    lbound = rep(0, dim),
+    ubound = rep(10, dim),
+    argmin = rep(0, dim) # I don't know the argmin.
+  ),
+  levy = list(
+    func = levy,
+    lbound_scalar = -10,
+    ubound_scalar = 10,
+    lbound = rep(-10, dim),
+    ubound = rep(10, dim),
+    argmin = rep(1, dim)
+  ),
+  michal = list(
+    func = michal,
+    lbound_scalar = 0,
+    ubound_scalar = pi,
+    lbound = rep(0, dim),
+    ubound = rep(pi, dim),
+    argmin = rep(0, dim) # I don't know the argmin in arbitrary dimension.
+  ),
   rastr = list(
     func = rastr,
     lbound_scalar = -5.12,
@@ -286,7 +442,13 @@ test_func_list = list(
     lbound = rep(-500, dim),
     ubound = rep(500, dim),
     argmin = rep(420.9687, dim)
+  ),
+  stybt = list(
+    func = stybt,
+    lbound_scalar = -5,
+    ubound_scalar = 5,
+    lbound = rep(-5, dim),
+    ubound = rep(5, dim),
+    argmin = rep(-2.903534, dim)
   )
 )
-
-# rastr_list = 
