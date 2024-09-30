@@ -10,7 +10,7 @@
 module purge
 module load StdEnv/2023 gcc/12.3 r/4.4.0     # Adjust version and add the gcc module used for installing packages.
 
-TEST_FUNC="ackley" # "ackley" # "grie" # "langer" # "levy" # "michal" # "schwef" # "stybt"
+TEST_FUNC="stybt" # "ackley" # "grie" # "langer" # "levy" # "michal" # "schwef" # "stybt"
 DIM=5
 NUM_INIT_OBS=$(($DIM * 10))
 NUM_RUNS=10
