@@ -159,6 +159,7 @@ best_so_far <- matrix(data = NA, nrow = 1, ncol = 2 * num_subseq_obs)
 ei_vals <- matrix(data = NA, nrow = 1, ncol = 2 * num_subseq_obs)
 all_x_pts <- matrix(data = NA, nrow = num_init_obs, ncol = dim)
 all_y_vals <- matrix(data = NA, nrow = num_init_obs, ncol = 1)
+cur_reg <- matrix(data = NA, nrow = 1, ncol = 2 + (2 * dim))
 
 # Load the initial observation points
 # and then evaluate the test function at those points
@@ -382,6 +383,33 @@ while (length(all_regions) > 0) {
   print(region_to_explore)
   
   print(sprintf("Next highest a_max value: %s", next_highest_a_max))
+
+  # Record the observation number, number of regions,
+  # and region bounds when we are entering explore_region()
+  # (This is to give some sense of where the algorithm
+  # is exploring and how often it's switching regions)
+
+  # Note that, if the tryCatch() fails,
+  # we still accumulate the desired data
+  # in cur_reg, so as long as tryCatch()
+  # succeeds the last time, nothing is lost
+
+  print("Saving current region records.")
+
+  new_cur_reg_row <- c(n_obs + num_init_obs, length(all_regions), as.vector(t(region_to_explore$bound_matrix)))
+  cur_reg <- rbind(cur_reg, new_cur_reg_row)
+
+  tryCatch(
+    expr = {
+      write.table(cur_reg[-1, ],
+                  file = sprintf("%sseed_%s_cur_reg.csv", save_dir, seed_value)
+      )
+    },
+    error = function(e) {
+      print("Error: couldn't save current region records.")
+      print(e)
+    }
+  )
   
   # Send the region chosen for exploration to explore_region()
   

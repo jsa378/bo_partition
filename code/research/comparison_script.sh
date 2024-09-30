@@ -8,9 +8,9 @@
 TEST_FUNC="ackley" # "ackley" # "grie" # "langer" # "levy" # "michal" # "rastr" # "schwef" # "stybt"
 DIM=5
 NUM_INIT_OBS=50
-NUM_SUBSEQ_OBS=5000
-N_MAX=100 # 250
-EPSILON=0.01 # 0.05 # 0.10
+NUM_SUBSEQ_OBS=15000
+N_MAX=100 # 100 # 250
+EPSILON=0.01 # 0.01 # 0.05 # 0.1
 
 # The reason I make the directories below
 # and then navigate into them before
