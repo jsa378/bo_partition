@@ -5,9 +5,9 @@
 # The parameters below need to match those
 # in the various .sh files being called below
 
-TEST_FUNC="ackley" # "ackley" # "grie" # "langer" # "levy" # "michal" # "rastr" # "schwef" # "stybt"
-DIM=5
-NUM_INIT_OBS=50
+TEST_FUNC="stybt" # "ackley" # "grie" # "langer" # "levy" # "michal" # "rastr" # "schwef" # "stybt"
+DIM=15
+NUM_INIT_OBS=150
 NUM_SUBSEQ_OBS=15000
 N_MAX=100 # 100 # 250
 EPSILON=0.01 # 0.01 # 0.05 # 0.1
