@@ -21,13 +21,13 @@ start <- Sys.time()
 # nugget_param <- 1e-09
 # save_dir <- "/Users/jesse/Downloads/test/"
 
-seed_value <- 3
+seed_value <- 1
 test_func_name <- "rastr"
 dim <- 2
-num_init_obs <- 20
+num_init_obs <- 20 # 50
 num_subseq_obs <- 100
 num_runs <- 10
-n_0 <- 15
+n_0 <- 10 # 10, 15, 19 for 20 init obs; 10, 20, 30, 40, 49 for 50 init obs (both for labo)
 # n_max_param <- 25
 # tol_param <- 0.1
 # how_many_EI_points_param <- 1000
@@ -97,7 +97,7 @@ lagp_ei <- function(x, x_pts = init_points, y_pts = init_y, call = "genoud"){ # 
   local_gp_model <- laGP(
     Xref = x,
     start = 6,
-    end = n_0, # 10, 15, 20 for 20; 10, 20, 30, 40, 50 for 50
+    end = n_0,
     X = x_pts,
     Z = y_pts,
     # d = NULL,
@@ -153,10 +153,12 @@ ei_contour <- function(ei_fn, optim_res) {
     fun_string <- "lagp_ei"
     num_pts <- n_0
     ei_vals <- ei_fn(x = grid_pts, call = "contour")
+    file_string <- sprintf("/Users/jesse/Downloads/meetings/12_24oct24/lagp_ei_%s_%s_%s.png", seed_value, n_0, num_init_obs)
   } else {
     fun_string = "dice_ei"
     num_pts <- num_init_obs
     ei_vals <- ei_fn(x = grid_pts) # doesn't have a "call" argument
+    file_string <- sprintf("/Users/jesse/Downloads/meetings/12_24oct24/dice_ei_%s_%s.png", seed_value, num_init_obs)
     # ei_vals <- apply(X = grid_pts, MARGIN = 1, FUN = ei_fn)
     # ei_vals <- with(grid_pts, ei_fun)
   }
@@ -176,6 +178,7 @@ ei_contour <- function(ei_fn, optim_res) {
   point_symbols <- c(rep(1, nrow(init_points)), 19)
   points_to_plot <- rbind(init_points, optim_res$par)
   
+  png(file_string, width = 1000, height = 1000, type = "cairo")
   filled.contour(x = reg_x,
                  y = reg_y,
                  z = ei_mat,
@@ -188,11 +191,14 @@ ei_contour <- function(ei_fn, optim_res) {
                                     xlab = "x1",
                                     ylab = "x2")
   )
+  dev.off()
   # points(x = init_points)
   
 }
 
-set.seed(1)
+# Do optimization for laGP/EI
+
+# set.seed(1)
 parinit <- test_lbound + runif(dim) * (test_ubound - test_lbound)
 
 genoud_result <- genoud(fn = lagp_ei, nvars=dim, max=TRUE,
@@ -211,6 +217,12 @@ genoud_result <- genoud(fn = lagp_ei, nvars=dim, max=TRUE,
 # ei_contour()
 
 ei_contour(ei_fn = lagp_ei, optim_res = genoud_result)
+
+#####
+
+##### REGULAR DICE STUFF BELOW #####
+
+#####
 
 dice_ctrl <- list(
   pop.size = 1024,
